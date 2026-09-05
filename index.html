@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>مدرسة مسار للتميز</title>
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: system-ui, Tahoma, Arial, sans-serif; background: #FBF9F4; }
+  #app { max-width: 420px; margin: 0 auto; min-height: 100vh; background: #FBF9F4; display: flex; flex-direction: column; }
+
+  .header { background: #16233F; padding: 20px 18px; display: flex; align-items: center; justify-content: space-between; border-bottom-left-radius: 20px; border-bottom-right-radius: 20px; }
+  .login-header { background: #16233F; padding: 56px 24px 40px; text-align: center; border-bottom-left-radius: 28px; border-bottom-right-radius: 28px; }
+  .avatar { width: 64px; height: 64px; border-radius: 50%; background: #C79A3E; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px; font-size: 26px; font-weight: 700; color: #16233F; }
+  .avatar-small { width: 40px; height: 40px; border-radius: 50%; background: #C79A3E; display: flex; align-items: center; justify-content: center; font-weight: 700; color: #16233F; }
+  .school-name { color: #fff; font-size: 20px; font-weight: 600; }
+  .school-sub { color: #B9C2D4; font-size: 13px; margin-top: 4px; }
+
+  form { padding: 32px 24px; flex: 1; }
+  label { font-size: 13px; color: #5B6472; display: block; margin-bottom: 6px; }
+  .field { display: flex; align-items: center; background: #fff; border: 1px solid #E3E0D6; border-radius: 12px; padding: 12px 14px; margin-bottom: 16px; }
+  .field input { border: none; outline: none; flex: 1; margin-right: 10px; font-size: 15px; background: transparent; text-align: right; direction: rtl; }
+  .error { display: flex; align-items: center; gap: 6px; color: #B4483A; font-size: 13px; margin-bottom: 8px; }
+  .btn-main { width: 100%; background: #16233F; color: #fff; border: none; border-radius: 12px; padding: 14px 0; font-size: 15px; font-weight: 600; margin-top: 12px; cursor: pointer; }
+  .btn-main:disabled { opacity: 0.6; }
+
+  .logout-btn { background: transparent; border: none; color: #B9C2D4; display: flex; align-items: center; gap: 4px; font-size: 13px; cursor: pointer; }
+
+  .tabbar { position: sticky; bottom: 0; background: #fff; border-top: 1px solid #ECE9DE; display: flex; }
+  .tab-btn { flex: 1; background: none; border: none; padding: 12px 0 10px; display: flex; flex-direction: column; align-items: center; gap: 4px; color: #A9A79C; cursor: pointer; font-family: inherit; }
+  .tab-btn.active { color: #16233F; font-weight: 600; }
+  .tab-btn span { font-size: 11px; }
+
+  .content { flex: 1; overflow-y: auto; padding: 16px 18px 24px; }
+
+  .child-chips { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 4px; margin-bottom: 16px; scrollbar-width: none; }
+  .child-chips::-webkit-scrollbar { display: none; }
+  .chip { flex-shrink: 0; padding: 8px 16px; border-radius: 999px; background: #fff; border: 1px solid #E3E0D6; font-size: 13px; color: #5B6472; cursor: pointer; white-space: nowrap; }
+  .chip.active { background: #16233F; color: #fff; border-color: #16233F; }
+
+  /* التصميم الخاص بالنتائج */
+  .avg-card { background: #16233F; border-radius: 16px; padding: 18px; color: #fff; margin-bottom: 16px; }
+  .avg-label { font-size: 13px; color: #B9C2D4; }
+  .avg-num { font-size: 34px; font-weight: 700; }
+  .subj-card { background: #fff; border: 1px solid #ECE9DE; border-radius: 14px; padding: 14px 16px; margin-bottom: 10px; }
+  .subj-row { display: flex; justify-content: space-between; margin-bottom: 8px; }
+  .subj-name { font-size: 14.5px; font-weight: 500; color: #2C2C2A; }
+  .subj-score { font-size: 14.5px; font-weight: 600; color: #16233F; }
+  .subj-meta { font-size: 12px; color: #8A8578; margin-top: 4px; }
+  .bar-bg { height: 6px; background: #F1EFE8; border-radius: 4px; overflow: hidden; }
+  .bar-fill { height: 100%; border-radius: 4px; }
+
+  /* التصميم الخاص بالدفعات */
+  .pay-summary { display: flex; gap: 10px; margin-bottom: 16px; }
+  .pay-box { flex: 1; border-radius: 14px; padding: 14px; }
+  .pay-box .lbl { font-size: 12px; }
+  .pay-box .val { font-size: 18px; font-weight: 700; }
+  .pay-item { background: #fff; border: 1px solid #ECE9DE; border-radius: 14px; padding: 14px 16px; margin-bottom: 10px; }
+  .pay-item .title { font-size: 14.5px; font-weight: 500; color: #2C2C2A; margin-bottom: 4px; }
+  .pay-item .meta { font-size: 12.5px; color: #8A8578; }
+
+  /* التصميم الخاص بالباص */
+  .bus-card { background: #16233F; border-radius: 16px; padding: 18px; color: #fff; margin-bottom: 12px; }
+  .bus-route { font-size: 13px; color: #B9C2D4; margin-bottom: 4px; }
+  .bus-driver { font-size: 16px; font-weight: 600; }
+  .bus-link { display: inline-block; margin-top: 12px; background: #C79A3E; color: #16233F; font-size: 13px; font-weight: 600; padding: 8px 16px; border-radius: 10px; text-decoration: none; }
+
+  /* التصميم الخاص بالوظائف */
+  .task-card { background: #fff; border: 1px solid #ECE9DE; border-radius: 14px; padding: 14px 16px; margin-bottom: 10px; border-right: 4px solid #16233F; }
+  .task-title { font-size: 14.5px; font-weight: 600; color: #2C2C2A; margin-bottom: 6px; }
+  .task-meta { font-size: 12.5px; color: #8A8578; display: flex; gap: 10px; }
+
+  /* التصميم الخاص بالحضور */
+  .att-card { display: flex; justify-content: space-between; align-items: center; background: #fff; border: 1px solid #ECE9DE; border-radius: 12px; padding: 14px 16px; margin-bottom: 10px; }
+  .att-date { font-size: 14.5px; font-weight: 500; color: #2C2C2A; }
+  .att-status { font-size: 12.5px; font-weight: 600; padding: 6px 14px; border-radius: 20px; }
+  .status-present { background: #EAF3DE; color: #3B6D11; }
+  .status-absent { background: #FCEBEB; color: #A32D2D; }
+  .status-late { background: #FFF4E5; color: #B27B16; }
+
+  .empty-box { text-align: center; padding: 40px 20px; color: #8A8578; font-size: 14px; }
+</style>
+</head>
+<body>
+<div id="app"></div>
+
+<script>
+const API_URL = "https://script.google.com/macros/s/AKfycbxpntK2nYh408EgCxhcixlMo39Qdb1pP86w2gC3jrOUas7ixGtyXrPdbX2G7wXZ3KL8Vw/exec";
+
+let session = null; // { parent, children, grades, payments, assignments, attendance }
+let currentChildIndex = 0;
+let currentTab = "results";
+
+function statusColor(remaining) {
+  return remaining > 0
+    ? { bg: "#FCEBEB", text: "#A32D2D", dark: "#501313" }
+    : { bg: "#EAF3DE", text: "#3B6D11", dark: "#173404" };
+}
+
+function renderLogin(errorMsg) {
+  const app = document.getElementById("app");
+  app.innerHTML = `
+    <div class="login-header">
+      <div class="avatar">م</div>
+      <div class="school-name">مدرسة مسار للتميز</div>
+      <div class="school-sub">بوابة أولياء الأمور</div>
+    </div>
+    <form id="loginForm">
+      <label>رقم هاتف ولي الأمر</label>
+      <div class="field">
+        <input id="idInput" type="tel" placeholder="مثال: 0999111444" />
+      </div>
+      <label>كلمة السر (PIN)</label>
+      <div class="field">
+        <input id="pwInput" type="password" placeholder="كلمة السر المعطاة من المدرسة" />
+      </div>
+      <div id="loginError">${errorMsg ? `<div class="error">${errorMsg}</div>` : ""}</div>
+      <button type="submit" class="btn-main" id="loginBtn">تسجيل الدخول</button>
+    </form>
+  `;
+
+  document.getElementById("loginForm").addEventListener("submit", async function (e) {
+    e.preventDefault();
+    const phone = document.getElementById("idInput").value.trim();
+    const pw = document.getElementById("pwInput").value.trim();
+    const btn = document.getElementById("loginBtn");
+    btn.disabled = true;
+    btn.textContent = "جارِ الدخول...";
+
+    try {
+      const url = `${API_URL}?action=login&phone=${encodeURIComponent(phone)}&pin=${encodeURIComponent(pw)}`;
+      const res = await fetch(url);
+      const data = await res.json();
+
+      if (!data.ok) {
+        renderLogin(data.error || "حدث خطأ، حاول مرة أخرى");
+        return;
+      }
+
+      session = data;
+      currentChildIndex = 0;
+      currentTab = "results";
+      renderApp();
+    } catch (err) {
+      renderLogin("تعذر الاتصال بالخادم. تأكد من الإنترنت أو من الرابط.");
+    }
+  });
+}
+
+function renderResults(child) {
+  if (!session.grades) return `<div class="empty-box">لا توجد بيانات علامات</div>`;
+  const grades = session.grades.filter(g => String(g.Student_ID).trim() === String(child.Student_ID).trim());
+  if (grades.length === 0) return `<div class="empty-box">لا توجد علامات مسجلة بعد لـ ${child.Student_Name}</div>`;
+
+  const nums = grades.map((g) => Number(g.Score)).filter((n) => !isNaN(n));
+  const avg = nums.length ? Math.round(nums.reduce((a, b) => a + b, 0) / nums.length) : 0;
+
+  let html = `
+    <div class="avg-card">
+      <div class="avg-label">${child.Student_Name} - ${child.Class_Level}</div>
+      <div style="display:flex;align-items:baseline;gap:8px;margin-top:6px;">
+        <div class="avg-num">${avg}%</div>
+        <div class="avg-label">المعدل العام</div>
+      </div>
+    </div>
+  `;
+
+  grades.forEach((g) => {
+    const score = Number(g.Score) || 0;
+    const color = score >= 85 ? "#2E7D5B" : score >= 70 ? "#C79A3E" : "#B4483A";
+    const subjectClean = String(g.Subject || "").replace(/[^\u0600-\u06FF\sa-zA-Z]/g, "").trim();
+    html += `
+      <div class="subj-card">
+        <div class="subj-row">
+          <span class="subj-name">${subjectClean || g.Subject}</span>
+          <span class="subj-score">${score}/100</span>
+        </div>
+        <div class="bar-bg"><div class="bar-fill" style="width:${score}%;background:${color}"></div></div>
+        <div class="subj-meta">${g.Exam_Name || ""}${g.Behavior ? " · " + g.Behavior : ""}</div>
+      </div>
+    `;
+  });
+  return html;
+}
+
+function renderAssignments(child) {
+  if (!session.assignments || session.assignments.length === 0) {
+    return `<div class="empty-box">لا توجد وظائف مسجلة حالياً</div>`;
+  }
+  const tasks = session.assignments.filter(a => String(a.Student_ID).trim() === String(child.Student_ID).trim());
+  if (tasks.length === 0) {
+    return `<div class="empty-box">لا توجد وظائف مسجلة لـ ${child.Student_Name}</div>`;
+  }
+  
+  let html = "";
+  tasks.forEach(t => {
+    html += `
+      <div class="task-card">
+        <div class="task-title">${t.Subject || 'وظيفة'} - ${t.Title || 'بدون عنوان'}</div>
+        <div class="task-meta">
+          <span>تاريخ التسليم: ${t.Due_Date || 'غير محدد'}</span>
+        </div>
+        ${t.Details ? `<div style="font-size:13px;color:#5B6472;margin-top:8px;">${t.Details}</div>` : ""}
+      </div>
+    `;
+  });
+  return html;
+}
+
+function renderAttendance(child) {
+  if (!session.attendance || session.attendance.length === 0) {
+    return `<div class="empty-box">لا يوجد سجل حضور حالياً</div>`;
+  }
+  const att = session.attendance.filter(a => String(a.Student_ID).trim() === String(child.Student_ID).trim());
+  if (att.length === 0) {
+    return `<div class="empty-box">لا يوجد سجل حضور لـ ${child.Student_Name}</div>`;
+  }
+  
+  let html = "";
+  att.forEach(a => {
+    let statusClass = "status-present";
+    let statusText = a.Status || "حاضر";
+    if (statusText.includes("غائب") || statusText.includes("غياب")) statusClass = "status-absent";
+    if (statusText.includes("متأخر") || statusText.includes("تأخير")) statusClass = "status-late";
+    
+    html += `
+      <div class="att-card">
+        <div class="att-date">${a.Date || 'تاريخ غير محدد'}</div>
+        <div class="att-status ${statusClass}">${statusText}</div>
+      </div>
+    `;
+  });
+  return html;
+}
+
+function renderPayments() {
+  if (!session.payments || session.payments.length === 0) {
+    return `<div class="empty-box">لا توجد دفعات مسجلة</div>`;
+  }
+  const last = session.payments[session.payments.length - 1];
+  const totalRequired = parseMoney(last.Total_Required);
+  const remaining = parseMoney(last.Remaining_Balance);
+  const paid = totalRequired - remaining;
+  const c = statusColor(remaining);
+
+  let html = `
+    <div class="pay-summary">
+      <div class="pay-box" style="background:#EAF3DE;">
+        <div class="lbl" style="color:#3B6D11;">المدفوع</div>
+        <div class="val" style="color:#173404;">$${paid.toLocaleString()}</div>
+      </div>
+      <div class="pay-box" style="background:${c.bg};">
+        <div class="lbl" style="color:${c.text};">المتبقي</div>
+        <div class="val" style="color:${c.dark};">$${remaining.toLocaleString()}</div>
+      </div>
+    </div>
+  `;
+
+  [...session.payments].reverse().forEach((p) => {
+    html += `
+      <div class="pay-item">
+        <div class="title">${p.Notes || "دفعة"} — $${parseMoney(p.Amount).toLocaleString()}</div>
+        <div class="meta">${p.Payment_Date || ""} · ${p.Payment_Method || ""}</div>
+      </div>
+    `;
+  });
+  return html;
+}
+
+function parseMoney(val) {
+  if (typeof val === "number") return val;
+  if (!val) return 0;
+  return Number(String(val).replace(/[^0-9.]/g, "")) || 0;
+}
+
+function renderBus(child) {
+  if (!child.bus) return `<div class="empty-box">لا يوجد خط باص مسجل لـ ${child.Student_Name} حالياً</div>`;
+  return `
+    <div class="bus-card">
+      <div class="bus-route">${child.bus.Route_Area || "المنطقة غير محددة"}</div>
+      <div class="bus-driver">المشرف: ${child.Supervisor_Name || "-"}</div>
+      ${child.bus.Phone ? `<div style="font-size:13px;color:#B9C2D4;margin-top:6px;">هاتف: ${child.bus.Phone}</div>` : ""}
+      ${child.bus.Live_Location_URL ? `<a class="bus-link" href="${child.bus.Live_Location_URL}" target="_blank">تتبع الموقع الآن</a>` : ""}
+    </div>
+  `;
+}
+
+function renderApp() {
+  const app = document.getElementById("app");
+  const child = session.children[currentChildIndex];
+
+  let contentHtml = "";
+  if (session.children.length === 0) {
+    contentHtml = `<div class="empty-box">لا يوجد طلاب مسجلين تحت هذا الحساب</div>`;
+  } else {
+    if (currentTab === "results") contentHtml = renderResults(child);
+    if (currentTab === "assignments") contentHtml = renderAssignments(child);
+    if (currentTab === "attendance") contentHtml = renderAttendance(child);
+    if (currentTab === "payments") contentHtml = renderPayments();
+    if (currentTab === "bus") contentHtml = renderBus(child);
+  }
+
+  const chips = session.children
+    .map((c, i) => `<button class="chip ${i === currentChildIndex ? "active" : ""}" data-idx="${i}">${c.Student_Name}</button>`)
+    .join("");
+
+  app.innerHTML = `
+    <div class="header">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <div class="avatar-small">${(session.parent.Parent_Name || "؟")[0]}</div>
+        <div>
+          <div style="color:#fff;font-size:15px;font-weight:600;">${session.parent.Parent_Name}</div>
+          <div style="color:#B9C2D4;font-size:12.5px;">${session.children.length} طالب</div>
+        </div>
+      </div>
+      <button id="logoutBtn" class="logout-btn">خروج</button>
+    </div>
+
+    <div class="content">
+      ${currentTab !== "payments" && session.children.length > 0 ? `<div class="child-chips">${chips}</div>` : ""}
+      ${contentHtml}
+    </div>
+
+    <div class="tabbar">
+      <button class="tab-btn ${currentTab === "results" ? "active" : ""}" data-tab="results"><span>النتائج</span></button>
+      <button class="tab-btn ${currentTab === "assignments" ? "active" : ""}" data-tab="assignments"><span>الوظائف</span></button>
+      <button class="tab-btn ${currentTab === "attendance" ? "active" : ""}" data-tab="attendance"><span>الحضور</span></button>
+      <button class="tab-btn ${currentTab === "payments" ? "active" : ""}" data-tab="payments"><span>الدفعات</span></button>
+      <button class="tab-btn ${currentTab === "bus" ? "active" : ""}" data-tab="bus"><span>الباص</span></button>
+    </div>
+  `;
+
+  document.getElementById("logoutBtn").addEventListener("click", function () {
+    session = null;
+    renderLogin();
+  });
+
+  document.querySelectorAll(".tab-btn").forEach((btn) => {
+    btn.addEventListener("click", function () {
+      currentTab = btn.getAttribute("data-tab");
+      renderApp();
+    });
+  });
+
+  document.querySelectorAll(".chip").forEach((btn) => {
+    btn.addEventListener("click", function () {
+      currentChildIndex = Number(btn.getAttribute("data-idx"));
+      renderApp();
+    });
+  });
+}
+
+renderLogin();
+</script>
+</body>
+</html>
