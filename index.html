@@ -4,92 +4,202 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>مدرسة مسار للتميز</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
 <style>
   * { box-sizing: border-box; }
-  body { margin: 0; font-family: system-ui, Tahoma, Arial, sans-serif; background: #FBF9F4; }
-  #app { max-width: 420px; margin: 0 auto; min-height: 100vh; background: #FBF9F4; display: flex; flex-direction: column; }
+  :root {
+    --bg: #FBF9F4; --card: #fff; --border: #ECE9DE; --header: #16233F; --gold: #C79A3E;
+    --text: #2C2C2A; --muted: #8A8578; --muted2: #5B6472; --field-border: #E3E0D6;
+  }
+  body.dark {
+    --bg: #12161F; --card: #1B2130; --border: #2A3142; --header: #0C1119; --gold: #D8B15C;
+    --text: #EDEEF0; --muted: #9AA0AC; --muted2: #B4BAC6; --field-border: #2A3142;
+  }
+  body { margin: 0; font-family: system-ui, Tahoma, Arial, sans-serif; background: var(--bg); transition: background .2s; }
+  #app { max-width: 420px; margin: 0 auto; min-height: 100vh; background: var(--bg); display: flex; flex-direction: column; }
 
-  .header { background: #16233F; padding: 20px 18px; display: flex; align-items: center; justify-content: space-between; border-bottom-left-radius: 20px; border-bottom-right-radius: 20px; }
-  .login-header { background: #16233F; padding: 56px 24px 40px; text-align: center; border-bottom-left-radius: 28px; border-bottom-right-radius: 28px; }
-  .avatar { width: 64px; height: 64px; border-radius: 50%; background: #C79A3E; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px; font-size: 26px; font-weight: 700; color: #16233F; }
-  .avatar-small { width: 40px; height: 40px; border-radius: 50%; background: #C79A3E; display: flex; align-items: center; justify-content: center; font-weight: 700; color: #16233F; }
+  .header { background: var(--header); padding: 20px 18px; display: flex; align-items: center; justify-content: space-between; border-bottom-left-radius: 20px; border-bottom-right-radius: 20px; }
+  .login-header { background: var(--header); padding: 56px 24px 40px; text-align: center; border-bottom-left-radius: 28px; border-bottom-right-radius: 28px; position: relative; }
+  .avatar { width: 64px; height: 64px; border-radius: 50%; background: var(--gold); display: flex; align-items: center; justify-content: center; margin: 0 auto 16px; font-size: 26px; font-weight: 700; color: var(--header); }
+  .avatar-small { width: 40px; height: 40px; border-radius: 50%; background: var(--gold); display: flex; align-items: center; justify-content: center; font-weight: 700; color: var(--header); }
   .school-name { color: #fff; font-size: 20px; font-weight: 600; }
   .school-sub { color: #B9C2D4; font-size: 13px; margin-top: 4px; }
 
   form { padding: 32px 24px; flex: 1; }
-  label { font-size: 13px; color: #5B6472; display: block; margin-bottom: 6px; }
-  .field { display: flex; align-items: center; background: #fff; border: 1px solid #E3E0D6; border-radius: 12px; padding: 12px 14px; margin-bottom: 16px; }
-  .field input { border: none; outline: none; flex: 1; margin-right: 10px; font-size: 15px; background: transparent; text-align: right; direction: rtl; }
+  label { font-size: 13px; color: var(--muted2); display: block; margin-bottom: 6px; }
+  .field { display: flex; align-items: center; background: var(--card); border: 1px solid var(--field-border); border-radius: 12px; padding: 12px 14px; margin-bottom: 16px; }
+  .field input { border: none; outline: none; flex: 1; margin-right: 10px; font-size: 15px; background: transparent; text-align: right; direction: rtl; color: var(--text); }
   .error { display: flex; align-items: center; gap: 6px; color: #B4483A; font-size: 13px; margin-bottom: 8px; }
-  .btn-main { width: 100%; background: #16233F; color: #fff; border: none; border-radius: 12px; padding: 14px 0; font-size: 15px; font-weight: 600; margin-top: 12px; cursor: pointer; }
+  .btn-main { width: 100%; background: var(--header); color: #fff; border: none; border-radius: 12px; padding: 14px 0; font-size: 15px; font-weight: 600; margin-top: 12px; cursor: pointer; }
   .btn-main:disabled { opacity: 0.6; }
+  .remember-row { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--muted2); margin-top: 4px; }
 
   .logout-btn { background: transparent; border: none; color: #B9C2D4; display: flex; align-items: center; gap: 4px; font-size: 13px; cursor: pointer; }
+  .icon-btn { background: rgba(255,255,255,0.12); border: none; color: #fff; width: 34px; height: 34px; border-radius: 10px; font-size: 16px; cursor: pointer; }
 
-  .tabbar { position: sticky; bottom: 0; background: #fff; border-top: 1px solid #ECE9DE; display: flex; }
-  .tab-btn { flex: 1; background: none; border: none; padding: 12px 0 10px; display: flex; flex-direction: column; align-items: center; gap: 4px; color: #A9A79C; cursor: pointer; font-family: inherit; }
-  .tab-btn.active { color: #16233F; font-weight: 600; }
-  .tab-btn span { font-size: 11px; }
+  .tabbar { position: sticky; bottom: 0; background: var(--card); border-top: 1px solid var(--border); display: flex; }
+  .tab-btn { position: relative; flex: 1; background: none; border: none; padding: 12px 0 10px; display: flex; flex-direction: column; align-items: center; gap: 4px; color: var(--muted); cursor: pointer; font-family: inherit; }
+  .tab-btn.active { color: var(--header); font-weight: 600; }
+  body.dark .tab-btn.active { color: var(--gold); }
+  .tab-btn span { font-size: 10.5px; }
+  .badge-dot { position: absolute; top: 6px; left: calc(50% + 10px); width: 8px; height: 8px; border-radius: 50%; background: #C0392B; }
 
-  .content { flex: 1; overflow-y: auto; padding: 16px 18px 24px; }
+  .content { flex: 1; overflow-y: auto; padding: 16px 18px 24px; color: var(--text); }
 
   .child-chips { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 4px; margin-bottom: 16px; scrollbar-width: none; }
   .child-chips::-webkit-scrollbar { display: none; }
-  .chip { flex-shrink: 0; padding: 8px 16px; border-radius: 999px; background: #fff; border: 1px solid #E3E0D6; font-size: 13px; color: #5B6472; cursor: pointer; white-space: nowrap; }
-  .chip.active { background: #16233F; color: #fff; border-color: #16233F; }
+  .chip { flex-shrink: 0; padding: 8px 16px; border-radius: 999px; background: var(--card); border: 1px solid var(--field-border); font-size: 13px; color: var(--muted2); cursor: pointer; white-space: nowrap; }
+  .chip.active { background: var(--header); color: #fff; border-color: var(--header); }
 
-  /* التصميم الخاص بالنتائج */
-  .avg-card { background: #16233F; border-radius: 16px; padding: 18px; color: #fff; margin-bottom: 16px; }
+  .avg-card { background: var(--header); border-radius: 16px; padding: 18px; color: #fff; margin-bottom: 16px; display: flex; justify-content: space-between; align-items: flex-end; }
   .avg-label { font-size: 13px; color: #B9C2D4; }
   .avg-num { font-size: 34px; font-weight: 700; }
-  .subj-card { background: #fff; border: 1px solid #ECE9DE; border-radius: 14px; padding: 14px 16px; margin-bottom: 10px; }
+  .subj-card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 14px 16px; margin-bottom: 10px; }
   .subj-row { display: flex; justify-content: space-between; margin-bottom: 8px; }
-  .subj-name { font-size: 14.5px; font-weight: 500; color: #2C2C2A; }
-  .subj-score { font-size: 14.5px; font-weight: 600; color: #16233F; }
-  .subj-meta { font-size: 12px; color: #8A8578; margin-top: 4px; }
-  .bar-bg { height: 6px; background: #F1EFE8; border-radius: 4px; overflow: hidden; }
+  .subj-name { font-size: 14.5px; font-weight: 500; color: var(--text); }
+  .subj-score { font-size: 14.5px; font-weight: 600; color: var(--header); }
+  body.dark .subj-score { color: var(--gold); }
+  .subj-meta { font-size: 12px; color: var(--muted); margin-top: 4px; }
+  .bar-bg { height: 6px; background: var(--field-border); border-radius: 4px; overflow: hidden; }
   .bar-fill { height: 100%; border-radius: 4px; }
 
-  /* التصميم الخاص بالدفعات */
   .pay-summary { display: flex; gap: 10px; margin-bottom: 16px; }
   .pay-box { flex: 1; border-radius: 14px; padding: 14px; }
   .pay-box .lbl { font-size: 12px; }
   .pay-box .val { font-size: 18px; font-weight: 700; }
-  .pay-item { background: #fff; border: 1px solid #ECE9DE; border-radius: 14px; padding: 14px 16px; margin-bottom: 10px; }
-  .pay-item .title { font-size: 14.5px; font-weight: 500; color: #2C2C2A; margin-bottom: 4px; }
-  .pay-item .meta { font-size: 12.5px; color: #8A8578; }
+  .pay-item { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 14px 16px; margin-bottom: 10px; }
+  .pay-item .title { font-size: 14.5px; font-weight: 500; color: var(--text); margin-bottom: 4px; }
+  .pay-item .meta { font-size: 12.5px; color: var(--muted); }
 
-  /* التصميم الخاص بالباص */
-  .bus-card { background: #16233F; border-radius: 16px; padding: 18px; color: #fff; margin-bottom: 12px; }
+  .bus-card { background: var(--header); border-radius: 16px; padding: 18px; color: #fff; margin-bottom: 12px; }
   .bus-route { font-size: 13px; color: #B9C2D4; margin-bottom: 4px; }
   .bus-driver { font-size: 16px; font-weight: 600; }
-  .bus-link { display: inline-block; margin-top: 12px; background: #C79A3E; color: #16233F; font-size: 13px; font-weight: 600; padding: 8px 16px; border-radius: 10px; text-decoration: none; }
+  .bus-link { display: inline-block; margin-top: 12px; background: var(--gold); color: var(--header); font-size: 13px; font-weight: 600; padding: 8px 16px; border-radius: 10px; text-decoration: none; }
 
-  /* التصميم الخاص بالوظائف */
-  .task-card { background: #fff; border: 1px solid #ECE9DE; border-radius: 14px; padding: 14px 16px; margin-bottom: 10px; border-right: 4px solid #16233F; }
-  .task-title { font-size: 14.5px; font-weight: 600; color: #2C2C2A; margin-bottom: 6px; }
-  .task-meta { font-size: 12.5px; color: #8A8578; display: flex; gap: 10px; }
+  .task-card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 14px 16px; margin-bottom: 10px; border-right: 4px solid var(--header); }
+  .task-title { font-size: 14.5px; font-weight: 600; color: var(--text); margin-bottom: 6px; }
+  .task-meta { font-size: 12.5px; color: var(--muted); display: flex; gap: 10px; }
 
-  /* التصميم الخاص بالحضور */
-  .att-card { display: flex; justify-content: space-between; align-items: center; background: #fff; border: 1px solid #ECE9DE; border-radius: 12px; padding: 14px 16px; margin-bottom: 10px; }
-  .att-date { font-size: 14.5px; font-weight: 500; color: #2C2C2A; }
+  .att-card { display: flex; justify-content: space-between; align-items: center; background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px; margin-bottom: 10px; }
+  .att-date { font-size: 14.5px; font-weight: 500; color: var(--text); }
   .att-status { font-size: 12.5px; font-weight: 600; padding: 6px 14px; border-radius: 20px; }
   .status-present { background: #EAF3DE; color: #3B6D11; }
   .status-absent { background: #FCEBEB; color: #A32D2D; }
   .status-late { background: #FFF4E5; color: #B27B16; }
 
-  .empty-box { text-align: center; padding: 40px 20px; color: #8A8578; font-size: 14px; }
+  .section-title { font-size: 14px; font-weight: 700; color: var(--text); margin: 4px 0 10px; }
+  .countdown-card { background: linear-gradient(135deg, var(--header), #223258); border-radius: 16px; padding: 16px; color: #fff; margin-bottom: 14px; }
+  .countdown-num { font-size: 28px; font-weight: 700; color: var(--gold); }
+  .exam-item { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 12px 14px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; }
+  .exam-subject { font-size: 14px; font-weight: 500; color: var(--text); }
+  .exam-meta { font-size: 12px; color: var(--muted); margin-top: 2px; }
+
+  .note-card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 12px 14px; margin-bottom: 8px; border-right: 4px solid #2E7D5B; }
+  .note-card.negative { border-right-color: #B4483A; }
+  .note-text { font-size: 13.5px; color: var(--text); }
+  .note-meta { font-size: 11.5px; color: var(--muted); margin-top: 6px; }
+
+  .print-btn { background: none; border: 1px solid var(--field-border); color: var(--muted2); font-size: 12.5px; padding: 7px 14px; border-radius: 10px; cursor: pointer; margin-bottom: 14px; display: inline-flex; align-items: center; gap: 6px; }
+
+  .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 50; padding: 20px; }
+  .modal-box { background: var(--card); border-radius: 18px; max-width: 380px; width: 100%; max-height: 80vh; overflow-y: auto; padding: 20px; }
+  .modal-title { font-size: 16px; font-weight: 700; color: var(--text); margin-bottom: 14px; display: flex; justify-content: space-between; align-items: center; }
+  .ann-item { border-bottom: 1px solid var(--border); padding: 10px 0; }
+  .ann-item:last-child { border-bottom: none; }
+  .ann-title { font-size: 14px; font-weight: 600; color: var(--text); }
+  .ann-body { font-size: 13px; color: var(--muted2); margin-top: 4px; }
+  .ann-date { font-size: 11.5px; color: var(--muted); margin-top: 4px; }
+  .close-btn { background: none; border: none; font-size: 18px; color: var(--muted); cursor: pointer; }
+
+  .empty-box { text-align: center; padding: 40px 20px; color: var(--muted); font-size: 14px; }
+
+  .trend-box { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 14px; margin-bottom: 16px; }
+  .trend-title { font-size: 13px; font-weight: 600; color: var(--muted2); margin-bottom: 8px; }
+
+  .last-updated { text-align: center; font-size: 11px; color: var(--muted); padding: 6px 0; background: var(--bg); }
+  .search-field { display: flex; align-items: center; background: var(--card); border: 1px solid var(--field-border); border-radius: 12px; padding: 9px 12px; margin-bottom: 14px; }
+  .search-field input { border: none; outline: none; flex: 1; margin-right: 8px; font-size: 13.5px; background: transparent; text-align: right; direction: rtl; color: var(--text); }
+  .whatsapp-btn { background: #25D366; border: none; color: #fff; font-size: 12.5px; padding: 7px 14px; border-radius: 10px; cursor: pointer; margin-bottom: 14px; margin-right: 8px; display: inline-flex; align-items: center; gap: 6px; }
+
+  .results-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 13px; }
+  .results-table th { background: var(--header); color: #fff; padding: 9px 6px; font-weight: 600; font-size: 12px; }
+  .results-table td { text-align: center; padding: 9px 6px; border-bottom: 1px solid var(--border); color: var(--text); }
+  .results-table td.rt-subject { text-align: right; font-weight: 500; }
+  .results-table td.rt-avg { font-weight: 700; }
+  .results-table tr:nth-child(even) td { background: rgba(0,0,0,0.02); }
+  body.dark .results-table tr:nth-child(even) td { background: rgba(255,255,255,0.03); }
+
+  .cal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+  .cal-nav-btn { background: var(--card); border: 1px solid var(--field-border); color: var(--text); width: 34px; height: 34px; border-radius: 10px; cursor: pointer; font-size: 15px; }
+  .cal-title { font-size: 15px; font-weight: 700; color: var(--text); }
+  .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; margin-bottom: 16px; }
+  .cal-dow { text-align: center; font-size: 11px; color: var(--muted); padding-bottom: 4px; }
+  .cal-cell { aspect-ratio: 1; display: flex; align-items: center; justify-content: center; border-radius: 9px; font-size: 13px; font-weight: 600; position: relative; }
+  .cal-cell.empty { visibility: hidden; }
+  .cal-present { background: #DDF0DE; color: #1E5E27; }
+  .cal-absent { background: #FBDEDC; color: #8E2A22; }
+  .cal-late { background: #FCEBC7; color: #8A5A0A; }
+  .cal-weekend { background: #DCE7F7; color: #294A80; }
+  .cal-holiday { background: #DCE7F7; color: #294A80; }
+  .cal-neutral { background: var(--card); border: 1px solid var(--border); color: var(--muted); }
+  .cal-legend { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 18px; font-size: 11.5px; color: var(--muted2); }
+  .legend-dot { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-left: 4px; vertical-align: middle; }
+  .holiday-table { width: 100%; border-collapse: collapse; }
+  .holiday-table td { padding: 8px 4px; border-bottom: 1px solid var(--border); font-size: 13px; color: var(--text); }
+  .holiday-table td.hdate { color: var(--muted); font-size: 12px; }
+
+  @media print {
+    .tabbar, .header, .child-chips, .print-btn { display: none !important; }
+  }
 </style>
 </head>
 <body>
 <div id="app"></div>
 
 <script>
-const API_URL = "https://script.google.com/macros/s/AKfycbxpntK2nYh408EgCxhcixlMo39Qdb1pP86w2gC3jrOUas7ixGtyXrPdbX2G7wXZ3KL8Vw/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbxyq-38YbLECS3VbjhAarIOsDnMlA7ib5Zz8exCkUQoacKLW0pR6gHoEDxB-jXWOB7r/exec";
 
-let session = null; // { parent, children, grades, payments, assignments, attendance }
+let session = null;
 let currentChildIndex = 0;
 let currentTab = "results";
+let showAnnouncements = false;
+
+// ---------- تفضيلات محفوظة على الجهاز ----------
+function getSeenCounts() {
+  try { return JSON.parse(localStorage.getItem("masar_seen") || "{}"); } catch(e) { return {}; }
+}
+function setSeenCount(key, count) {
+  const seen = getSeenCounts();
+  seen[key] = count;
+  localStorage.setItem("masar_seen", JSON.stringify(seen));
+}
+function hasNew(key, currentCount) {
+  const seen = getSeenCounts();
+  return (seen[key] || 0) < currentCount;
+}
+
+function applyDarkModePref() {
+  if (localStorage.getItem("masar_dark") === "1") document.body.classList.add("dark");
+}
+function toggleDarkMode() {
+  document.body.classList.toggle("dark");
+  localStorage.setItem("masar_dark", document.body.classList.contains("dark") ? "1" : "0");
+  renderApp();
+}
+
+function saveCreds(phone, pin) {
+  localStorage.setItem("masar_phone", phone);
+  localStorage.setItem("masar_pin", pin);
+}
+function clearCreds() {
+  localStorage.removeItem("masar_phone");
+  localStorage.removeItem("masar_pin");
+}
+function getSavedCreds() {
+  const phone = localStorage.getItem("masar_phone");
+  const pin = localStorage.getItem("masar_pin");
+  return phone && pin ? { phone, pin } : null;
+}
 
 function statusColor(remaining) {
   return remaining > 0
@@ -97,8 +207,22 @@ function statusColor(remaining) {
     : { bg: "#EAF3DE", text: "#3B6D11", dark: "#173404" };
 }
 
+async function doLogin(phone, pin, remember) {
+  const url = `${API_URL}?action=login&phone=${encodeURIComponent(phone)}&pin=${encodeURIComponent(pin)}`;
+  const res = await fetch(url);
+  const data = await res.json();
+  if (!data.ok) return { ok: false, error: data.error };
+
+  session = data;
+  currentChildIndex = 0;
+  currentTab = "results";
+  if (remember) saveCreds(phone, pin);
+  return { ok: true };
+}
+
 function renderLogin(errorMsg) {
   const app = document.getElementById("app");
+  const saved = getSavedCreds();
   app.innerHTML = `
     <div class="login-header">
       <div class="avatar">م</div>
@@ -108,11 +232,15 @@ function renderLogin(errorMsg) {
     <form id="loginForm">
       <label>رقم هاتف ولي الأمر</label>
       <div class="field">
-        <input id="idInput" type="tel" placeholder="مثال: 0999111444" />
+        <input id="idInput" type="tel" placeholder="مثال: 0999111444" value="${saved ? saved.phone : ""}" />
       </div>
       <label>كلمة السر (PIN)</label>
       <div class="field">
-        <input id="pwInput" type="password" placeholder="كلمة السر المعطاة من المدرسة" />
+        <input id="pwInput" type="password" placeholder="كلمة السر المعطاة من المدرسة" value="${saved ? saved.pin : ""}" />
+      </div>
+      <div class="remember-row">
+        <input type="checkbox" id="rememberBox" ${saved ? "checked" : ""} />
+        <label for="rememberBox" style="margin:0;">تذكرني على هذا الجهاز</label>
       </div>
       <div id="loginError">${errorMsg ? `<div class="error">${errorMsg}</div>` : ""}</div>
       <button type="submit" class="btn-main" id="loginBtn">تسجيل الدخول</button>
@@ -123,23 +251,15 @@ function renderLogin(errorMsg) {
     e.preventDefault();
     const phone = document.getElementById("idInput").value.trim();
     const pw = document.getElementById("pwInput").value.trim();
+    const remember = document.getElementById("rememberBox").checked;
     const btn = document.getElementById("loginBtn");
     btn.disabled = true;
     btn.textContent = "جارِ الدخول...";
-
     try {
-      const url = `${API_URL}?action=login&phone=${encodeURIComponent(phone)}&pin=${encodeURIComponent(pw)}`;
-      const res = await fetch(url);
-      const data = await res.json();
-
-      if (!data.ok) {
-        renderLogin(data.error || "حدث خطأ، حاول مرة أخرى");
-        return;
-      }
-
-      session = data;
-      currentChildIndex = 0;
-      currentTab = "results";
+      const result = await doLogin(phone, pw, remember);
+      if (!result.ok) { renderLogin(result.error || "حدث خطأ، حاول مرة أخرى"); return; }
+      if (!remember) clearCreds();
+      showAnnouncements = (session.announcements || []).length > 0;
       renderApp();
     } catch (err) {
       renderLogin("تعذر الاتصال بالخادم. تأكد من الإنترنت أو من الرابط.");
@@ -147,96 +267,348 @@ function renderLogin(errorMsg) {
   });
 }
 
-function renderResults(child) {
-  if (!session.grades) return `<div class="empty-box">لا توجد بيانات علامات</div>`;
-  const grades = session.grades.filter(g => String(g.Student_ID).trim() === String(child.Student_ID).trim());
-  if (grades.length === 0) return `<div class="empty-box">لا توجد علامات مسجلة بعد لـ ${child.Student_Name}</div>`;
+async function tryAutoLogin() {
+  const saved = getSavedCreds();
+  if (!saved) { renderLogin(); return; }
+  const app = document.getElementById("app");
+  app.innerHTML = `<div class="empty-box" style="padding-top:80px;">جارِ تسجيل الدخول...</div>`;
+  try {
+    const result = await doLogin(saved.phone, saved.pin, true);
+    if (!result.ok) { clearCreds(); renderLogin(); return; }
+    showAnnouncements = (session.announcements || []).length > 0;
+    renderApp();
+  } catch (err) {
+    renderLogin();
+  }
+}
 
-  const nums = grades.map((g) => Number(g.Score)).filter((n) => !isNaN(n));
-  const avg = nums.length ? Math.round(nums.reduce((a, b) => a + b, 0) / nums.length) : 0;
+let currentSemesterView = "1";
+let lastTrendData = null;
+let trendChartInstance = null;
 
-  let html = `
-    <div class="avg-card">
-      <div class="avg-label">${child.Student_Name} - ${child.Class_Level}</div>
-      <div style="display:flex;align-items:baseline;gap:8px;margin-top:6px;">
-        <div class="avg-num">${avg}%</div>
-        <div class="avg-label">المعدل العام</div>
-      </div>
-    </div>
-  `;
+function buildTrendData(rows) {
+  const order = [];
+  const sums = {};
+  const counts = {};
+  rows.forEach(r => {
+    const hasScore = r.Score !== "" && r.Score !== null && r.Score !== undefined && !isNaN(Number(r.Score));
+    if (!hasScore) return;
+    const label = String(r.Exam_Name || "تقييم").trim();
+    if (!(label in sums)) { order.push(label); sums[label] = 0; counts[label] = 0; }
+    sums[label] += Number(r.Score);
+    counts[label]++;
+  });
+  return {
+    labels: order,
+    data: order.map(l => Math.round((sums[l] / counts[l]) * 10) / 10)
+  };
+}
 
-  grades.forEach((g) => {
-    const score = Number(g.Score) || 0;
-    const color = score >= 85 ? "#2E7D5B" : score >= 70 ? "#C79A3E" : "#B4483A";
-    const subjectClean = String(g.Subject || "").replace(/[^\u0600-\u06FF\sa-zA-Z]/g, "").trim();
-    html += `
-      <div class="subj-card">
-        <div class="subj-row">
-          <span class="subj-name">${subjectClean || g.Subject}</span>
-          <span class="subj-score">${score}/100</span>
-        </div>
-        <div class="bar-bg"><div class="bar-fill" style="width:${score}%;background:${color}"></div></div>
-        <div class="subj-meta">${g.Exam_Name || ""}${g.Behavior ? " · " + g.Behavior : ""}</div>
-      </div>
+function drawTrendChart() {
+  const canvas = document.getElementById("trendChart");
+  if (!canvas || !lastTrendData || lastTrendData.labels.length < 2) return;
+  if (trendChartInstance) { trendChartInstance.destroy(); trendChartInstance = null; }
+
+  const styles = getComputedStyle(document.body);
+  const lineColor = styles.getPropertyValue("--gold").trim() || "#C79A3E";
+  const textColor = styles.getPropertyValue("--muted2").trim() || "#5B6472";
+  const gridColor = styles.getPropertyValue("--border").trim() || "#ECE9DE";
+
+  trendChartInstance = new Chart(canvas.getContext("2d"), {
+    type: "line",
+    data: {
+      labels: lastTrendData.labels,
+      datasets: [{
+        label: "المعدل",
+        data: lastTrendData.data,
+        borderColor: lineColor,
+        backgroundColor: lineColor,
+        tension: 0.35,
+        pointRadius: 5,
+        pointBackgroundColor: lineColor,
+        fill: false,
+        borderWidth: 2.5
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: { legend: { display: false } },
+      scales: {
+        y: { min: 0, max: 100, ticks: { color: textColor }, grid: { color: gridColor } },
+        x: { ticks: { color: textColor }, grid: { display: false } }
+      }
+    }
+  });
+}
+
+function normalizeSemester(val) {
+  const s = String(val || "").trim();
+  if (s === "2" || s.includes("ثاني")) return "2";
+  return "1"; // افتراضي: الفصل الأول (توافق مع الشيت القديم بدون عمود Semester)
+}
+
+function computeSubjectAverages(rows) {
+  const bySubject = {};
+  rows.forEach(g => {
+    const subj = String(g.Subject || "مادة").trim();
+    if (!bySubject[subj]) bySubject[subj] = [];
+    bySubject[subj].push(g);
+  });
+  return Object.keys(bySubject).map(subj => {
+    const entries = bySubject[subj];
+    const valid = entries.filter(e => e.Score !== "" && e.Score !== null && e.Score !== undefined && !isNaN(Number(e.Score)));
+    const avg = valid.length ? valid.reduce((a, e) => a + Number(e.Score), 0) / valid.length : null;
+    return { subj, entries, valid, avg };
+  });
+}
+
+function renderClassicTable(subjectResults) {
+  let rows = "";
+  subjectResults.forEach(({ subj, entries, avg }) => {
+    const subjectClean = subj.replace(/[^\u0600-\u06FF\sa-zA-Z]/g, "").trim() || subj;
+    const slots = [entries[0], entries[1], entries[2]];
+    const cellVal = (e) => {
+      if (!e) return "—";
+      const hasScore = e.Score !== "" && e.Score !== null && e.Score !== undefined;
+      return hasScore ? Number(e.Score) : "—";
+    };
+    rows += `
+      <tr>
+        <td class="rt-subject">${subjectClean}</td>
+        <td>${cellVal(slots[0])}</td>
+        <td>${cellVal(slots[1])}</td>
+        <td>${cellVal(slots[2])}</td>
+        <td class="rt-avg">${avg === null ? "—" : Math.round(avg * 10) / 10}</td>
+      </tr>
     `;
   });
+
+  return `
+    <table class="results-table">
+      <thead>
+        <tr>
+          <th>المادة</th>
+          <th>المذاكرة الأولى</th>
+          <th>المذاكرة الثانية</th>
+          <th>الامتحان النهائي</th>
+          <th>المعدل</th>
+        </tr>
+      </thead>
+      <tbody>${rows}</tbody>
+    </table>
+  `;
+}
+
+function renderResults(child) {
+  if (!session.grades) return `<div class="empty-box">لا توجد بيانات علامات</div>`;
+  const rows = session.grades.filter(g => String(g.Student_ID).trim() === String(child.Student_ID).trim());
+  if (rows.length === 0) return `<div class="empty-box">لا توجد علامات مسجلة بعد لـ ${child.Student_Name}</div>`;
+
+  const hasSemesterColumn = rows.some(r => r.Semester !== undefined && String(r.Semester).trim() !== "");
+
+  const s1Rows = hasSemesterColumn ? rows.filter(r => normalizeSemester(r.Semester) === "1") : rows;
+  const s2Rows = hasSemesterColumn ? rows.filter(r => normalizeSemester(r.Semester) === "2") : [];
+
+  const s1Subjects = computeSubjectAverages(s1Rows);
+  const s2Subjects = computeSubjectAverages(s2Rows);
+
+  const s1Graded = s1Subjects.filter(s => s.avg !== null);
+  const s2Graded = s2Subjects.filter(s => s.avg !== null);
+
+  const s1Overall = s1Graded.length ? s1Graded.reduce((a, s) => a + s.avg, 0) / s1Graded.length : null;
+  const s2Overall = s2Graded.length ? s2Graded.reduce((a, s) => a + s.avg, 0) / s2Graded.length : null;
+
+  const finalAvg = (s1Overall !== null && s2Overall !== null) ? (s1Overall + s2Overall) / 2 : null;
+
+  let summaryLine;
+  if (finalAvg !== null) summaryLine = `المعدل النهائي (الفصلين): ${Math.round(finalAvg * 10) / 10}`;
+  else if (s1Overall !== null) summaryLine = `معدل الفصل الأول (مؤقت): ${Math.round(s1Overall * 10) / 10}`;
+  else summaryLine = `لا توجد نتائج كافية بعد لحساب المعدل`;
+
+  let html = `
+    <button class="print-btn" onclick="printSection('grades', ${currentChildIndex})">🖨 طباعة / حفظ PDF</button>
+    <button class="whatsapp-btn" onclick="shareResultsWhatsapp(${currentChildIndex})">📤 مشاركة عبر واتساب</button>
+    <div style="font-size:14px;font-weight:600;color:var(--text);margin-bottom:14px;">${child.Student_Name} - ${child.Class_Level}</div>
+    <div style="font-size:13.5px;color:var(--muted2);margin-bottom:14px;">${summaryLine}</div>
+  `;
+
+  if (hasSemesterColumn) {
+    html += `
+      <div class="child-chips" style="margin-bottom:10px;">
+        <button class="chip ${currentSemesterView === "1" ? "active" : ""}" onclick="currentSemesterView='1';renderApp();">الفصل الأول</button>
+        <button class="chip ${currentSemesterView === "2" ? "active" : ""}" onclick="currentSemesterView='2';renderApp();">الفصل الثاني</button>
+      </div>
+    `;
+    html += currentSemesterView === "1"
+      ? (s1Subjects.length ? renderClassicTable(s1Subjects) : `<div class="empty-box">لا توجد نتائج للفصل الأول بعد</div>`)
+      : (s2Subjects.length ? renderClassicTable(s2Subjects) : `<div class="empty-box">لا توجد نتائج للفصل الثاني بعد</div>`);
+  } else {
+    html += renderClassicTable(s1Subjects);
+  }
+
   return html;
 }
 
+let assignSearchTerm = "";
+
 function renderAssignments(child) {
-  if (!session.assignments || session.assignments.length === 0) {
-    return `<div class="empty-box">لا توجد وظائف مسجلة حالياً</div>`;
+  if (!session.assignments || session.assignments.length === 0) return `<div class="empty-box">لا توجد وظائف مسجلة حالياً</div>`;
+  let tasks = session.assignments.filter(a => {
+    const sid = String(a.Student_ID || "").trim();
+    if (sid !== "") return sid === String(child.Student_ID).trim();
+    return String(a.Class_Level || "").trim() === String(child.Class_Level).trim();
+  });
+
+  const searchBox = `
+    <div class="search-field">
+      <input id="assignSearch" placeholder="ابحث حسب اسم المادة..." value="${assignSearchTerm}" oninput="assignSearchTerm=this.value;renderApp();" />
+      <span>🔎</span>
+    </div>
+  `;
+
+  if (assignSearchTerm.trim() !== "") {
+    const term = assignSearchTerm.trim();
+    tasks = tasks.filter(t => String(t.Subject || "").includes(term));
   }
-  const tasks = session.assignments.filter(a => String(a.Student_ID).trim() === String(child.Student_ID).trim());
-  if (tasks.length === 0) {
-    return `<div class="empty-box">لا توجد وظائف مسجلة لـ ${child.Student_Name}</div>`;
-  }
-  
-  let html = "";
+
+  if (tasks.length === 0) return searchBox + `<div class="empty-box">لا توجد وظائف مطابقة</div>`;
+
+  let html = searchBox;
   tasks.forEach(t => {
     html += `
       <div class="task-card">
         <div class="task-title">${t.Subject || 'وظيفة'} - ${t.Title || 'بدون عنوان'}</div>
-        <div class="task-meta">
-          <span>تاريخ التسليم: ${t.Due_Date || 'غير محدد'}</span>
-        </div>
-        ${t.Details ? `<div style="font-size:13px;color:#5B6472;margin-top:8px;">${t.Details}</div>` : ""}
+        <div class="task-meta"><span>تاريخ التسليم: ${t.Due_Date || 'غير محدد'}</span></div>
+        ${t.Details ? `<div style="font-size:13px;color:var(--muted2);margin-top:8px;">${t.Details}</div>` : ""}
       </div>
     `;
   });
   return html;
+}
+
+const ARABIC_MONTHS = ["كانون الثاني","شباط","آذار","نيسان","أيار","حزيران","تموز","آب","أيلول","تشرين الأول","تشرين الثاني","كانون الأول"];
+const ARABIC_DOW_FULL = ["الأحد","الاثنين","الثلاثاء","الأربعاء","الخميس","الجمعة","السبت"];
+let clockIntervalStarted = false;
+
+function getCurrentDateTimeText() {
+  const now = new Date();
+  const dow = ARABIC_DOW_FULL[now.getDay()];
+  const day = now.getDate();
+  const month = ARABIC_MONTHS[now.getMonth()];
+  let hours = now.getHours();
+  const minutes = String(now.getMinutes()).padStart(2, "0");
+  const period = hours >= 12 ? "م" : "ص";
+  hours = hours % 12;
+  if (hours === 0) hours = 12;
+  return `${dow}، ${day} ${month} · ${hours}:${minutes} ${period}`;
+}
+
+function startLiveClock() {
+  if (clockIntervalStarted) return;
+  clockIntervalStarted = true;
+  setInterval(() => {
+    const el = document.getElementById("liveClock");
+    if (el) el.textContent = getCurrentDateTimeText();
+  }, 30000);
+}
+const ARABIC_DOW = ["أحد","اثنين","ثلاثاء","أربعاء","خميس","جمعة","سبت"];
+let calYear = new Date().getFullYear();
+let calMonth = new Date().getMonth(); // 0-11
+
+function ymd(y, m, d) {
+  return `${y}-${String(m + 1).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
+}
+
+function changeCalMonth(delta) {
+  calMonth += delta;
+  if (calMonth < 0) { calMonth = 11; calYear--; }
+  if (calMonth > 11) { calMonth = 0; calYear++; }
+  renderApp();
 }
 
 function renderAttendance(child) {
-  if (!session.attendance || session.attendance.length === 0) {
-    return `<div class="empty-box">لا يوجد سجل حضور حالياً</div>`;
-  }
-  const att = session.attendance.filter(a => String(a.Student_ID).trim() === String(child.Student_ID).trim());
-  if (att.length === 0) {
-    return `<div class="empty-box">لا يوجد سجل حضور لـ ${child.Student_Name}</div>`;
-  }
-  
-  let html = "";
-  att.forEach(a => {
-    let statusClass = "status-present";
-    let statusText = a.Status || "حاضر";
-    if (statusText.includes("غائب") || statusText.includes("غياب")) statusClass = "status-absent";
-    if (statusText.includes("متأخر") || statusText.includes("تأخير")) statusClass = "status-late";
-    
-    html += `
-      <div class="att-card">
-        <div class="att-date">${a.Date || 'تاريخ غير محدد'}</div>
-        <div class="att-status ${statusClass}">${statusText}</div>
-      </div>
-    `;
+  const attMap = {};
+  (session.attendance || [])
+    .filter(a => String(a.Student_ID).trim() === String(child.Student_ID).trim())
+    .forEach(a => {
+      const d = new Date(a.Date);
+      if (!isNaN(d)) attMap[ymd(d.getFullYear(), d.getMonth(), d.getDate())] = String(a.Status || "");
+    });
+
+  const holidayMap = {};
+  (session.holidays || []).forEach(h => {
+    const d = new Date(h.Date);
+    if (!isNaN(d)) holidayMap[ymd(d.getFullYear(), d.getMonth(), d.getDate())] = h.Holiday_Name || "عطلة رسمية";
   });
-  return html;
+
+  const firstDay = new Date(calYear, calMonth, 1);
+  const startOffset = firstDay.getDay(); // 0=أحد
+  const daysInMonth = new Date(calYear, calMonth + 1, 0).getDate();
+
+  let cells = "";
+  for (let i = 0; i < startOffset; i++) cells += `<div class="cal-cell empty"></div>`;
+
+  for (let day = 1; day <= daysInMonth; day++) {
+    const dow = new Date(calYear, calMonth, day).getDay(); // 0..6, 5=جمعة 6=سبت
+    const key = ymd(calYear, calMonth, day);
+    let cls = "cal-neutral";
+    let title = "";
+
+    if (dow === 5 || dow === 6) {
+      cls = "cal-weekend";
+      title = "عطلة نهاية أسبوع";
+    } else if (holidayMap[key]) {
+      cls = "cal-holiday";
+      title = holidayMap[key];
+    } else if (attMap[key]) {
+      const st = attMap[key];
+      if (st.includes("غائب") || st.includes("غياب")) { cls = "cal-absent"; title = "غياب"; }
+      else if (st.includes("متأخر") || st.includes("تأخير")) { cls = "cal-late"; title = "تأخير"; }
+      else { cls = "cal-present"; title = "حضور"; }
+    }
+
+    cells += `<div class="cal-cell ${cls}" title="${title}">${day}</div>`;
+  }
+
+  const monthHolidays = (session.holidays || []).filter(h => {
+    const d = new Date(h.Date);
+    return !isNaN(d) && d.getFullYear() === calYear && d.getMonth() === calMonth;
+  });
+
+  let holidayTableHtml = `<div class="section-title">🔵 العطل الرسمية هذا الشهر</div>`;
+  if (monthHolidays.length === 0) {
+    holidayTableHtml += `<div class="empty-box" style="padding:16px;">لا توجد عطل رسمية مسجلة هذا الشهر</div>`;
+  } else {
+    holidayTableHtml += `<table class="holiday-table">`;
+    monthHolidays.forEach(h => {
+      const d = new Date(h.Date);
+      holidayTableHtml += `<tr><td>${h.Holiday_Name || 'عطلة'}</td><td class="hdate">${d.getDate()} ${ARABIC_MONTHS[calMonth]}</td></tr>`;
+    });
+    holidayTableHtml += `</table>`;
+  }
+
+  return `
+    <div class="cal-header">
+      <button class="cal-nav-btn" onclick="changeCalMonth(-1)">›</button>
+      <div class="cal-title">${ARABIC_MONTHS[calMonth]} ${calYear}</div>
+      <button class="cal-nav-btn" onclick="changeCalMonth(1)">‹</button>
+    </div>
+    <div class="cal-grid">
+      ${ARABIC_DOW.map(d => `<div class="cal-dow">${d}</div>`).join("")}
+      ${cells}
+    </div>
+    <div class="cal-legend">
+      <span><span class="legend-dot" style="background:#DDF0DE;"></span>حضور</span>
+      <span><span class="legend-dot" style="background:#FBDEDC;"></span>غياب</span>
+      <span><span class="legend-dot" style="background:#FCEBC7;"></span>تأخير</span>
+      <span><span class="legend-dot" style="background:#DCE7F7;"></span>عطلة (نهاية أسبوع / رسمية)</span>
+    </div>
+    ${holidayTableHtml}
+  `;
 }
 
 function renderPayments() {
-  if (!session.payments || session.payments.length === 0) {
-    return `<div class="empty-box">لا توجد دفعات مسجلة</div>`;
-  }
+  if (!session.payments || session.payments.length === 0) return `<div class="empty-box">لا توجد دفعات مسجلة</div>`;
   const last = session.payments[session.payments.length - 1];
   const totalRequired = parseMoney(last.Total_Required);
   const remaining = parseMoney(last.Remaining_Balance);
@@ -244,6 +616,7 @@ function renderPayments() {
   const c = statusColor(remaining);
 
   let html = `
+    <button class="print-btn" onclick="printSection('payments')">🖨 طباعة / حفظ PDF</button>
     <div class="pay-summary">
       <div class="pay-box" style="background:#EAF3DE;">
         <div class="lbl" style="color:#3B6D11;">المدفوع</div>
@@ -255,7 +628,6 @@ function renderPayments() {
       </div>
     </div>
   `;
-
   [...session.payments].reverse().forEach((p) => {
     html += `
       <div class="pay-item">
@@ -275,14 +647,167 @@ function parseMoney(val) {
 
 function renderBus(child) {
   if (!child.bus) return `<div class="empty-box">لا يوجد خط باص مسجل لـ ${child.Student_Name} حالياً</div>`;
+
+  let statusNote = "";
+  if (!child.bus.hasUrlConfigured) {
+    statusNote = `<div style="font-size:12.5px;color:#F0D9A0;margin-top:12px;">لا يوجد رابط تتبع للباص حالياً</div>`;
+  } else if (!child.bus.trackingActive) {
+    statusNote = `<div style="font-size:12.5px;color:#F0D9A0;margin-top:12px;">التتبع المباشر متاح فقط خلال أوقات الدوام (الأحد–الخميس، 7ص–5م)</div>`;
+  }
+
   return `
     <div class="bus-card">
       <div class="bus-route">${child.bus.Route_Area || "المنطقة غير محددة"}</div>
       <div class="bus-driver">المشرف: ${child.Supervisor_Name || "-"}</div>
       ${child.bus.Phone ? `<div style="font-size:13px;color:#B9C2D4;margin-top:6px;">هاتف: ${child.bus.Phone}</div>` : ""}
-      ${child.bus.Live_Location_URL ? `<a class="bus-link" href="${child.bus.Live_Location_URL}" target="_blank">تتبع الموقع الآن</a>` : ""}
+      ${child.bus.Live_Location_URL ? `<a class="bus-link" href="${child.bus.Live_Location_URL}" target="_blank">تتبع الموقع الآن</a>` : statusNote}
     </div>
   `;
+}
+
+function daysUntil(dateStr) {
+  const target = new Date(dateStr);
+  if (isNaN(target.getTime())) return null;
+  const now = new Date();
+  const diffMs = target.setHours(0,0,0,0) - now.setHours(0,0,0,0);
+  return Math.round(diffMs / 86400000);
+}
+
+let examSearchTerm = "";
+
+function renderMore(child) {
+  let exams = (session.exams || [])
+    .filter(ex => String(ex.Class_Level).trim() === String(child.Class_Level).trim())
+    .map(ex => ({ ...ex, _days: daysUntil(ex.Exam_Date) }))
+    .filter(ex => ex._days === null || ex._days >= 0)
+    .sort((a, b) => (a._days ?? 999) - (b._days ?? 999));
+
+  const notes = (session.behaviorNotes || [])
+    .filter(n => String(n.Student_ID).trim() === String(child.Student_ID).trim())
+    .slice()
+    .reverse();
+
+  let html = `<div class="section-title">📅 الامتحانات القادمة</div>`;
+  html += `
+    <div class="search-field">
+      <input id="examSearch" placeholder="ابحث حسب اسم المادة..." value="${examSearchTerm}" oninput="examSearchTerm=this.value;renderApp();" />
+      <span>🔎</span>
+    </div>
+  `;
+  if (examSearchTerm.trim() !== "") {
+    const term = examSearchTerm.trim();
+    exams = exams.filter(ex => String(ex.Subject || "").includes(term));
+  }
+
+  if (exams.length === 0) {
+    html += `<div class="empty-box" style="padding:20px;">لا توجد امتحانات قادمة مطابقة</div>`;
+  } else {
+    const next = exams[0];
+    html += `
+      <div class="countdown-card">
+        <div style="font-size:13px;color:#B9C2D4;">أقرب امتحان: ${(next.Subject||'').toString()} (${next.Exam_Type||''})</div>
+        <div class="countdown-num">${next._days === 0 ? 'اليوم' : next._days + ' يوم'}</div>
+      </div>
+    `;
+    exams.forEach(ex => {
+      html += `
+        <div class="exam-item">
+          <div>
+            <div class="exam-subject">${ex.Subject || ''} — ${ex.Exam_Type || ''}</div>
+            <div class="exam-meta">${ex.Exam_Date || ''}${ex.Notes ? ' · ' + ex.Notes : ''}</div>
+          </div>
+          <div style="font-weight:700;color:var(--header);">${ex._days === 0 ? 'اليوم' : ex._days + ' ي'}</div>
+        </div>
+      `;
+    });
+  }
+
+  html += `<div class="section-title" style="margin-top:20px;">📝 ملاحظات المعلمين</div>`;
+  if (notes.length === 0) {
+    html += `<div class="empty-box" style="padding:20px;">لا توجد ملاحظات مسجلة</div>`;
+  } else {
+    notes.forEach(n => {
+      const isNeg = String(n.Type || '').includes('سلب');
+      html += `
+        <div class="note-card ${isNeg ? 'negative' : ''}">
+          <div class="note-text">${n.Note || ''}</div>
+          <div class="note-meta">${n.Date || ''} · ${n.Type || ''}</div>
+        </div>
+      `;
+    });
+  }
+  return html;
+}
+
+function renderAnnouncementsModal() {
+  const items = session.announcements || [];
+  if (!showAnnouncements || items.length === 0) return "";
+  let html = `
+    <div class="modal-overlay" onclick="closeAnnouncements(event)">
+      <div class="modal-box" onclick="event.stopPropagation()">
+        <div class="modal-title">📢 إعلانات المدرسة <button class="close-btn" onclick="closeAnnouncements()">✕</button></div>
+  `;
+  [...items].reverse().forEach(a => {
+    html += `
+      <div class="ann-item">
+        <div class="ann-title">${a.Title || ''}</div>
+        <div class="ann-body">${a.Body || ''}</div>
+        <div class="ann-date">${a.Date || ''}</div>
+      </div>
+    `;
+  });
+  html += `</div></div>`;
+  return html;
+}
+function closeAnnouncements(e) {
+  showAnnouncements = false;
+  renderApp();
+}
+
+function shareResultsWhatsapp(childIdx) {
+  const child = session.children[childIdx];
+  const rows = session.grades.filter(g => String(g.Student_ID).trim() === String(child.Student_ID).trim());
+  const hasSemesterColumn = rows.some(r => r.Semester !== undefined && String(r.Semester).trim() !== "");
+  const semRows = hasSemesterColumn ? rows.filter(r => normalizeSemester(r.Semester) === currentSemesterView) : rows;
+  const subjects = computeSubjectAverages(semRows);
+
+  let text = `📋 كشف علامات: ${child.Student_Name} - ${child.Class_Level}\n`;
+  text += `مدرسة مسار للتميز${hasSemesterColumn ? " - الفصل " + (currentSemesterView === "1" ? "الأول" : "الثاني") : ""}\n\n`;
+  subjects.forEach(s => {
+    const subjectClean = s.subj.replace(/[^\u0600-\u06FF\sa-zA-Z]/g, "").trim() || s.subj;
+    text += `${subjectClean}: ${s.avg === null ? "لا توجد نتيجة بعد" : Math.round(s.avg * 10) / 10}\n`;
+  });
+
+  const url = `https://wa.me/?text=${encodeURIComponent(text)}`;
+  window.open(url, "_blank");
+}
+
+function printSection(type, childIdx) {
+  const child = session.children[childIdx ?? currentChildIndex];
+  let bodyHtml = "";
+  if (type === "grades") {
+    const grades = session.grades.filter(g => String(g.Student_ID).trim() === String(child.Student_ID).trim());
+    bodyHtml = `<h2>كشف علامات: ${child.Student_Name} - ${child.Class_Level}</h2><table border="1" cellpadding="8" style="border-collapse:collapse;width:100%;"><tr><th>المادة</th><th>العلامة</th><th>الاختبار</th></tr>`;
+    grades.forEach(g => {
+      bodyHtml += `<tr><td>${g.Subject||''}</td><td>${g.Score||''}</td><td>${g.Exam_Name||''}</td></tr>`;
+    });
+    bodyHtml += `</table>`;
+  } else if (type === "payments") {
+    bodyHtml = `<h2>كشف حساب مالي: ${session.parent.Parent_Name}</h2><table border="1" cellpadding="8" style="border-collapse:collapse;width:100%;"><tr><th>البيان</th><th>المبلغ</th><th>التاريخ</th></tr>`;
+    session.payments.forEach(p => {
+      bodyHtml += `<tr><td>${p.Notes||'دفعة'}</td><td>$${parseMoney(p.Amount)}</td><td>${p.Payment_Date||''}</td></tr>`;
+    });
+    bodyHtml += `</table>`;
+  }
+
+  const w = window.open("", "_blank");
+  w.document.write(`
+    <html dir="rtl"><head><meta charset="UTF-8"><title>طباعة</title>
+    <style>body{font-family:Tahoma,Arial,sans-serif;padding:24px;} table{margin-top:16px;} th{background:#16233F;color:#fff;padding:8px;}</style>
+    </head><body>${bodyHtml}</body></html>
+  `);
+  w.document.close();
+  setTimeout(() => w.print(), 300);
 }
 
 function renderApp() {
@@ -298,11 +823,20 @@ function renderApp() {
     if (currentTab === "attendance") contentHtml = renderAttendance(child);
     if (currentTab === "payments") contentHtml = renderPayments();
     if (currentTab === "bus") contentHtml = renderBus(child);
+    if (currentTab === "more") contentHtml = renderMore(child);
   }
 
   const chips = session.children
     .map((c, i) => `<button class="chip ${i === currentChildIndex ? "active" : ""}" data-idx="${i}">${c.Student_Name}</button>`)
     .join("");
+
+  const gradesCount = (session.grades || []).filter(g => String(g.Student_ID).trim() === String(child.Student_ID).trim()).length;
+  const assignCount = (session.assignments || []).filter(a => String(a.Student_ID).trim() === String(child.Student_ID).trim()).length;
+  const moreCount = (session.exams || []).length + (session.behaviorNotes || []).filter(n => String(n.Student_ID).trim() === String(child.Student_ID).trim()).length;
+
+  const showBadgeResults = hasNew("results_" + child.Student_ID, gradesCount);
+  const showBadgeAssign = hasNew("assign_" + child.Student_ID, assignCount);
+  const showBadgeMore = hasNew("more_" + child.Student_ID, moreCount);
 
   app.innerHTML = `
     <div class="header">
@@ -311,10 +845,16 @@ function renderApp() {
         <div>
           <div style="color:#fff;font-size:15px;font-weight:600;">${session.parent.Parent_Name}</div>
           <div style="color:#B9C2D4;font-size:12.5px;">${session.children.length} طالب</div>
+          <div id="liveClock" style="color:#8DA0C4;font-size:10.5px;margin-top:2px;">${getCurrentDateTimeText()}</div>
         </div>
       </div>
-      <button id="logoutBtn" class="logout-btn">خروج</button>
+      <div style="display:flex;align-items:center;gap:8px;">
+        ${(session.announcements||[]).length ? `<button class="icon-btn" onclick="showAnnouncements=true;renderApp();">📢</button>` : ""}
+        <button class="icon-btn" onclick="toggleDarkMode()">${document.body.classList.contains('dark') ? '☀️' : '🌙'}</button>
+        <button id="logoutBtn" class="logout-btn">خروج</button>
+      </div>
     </div>
+    ${session.lastUpdated ? `<div class="last-updated">🕓 آخر تحديث للبيانات: ${session.lastUpdated}</div>` : ""}
 
     <div class="content">
       ${currentTab !== "payments" && session.children.length > 0 ? `<div class="child-chips">${chips}</div>` : ""}
@@ -322,22 +862,28 @@ function renderApp() {
     </div>
 
     <div class="tabbar">
-      <button class="tab-btn ${currentTab === "results" ? "active" : ""}" data-tab="results"><span>النتائج</span></button>
-      <button class="tab-btn ${currentTab === "assignments" ? "active" : ""}" data-tab="assignments"><span>الوظائف</span></button>
+      <button class="tab-btn ${currentTab === "results" ? "active" : ""}" data-tab="results">${showBadgeResults ? '<span class="badge-dot"></span>' : ''}<span>النتائج</span></button>
+      <button class="tab-btn ${currentTab === "assignments" ? "active" : ""}" data-tab="assignments">${showBadgeAssign ? '<span class="badge-dot"></span>' : ''}<span>الوظائف</span></button>
       <button class="tab-btn ${currentTab === "attendance" ? "active" : ""}" data-tab="attendance"><span>الحضور</span></button>
       <button class="tab-btn ${currentTab === "payments" ? "active" : ""}" data-tab="payments"><span>الدفعات</span></button>
       <button class="tab-btn ${currentTab === "bus" ? "active" : ""}" data-tab="bus"><span>الباص</span></button>
+      <button class="tab-btn ${currentTab === "more" ? "active" : ""}" data-tab="more">${showBadgeMore ? '<span class="badge-dot"></span>' : ''}<span>المزيد</span></button>
     </div>
+    ${renderAnnouncementsModal()}
   `;
 
   document.getElementById("logoutBtn").addEventListener("click", function () {
     session = null;
+    clearCreds();
     renderLogin();
   });
 
   document.querySelectorAll(".tab-btn").forEach((btn) => {
     btn.addEventListener("click", function () {
       currentTab = btn.getAttribute("data-tab");
+      if (currentTab === "results") setSeenCount("results_" + child.Student_ID, gradesCount);
+      if (currentTab === "assignments") setSeenCount("assign_" + child.Student_ID, assignCount);
+      if (currentTab === "more") setSeenCount("more_" + child.Student_ID, moreCount);
       renderApp();
     });
   });
@@ -348,9 +894,12 @@ function renderApp() {
       renderApp();
     });
   });
+
+  startLiveClock();
 }
 
-renderLogin();
+applyDarkModePref();
+tryAutoLogin();
 </script>
 </body>
 </html>
