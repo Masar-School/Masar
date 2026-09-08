@@ -37,12 +37,12 @@
   .logout-btn { background: transparent; border: none; color: #B9C2D4; display: flex; align-items: center; gap: 4px; font-size: 13px; cursor: pointer; }
   .icon-btn { background: rgba(255,255,255,0.12); border: none; color: #fff; width: 34px; height: 34px; border-radius: 10px; font-size: 16px; cursor: pointer; }
 
-  .tabbar { position: sticky; bottom: 0; background: var(--card); border-top: 1px solid var(--border); display: flex; }
-  .tab-btn { position: relative; flex: 1; background: none; border: none; padding: 12px 0 10px; display: flex; flex-direction: column; align-items: center; gap: 4px; color: var(--muted); cursor: pointer; font-family: inherit; }
-  .tab-btn.active { color: var(--header); font-weight: 600; }
-  body.dark .tab-btn.active { color: var(--gold); }
-  .tab-btn span { font-size: 10.5px; }
-  .badge-dot { position: absolute; top: 6px; left: calc(50% + 10px); width: 8px; height: 8px; border-radius: 50%; background: #C0392B; }
+  .tabbar { position: sticky; bottom: 0; background: var(--card); border-top: 1px solid var(--border); display: flex; padding: 6px 6px calc(6px + env(safe-area-inset-bottom)); gap: 4px; }
+  .tab-btn { position: relative; flex: 1; background: none; border: none; padding: 12px 4px; border-radius: 14px; display: flex; flex-direction: column; align-items: center; gap: 5px; color: var(--muted); cursor: pointer; font-family: inherit; transition: background .15s, color .15s; }
+  .tab-btn.active { color: #fff; font-weight: 700; background: var(--header); }
+  body.dark .tab-btn.active { color: var(--header); background: var(--gold); }
+  .tab-btn span { font-size: 14px; }
+  .badge-dot { position: absolute; top: 6px; left: calc(50% + 14px); width: 9px; height: 9px; border-radius: 50%; background: #C0392B; border: 2px solid var(--card); }
 
   .content { flex: 1; overflow-y: auto; padding: 16px 18px 24px; color: var(--text); }
 
@@ -157,7 +157,7 @@
 <div id="app"></div>
 
 <script>
-const API_URL = "https://script.google.com/macros/s/AKfycbxyq-38YbLECS3VbjhAarIOsDnMlA7ib5Zz8exCkUQoacKLW0pR6gHoEDxB-jXWOB7r/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbzD_M6vqTdjh3xtrzvC-X3-QdjkYxjOBsNi-_ArbPZRHFSgRRfRH0-x7C2AgXy2pQXq3Q/exec";
 
 let session = null;
 let currentChildIndex = 0;
@@ -454,10 +454,12 @@ let assignSearchTerm = "";
 function renderAssignments(child) {
   if (!session.assignments || session.assignments.length === 0) return `<div class="empty-box">لا توجد وظائف مسجلة حالياً</div>`;
   let tasks = session.assignments.filter(a => {
-    const sid = String(a.Student_ID || "").trim();
-    if (sid !== "") return sid === String(child.Student_ID).trim();
-    return String(a.Class_Level || "").trim() === String(child.Class_Level).trim();
+    const sameClass = String(a.Class_Level || "").trim() === String(child.Class_Level || "").trim();
+    const aSection = String(a.Section || "").trim();
+    const sameSection = aSection === "" || aSection === String(child.Section || "").trim();
+    return sameClass && sameSection;
   });
+  tasks = tasks.slice().sort((a, b) => String(b.Date || "").localeCompare(String(a.Date || "")));
 
   const searchBox = `
     <div class="search-field">
@@ -477,8 +479,8 @@ function renderAssignments(child) {
   tasks.forEach(t => {
     html += `
       <div class="task-card">
-        <div class="task-title">${t.Subject || 'وظيفة'} - ${t.Title || 'بدون عنوان'}</div>
-        <div class="task-meta"><span>تاريخ التسليم: ${t.Due_Date || 'غير محدد'}</span></div>
+        <div class="task-title">${t.Subject || 'وظيفة'}</div>
+        <div class="task-meta"><span>التاريخ: ${t.Date || 'غير محدد'}</span></div>
         ${t.Details ? `<div style="font-size:13px;color:var(--muted2);margin-top:8px;">${t.Details}</div>` : ""}
       </div>
     `;
@@ -727,11 +729,10 @@ function renderMore(child) {
     html += `<div class="empty-box" style="padding:20px;">لا توجد ملاحظات مسجلة</div>`;
   } else {
     notes.forEach(n => {
-      const isNeg = String(n.Type || '').includes('سلب');
       html += `
-        <div class="note-card ${isNeg ? 'negative' : ''}">
-          <div class="note-text">${n.Note || ''}</div>
-          <div class="note-meta">${n.Date || ''} · ${n.Type || ''}</div>
+        <div class="note-card">
+          <div class="note-text">${n.Note_Text || ''}</div>
+          <div class="note-meta">${n.Date || ''}</div>
         </div>
       `;
     });
@@ -789,7 +790,7 @@ function printSection(type, childIdx) {
     const grades = session.grades.filter(g => String(g.Student_ID).trim() === String(child.Student_ID).trim());
     bodyHtml = `<h2>كشف علامات: ${child.Student_Name} - ${child.Class_Level}</h2><table border="1" cellpadding="8" style="border-collapse:collapse;width:100%;"><tr><th>المادة</th><th>العلامة</th><th>الاختبار</th></tr>`;
     grades.forEach(g => {
-      bodyHtml += `<tr><td>${g.Subject||''}</td><td>${g.Score||''}</td><td>${g.Exam_Name||''}</td></tr>`;
+      bodyHtml += `<tr><td>${g.Subject||''}</td><td>${g.Score||''}</td><td>${g.Exam_Type||''}</td></tr>`;
     });
     bodyHtml += `</table>`;
   } else if (type === "payments") {
