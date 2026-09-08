@@ -35,7 +35,7 @@
   .remember-row { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--muted2); margin-top: 4px; }
 
   .logout-btn { background: transparent; border: none; color: #B9C2D4; display: flex; align-items: center; gap: 4px; font-size: 13px; cursor: pointer; }
-  .icon-btn { background: rgba(255,255,255,0.12); border: none; color: #fff; width: 34px; height: 34px; border-radius: 10px; font-size: 16px; cursor: pointer; }
+  .icon-btn { background: rgba(255,255,255,0.12); border: none; color: #fff; width: 34px; height: 34px; border-radius: 10px; font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
 
   .tabbar { position: sticky; bottom: 0; background: var(--card); border-top: 1px solid var(--border); display: flex; padding: 6px 6px calc(6px + env(safe-area-inset-bottom)); gap: 4px; }
   .tab-btn { position: relative; flex: 1; background: none; border: none; padding: 12px 4px; border-radius: 14px; display: flex; flex-direction: column; align-items: center; gap: 5px; color: var(--muted); cursor: pointer; font-family: inherit; transition: background .15s, color .15s; }
@@ -113,9 +113,6 @@
 
   .empty-box { text-align: center; padding: 40px 20px; color: var(--muted); font-size: 14px; }
 
-  .trend-box { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 14px; margin-bottom: 16px; }
-  .trend-title { font-size: 13px; font-weight: 600; color: var(--muted2); margin-bottom: 8px; }
-
   .last-updated { text-align: center; font-size: 11px; color: var(--muted); padding: 6px 0; background: var(--bg); }
   .search-field { display: flex; align-items: center; background: var(--card); border: 1px solid var(--field-border); border-radius: 12px; padding: 9px 12px; margin-bottom: 14px; }
   .search-field input { border: none; outline: none; flex: 1; margin-right: 8px; font-size: 13.5px; background: transparent; text-align: right; direction: rtl; color: var(--text); }
@@ -136,12 +133,15 @@
   .cal-dow { text-align: center; font-size: 11px; color: var(--muted); padding-bottom: 4px; }
   .cal-cell { aspect-ratio: 1; display: flex; align-items: center; justify-content: center; border-radius: 9px; font-size: 13px; font-weight: 600; position: relative; }
   .cal-cell.empty { visibility: hidden; }
-  .cal-present { background: #DDF0DE; color: #1E5E27; }
-  .cal-absent { background: #FBDEDC; color: #8E2A22; }
-  .cal-late { background: #FCEBC7; color: #8A5A0A; }
-  .cal-weekend { background: #DCE7F7; color: #294A80; }
-  .cal-holiday { background: #DCE7F7; color: #294A80; }
+  
+  /* ألوان التقويم المحدثة */
+  .cal-present { background: #DDF0DE; color: #1E5E27; } /* أخضر */
+  .cal-absent { background: #FBDEDC; color: #8E2A22; } /* أحمر */
+  .cal-late { background: #FCEBC7; color: #8A5A0A; } /* أصفر */
+  .cal-weekend { background: #E4D6F5; color: #532E80; } /* بنفسجي */
+  .cal-holiday { background: #E4D6F5; color: #532E80; } /* بنفسجي */
   .cal-neutral { background: var(--card); border: 1px solid var(--border); color: var(--muted); }
+  
   .cal-legend { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 18px; font-size: 11.5px; color: var(--muted2); }
   .legend-dot { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-left: 4px; vertical-align: middle; }
   .holiday-table { width: 100%; border-collapse: collapse; }
@@ -157,6 +157,7 @@
 <div id="app"></div>
 
 <script>
+// تأكد من وضع الرابط الجديد للـ Web App هنا
 const API_URL = "https://script.google.com/macros/s/AKfycbzD_M6vqTdjh3xtrzvC-X3-QdjkYxjOBsNi-_ArbPZRHFSgRRfRH0-x7C2AgXy2pQXq3Q/exec";
 
 let session = null;
@@ -214,6 +215,9 @@ async function doLogin(phone, pin, remember) {
   if (!data.ok) return { ok: false, error: data.error };
 
   session = data;
+  session._phone = phone; // حفظ بيانات الدخول من أجل زر التحديث
+  session._pin = pin;
+  
   currentChildIndex = 0;
   currentTab = "results";
   if (remember) saveCreds(phone, pin);
@@ -283,68 +287,11 @@ async function tryAutoLogin() {
 }
 
 let currentSemesterView = "1";
-let lastTrendData = null;
-let trendChartInstance = null;
-
-function buildTrendData(rows) {
-  const order = [];
-  const sums = {};
-  const counts = {};
-  rows.forEach(r => {
-    const hasScore = r.Score !== "" && r.Score !== null && r.Score !== undefined && !isNaN(Number(r.Score));
-    if (!hasScore) return;
-    const label = String(r.Exam_Name || "تقييم").trim();
-    if (!(label in sums)) { order.push(label); sums[label] = 0; counts[label] = 0; }
-    sums[label] += Number(r.Score);
-    counts[label]++;
-  });
-  return {
-    labels: order,
-    data: order.map(l => Math.round((sums[l] / counts[l]) * 10) / 10)
-  };
-}
-
-function drawTrendChart() {
-  const canvas = document.getElementById("trendChart");
-  if (!canvas || !lastTrendData || lastTrendData.labels.length < 2) return;
-  if (trendChartInstance) { trendChartInstance.destroy(); trendChartInstance = null; }
-
-  const styles = getComputedStyle(document.body);
-  const lineColor = styles.getPropertyValue("--gold").trim() || "#C79A3E";
-  const textColor = styles.getPropertyValue("--muted2").trim() || "#5B6472";
-  const gridColor = styles.getPropertyValue("--border").trim() || "#ECE9DE";
-
-  trendChartInstance = new Chart(canvas.getContext("2d"), {
-    type: "line",
-    data: {
-      labels: lastTrendData.labels,
-      datasets: [{
-        label: "المعدل",
-        data: lastTrendData.data,
-        borderColor: lineColor,
-        backgroundColor: lineColor,
-        tension: 0.35,
-        pointRadius: 5,
-        pointBackgroundColor: lineColor,
-        fill: false,
-        borderWidth: 2.5
-      }]
-    },
-    options: {
-      responsive: true,
-      plugins: { legend: { display: false } },
-      scales: {
-        y: { min: 0, max: 100, ticks: { color: textColor }, grid: { color: gridColor } },
-        x: { ticks: { color: textColor }, grid: { display: false } }
-      }
-    }
-  });
-}
 
 function normalizeSemester(val) {
   const s = String(val || "").trim();
   if (s === "2" || s.includes("ثاني")) return "2";
-  return "1"; // افتراضي: الفصل الأول (توافق مع الشيت القديم بدون عمود Semester)
+  return "1";
 }
 
 function computeSubjectAverages(rows) {
@@ -432,7 +379,8 @@ function renderResults(child) {
     <div style="font-size:13.5px;color:var(--muted2);margin-bottom:14px;">${summaryLine}</div>
   `;
 
-  if (hasSemesterColumn) {
+  // إظهار التبويبات فقط إذا كان هناك نتائج مسجلة في الفصل الثاني
+  if (hasSemesterColumn && s2Rows.length > 0) {
     html += `
       <div class="child-chips" style="margin-bottom:10px;">
         <button class="chip ${currentSemesterView === "1" ? "active" : ""}" onclick="currentSemesterView='1';renderApp();">الفصل الأول</button>
@@ -443,7 +391,7 @@ function renderResults(child) {
       ? (s1Subjects.length ? renderClassicTable(s1Subjects) : `<div class="empty-box">لا توجد نتائج للفصل الأول بعد</div>`)
       : (s2Subjects.length ? renderClassicTable(s2Subjects) : `<div class="empty-box">لا توجد نتائج للفصل الثاني بعد</div>`);
   } else {
-    html += renderClassicTable(s1Subjects);
+    html += s1Subjects.length ? renderClassicTable(s1Subjects) : `<div class="empty-box">لا توجد نتائج مسجلة حتى الآن</div>`;
   }
 
   return html;
@@ -515,7 +463,7 @@ function startLiveClock() {
 }
 const ARABIC_DOW = ["أحد","اثنين","ثلاثاء","أربعاء","خميس","جمعة","سبت"];
 let calYear = new Date().getFullYear();
-let calMonth = new Date().getMonth(); // 0-11
+let calMonth = new Date().getMonth(); 
 
 function ymd(y, m, d) {
   return `${y}-${String(m + 1).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
@@ -544,14 +492,14 @@ function renderAttendance(child) {
   });
 
   const firstDay = new Date(calYear, calMonth, 1);
-  const startOffset = firstDay.getDay(); // 0=أحد
+  const startOffset = firstDay.getDay(); 
   const daysInMonth = new Date(calYear, calMonth + 1, 0).getDate();
 
   let cells = "";
   for (let i = 0; i < startOffset; i++) cells += `<div class="cal-cell empty"></div>`;
 
   for (let day = 1; day <= daysInMonth; day++) {
-    const dow = new Date(calYear, calMonth, day).getDay(); // 0..6, 5=جمعة 6=سبت
+    const dow = new Date(calYear, calMonth, day).getDay(); 
     const key = ymd(calYear, calMonth, day);
     let cls = "cal-neutral";
     let title = "";
@@ -603,7 +551,7 @@ function renderAttendance(child) {
       <span><span class="legend-dot" style="background:#DDF0DE;"></span>حضور</span>
       <span><span class="legend-dot" style="background:#FBDEDC;"></span>غياب</span>
       <span><span class="legend-dot" style="background:#FCEBC7;"></span>تأخير</span>
-      <span><span class="legend-dot" style="background:#DCE7F7;"></span>عطلة (نهاية أسبوع / رسمية)</span>
+      <span><span class="legend-dot" style="background:#E4D6F5;"></span>عطلة (نهاية أسبوع / رسمية)</span>
     </div>
     ${holidayTableHtml}
   `;
@@ -812,6 +760,7 @@ function printSection(type, childIdx) {
 }
 
 function renderApp() {
+  const activeId = document.activeElement ? document.activeElement.id : null;
   const app = document.getElementById("app");
   const child = session.children[currentChildIndex];
 
@@ -851,7 +800,8 @@ function renderApp() {
       </div>
       <div style="display:flex;align-items:center;gap:8px;">
         ${(session.announcements||[]).length ? `<button class="icon-btn" onclick="showAnnouncements=true;renderApp();">📢</button>` : ""}
-        <button class="icon-btn" onclick="toggleDarkMode()">${document.body.classList.contains('dark') ? '☀️' : '🌙'}</button>
+        <button class="icon-btn" id="refreshBtn" title="تحديث الصفحة">🔄</button>
+        <button class="icon-btn" onclick="toggleDarkMode()" title="الوضع الليلي">${document.body.classList.contains('dark') ? '☀️' : '🌙'}</button>
         <button id="logoutBtn" class="logout-btn">خروج</button>
       </div>
     </div>
@@ -872,6 +822,25 @@ function renderApp() {
     </div>
     ${renderAnnouncementsModal()}
   `;
+
+  // برمجة زر التحديث
+  document.getElementById("refreshBtn").addEventListener("click", async function () {
+    const btn = this;
+    btn.innerHTML = "⏳";
+    btn.disabled = true;
+    try {
+      const result = await doLogin(session._phone, session._pin, !!getSavedCreds());
+      if (!result.ok) alert(result.error);
+      else {
+        showAnnouncements = (session.announcements || []).length > 0;
+        renderApp();
+      }
+    } catch (err) {
+      alert("تعذر الاتصال بالخادم");
+      btn.innerHTML = "🔄";
+      btn.disabled = false;
+    }
+  });
 
   document.getElementById("logoutBtn").addEventListener("click", function () {
     session = null;
@@ -897,6 +866,17 @@ function renderApp() {
   });
 
   startLiveClock();
+
+  // استعادة المؤشر في حقل البحث بعد تحديث الصفحة لمنع تقطعه
+  if (activeId) {
+    const el = document.getElementById(activeId);
+    if (el) {
+      el.focus();
+      const val = el.value;
+      el.value = "";
+      el.value = val;
+    }
+  }
 }
 
 applyDarkModePref();
