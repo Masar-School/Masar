@@ -4,6 +4,13 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>مدرسة مسار للتميز</title>
+<link rel="manifest" href="manifest-parent.json">
+<meta name="theme-color" content="#16233F">
+<link rel="apple-touch-icon" href="icons/icon-parent-192.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="مسار - الأهالي">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
 <style>
   * { box-sizing: border-box; }
@@ -158,7 +165,7 @@
 
 <script>
 // تأكد من وضع الرابط الجديد للـ Web App هنا
-const API_URL = "https://script.google.com/macros/s/AKfycbxUzfL2glAPoc-29rcp6TmIrT5oj35aM-GijvRDF2aKlnU3bHh9T7-1jyaDIlRz6dWN-A/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbz6ELxp6ppDgAvygOQdPeP9pdHWjzpOJuQwVmQHW3TGKggW-olcNVTcLxsYwRFUCOn-tQ/exec";
 
 let session = null;
 let currentChildIndex = 0;
@@ -885,6 +892,11 @@ function renderApp() {
 
 applyDarkModePref();
 tryAutoLogin();
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("./sw.js").catch(() => {});
+  });
+}
 </script>
 </body>
 </html>
