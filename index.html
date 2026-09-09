@@ -158,7 +158,7 @@
 
 <script>
 // تأكد من وضع الرابط الجديد للـ Web App هنا
-const API_URL = "https://script.google.com/macros/s/AKfycbzD_M6vqTdjh3xtrzvC-X3-QdjkYxjOBsNi-_ArbPZRHFSgRRfRH0-x7C2AgXy2pQXq3Q/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbxUzfL2glAPoc-29rcp6TmIrT5oj35aM-GijvRDF2aKlnU3bHh9T7-1jyaDIlRz6dWN-A/exec";
 
 let session = null;
 let currentChildIndex = 0;
@@ -592,7 +592,11 @@ function renderPayments() {
 function parseMoney(val) {
   if (typeof val === "number") return val;
   if (!val) return 0;
-  return Number(String(val).replace(/[^0-9.]/g, "")) || 0;
+  let s = String(val).trim();
+  s = s.replace(/[٬,]/g, "");     // إزالة فواصل الآلاف (عربية وعادية)
+  s = s.replace(/٫/g, ".");       // تحويل الفاصلة العشرية العربية إلى نقطة
+  s = s.replace(/[^0-9.\-]/g, ""); // إزالة أي رمز آخر ($ وغيره)
+  return Number(s) || 0;
 }
 
 function renderBus(child) {
