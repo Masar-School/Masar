@@ -11,10 +11,26 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="مسار - الطاقم">
+
 <style>
+  :root {
+    --bg: #FCF4F2; --card: #fff; --border: #F0DAD5; --border2: #E9CFC9;
+    --text: #2C2C2A; --muted: #A98080; --muted2: #6B4A4A;
+    --pill-bg: #F1EFE8; --pill-text: #8A8578;
+    --edit-bg: #F0DAD5; --edit-text: #7A2626;
+    --tint-card: #FFF7F5;
+  }
+  body.dark {
+    --bg: #1C1517; --card: #2A1F21; --border: #4A3436; --border2: #5A3F42;
+    --text: #F0E6E4; --muted: #C4A29D; --muted2: #D9BAB6;
+    --pill-bg: #3E3234; --pill-text: #B5A29D;
+    --edit-bg: #5A3436; --edit-text: #F5C9C0;
+    --tint-card: #2E2224;
+  }
+
   * { box-sizing: border-box; }
-  body { margin: 0; font-family: system-ui, Tahoma, Arial, sans-serif; background: #FCF4F2; }
-  #app { max-width: 420px; margin: 0 auto; min-height: 100vh; background: #FCF4F2; display: flex; flex-direction: column; }
+  body { margin: 0; font-family: system-ui, Tahoma, Arial, sans-serif; background: var(--bg); }
+  #app { max-width: 420px; margin: 0 auto; min-height: 100vh; background: var(--bg); display: flex; flex-direction: column; }
 
   .login-header { background: #A63A3A; padding: 56px 24px 40px; text-align: center; border-bottom-left-radius: 28px; border-bottom-right-radius: 28px; }
   .avatar { width: 64px; height: 64px; border-radius: 50%; background: #F2B8A8; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px; font-size: 26px; font-weight: 700; color: #7A2626; }
@@ -22,32 +38,33 @@
   .school-sub { color: #F3D3D0; font-size: 13px; margin-top: 4px; }
 
   form { padding: 32px 24px; flex: 1; }
-  label { font-size: 13px; color: #6B4A4A; display: block; margin-bottom: 6px; }
-  .field { display: flex; align-items: center; background: #fff; border: 1px solid #E9CFC9; border-radius: 12px; padding: 12px 14px; margin-bottom: 16px; }
+  label { font-size: 13px; color: var(--muted2); display: block; margin-bottom: 6px; }
+  .field { display: flex; align-items: center; background: var(--card); border: 1px solid var(--border2); border-radius: 12px; padding: 12px 14px; margin-bottom: 16px; }
   .field input { border: none; outline: none; flex: 1; margin-right: 10px; font-size: 15px; background: transparent; text-align: right; direction: rtl; }
   .error { color: #A63A3A; font-size: 13px; margin-bottom: 8px; }
   .btn-main { width: 100%; background: #A63A3A; color: #fff; border: none; border-radius: 12px; padding: 14px 0; font-size: 15px; font-weight: 600; margin-top: 12px; cursor: pointer; }
   .btn-main:disabled { opacity: 0.6; }
+  .remember-row { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--muted2); margin-top: 4px; margin-bottom: 4px; }
 
   .header { background: #A63A3A; padding: 20px 18px; display: flex; align-items: center; justify-content: space-between; border-bottom-left-radius: 20px; border-bottom-right-radius: 20px; }
   .logout-btn { background: transparent; border: none; color: #F3D3D0; font-size: 13px; cursor: pointer; }
   .content { flex: 1; padding: 16px 18px 24px; }
 
-  .roster-item { background: #fff; border: 1px solid #F0DAD5; border-radius: 12px; padding: 12px 14px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; }
-  .roster-name { font-size: 14px; font-weight: 500; color: #2C2C2A; }
-  .roster-id { font-size: 12px; color: #A98080; }
-  .empty-box { text-align: center; padding: 40px 20px; color: #A98080; font-size: 14px; }
+  .roster-item { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 12px 14px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; }
+  .roster-name { font-size: 14px; font-weight: 500; color: var(--text); }
+  .roster-id { font-size: 12px; color: var(--muted); }
+  .empty-box { text-align: center; padding: 40px 20px; color: var(--muted); font-size: 14px; }
   .badge-role { background: #F2B8A8; color: #7A2626; font-size: 11px; padding: 3px 10px; border-radius: 999px; font-weight: 600; }
 
   .admin-tabs { display: flex; gap: 10px; margin-bottom: 16px; overflow-x: auto; padding: 2px 2px 6px; }
-  .admin-tab-btn { flex-shrink: 0; padding: 12px 20px; border-radius: 999px; background: #fff; border: 1px solid #E9CFC9; font-size: 14.5px; font-weight: 600; color: #6B4A4A; cursor: pointer; white-space: nowrap; }
+  .admin-tab-btn { flex-shrink: 0; padding: 12px 20px; border-radius: 999px; background: var(--card); border: 1px solid var(--border2); font-size: 14.5px; font-weight: 600; color: var(--muted2); cursor: pointer; white-space: nowrap; }
   .admin-tab-btn.active { background: #A63A3A; color: #fff; border-color: #A63A3A; box-shadow: 0 2px 8px rgba(166,58,58,0.35); }
 
-  .section-title { font-size: 14px; font-weight: 700; color: #2C2C2A; margin: 4px 0 10px; }
-  .form-card { background: #fff; border: 1px solid #F0DAD5; border-radius: 14px; padding: 16px; margin-bottom: 18px; }
+  .section-title { font-size: 14px; font-weight: 700; color: var(--text); margin: 4px 0 10px; }
+  .form-card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 16px; margin-bottom: 18px; }
   .form-field { margin-bottom: 12px; }
-  .form-field label { font-size: 12.5px; color: #6B4A4A; display: block; margin-bottom: 5px; }
-  .form-field input, .form-field select, .form-field textarea { width: 100%; border: 1px solid #E9CFC9; border-radius: 10px; padding: 10px 12px; font-size: 14px; text-align: right; direction: rtl; font-family: inherit; }
+  .form-field label { font-size: 12.5px; color: var(--muted2); display: block; margin-bottom: 5px; }
+  .form-field input, .form-field select, .form-field textarea { width: 100%; border: 1px solid var(--border2); border-radius: 10px; padding: 10px 12px; font-size: 14px; text-align: right; direction: rtl; font-family: inherit; background: var(--card); color: var(--text); }
   textarea { resize: vertical; }
   .btn-save { background: #A63A3A; color: #fff; border: none; border-radius: 10px; padding: 11px 0; width: 100%; font-size: 14px; font-weight: 600; cursor: pointer; margin-top: 4px; }
   .btn-save:disabled { opacity: 0.6; }
@@ -55,18 +72,18 @@
   .form-msg.ok { color: #2E7D5B; }
   .form-msg.err { color: #A63A3A; }
 
-  .student-row { background: #fff; border: 1px solid #F0DAD5; border-radius: 12px; padding: 11px 14px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; }
-  .student-info .name { font-size: 13.5px; font-weight: 500; color: #2C2C2A; }
-  .student-info .meta { font-size: 11.5px; color: #A98080; margin-top: 2px; }
+  .student-row { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 11px 14px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; }
+  .student-info .name { font-size: 13.5px; font-weight: 500; color: var(--text); }
+  .student-info .meta { font-size: 11.5px; color: var(--muted); margin-top: 2px; }
   .status-pill { font-size: 11px; padding: 4px 10px; border-radius: 999px; font-weight: 600; border: none; cursor: pointer; }
   .status-active { background: #E1F5EE; color: #085041; }
-  .status-inactive { background: #F1EFE8; color: #8A8578; }
-  .search-field-admin { display: flex; align-items: center; background: #fff; border: 1px solid #E9CFC9; border-radius: 12px; padding: 9px 12px; margin-bottom: 14px; }
+  .status-inactive { background: var(--pill-bg); color: var(--pill-text); }
+  .search-field-admin { display: flex; align-items: center; background: var(--card); border: 1px solid var(--border2); border-radius: 12px; padding: 9px 12px; margin-bottom: 14px; }
   .search-field-admin input { border: none; outline: none; flex: 1; margin-right: 8px; font-size: 13.5px; background: transparent; text-align: right; direction: rtl; }
 
-  .attendance-row { background: #fff; border: 1px solid #F0DAD5; border-radius: 12px; padding: 10px 14px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; }
+  .attendance-row { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 10px 14px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; }
   .attendance-toggle { display: flex; gap: 6px; }
-  .att-btn { border: 1px solid #E9CFC9; background: #fff; color: #6B4A4A; font-size: 12px; padding: 6px 14px; border-radius: 999px; cursor: pointer; }
+  .att-btn { border: 1px solid var(--border2); background: var(--card); color: var(--muted2); font-size: 12px; padding: 6px 14px; border-radius: 999px; cursor: pointer; }
   .att-btn.att-present { background: #E1F5EE; color: #085041; border-color: #E1F5EE; }
   .att-btn.att-absent { background: #FBE3E0; color: #A63A3A; border-color: #FBE3E0; }
 
@@ -74,17 +91,17 @@
   .summary-row { display: flex; justify-content: space-between; margin-bottom: 6px; font-size: 13.5px; }
   .summary-children { margin-top: 10px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.25); font-size: 12.5px; }
   .summary-children div { margin-bottom: 4px; color: #F3D3D0; }
-  .supervisor-card { background: #fff; border: 1px solid #F0DAD5; border-radius: 12px; padding: 12px 14px; margin-bottom: 10px; }
-  .supervisor-name { font-size: 14px; font-weight: 600; color: #2C2C2A; margin-bottom: 8px; }
+  .supervisor-card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 12px 14px; margin-bottom: 10px; }
+  .supervisor-name { font-size: 14px; font-weight: 600; color: var(--text); margin-bottom: 8px; }
   .link-btn { display: inline-block; background: #E1F5EE; color: #085041; font-size: 12px; padding: 6px 12px; border-radius: 8px; text-decoration: none; margin-top: 6px; }
 
   /* كاليندار الحضور وكاليندار العطل */
   .cal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
-  .cal-nav-btn { background: #fff; border: 1px solid #E9CFC9; color: #2C2C2A; width: 36px; height: 36px; border-radius: 10px; cursor: pointer; font-size: 16px; }
+  .cal-nav-btn { background: var(--card); border: 1px solid var(--border2); color: var(--text); width: 36px; height: 36px; border-radius: 10px; cursor: pointer; font-size: 16px; }
   .cal-nav-btn:disabled { opacity: 0.35; cursor: not-allowed; }
-  .cal-title { font-size: 15.5px; font-weight: 700; color: #2C2C2A; }
+  .cal-title { font-size: 15.5px; font-weight: 700; color: var(--text); }
   .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; margin-bottom: 16px; }
-  .cal-dow { text-align: center; font-size: 11.5px; color: #A98080; padding-bottom: 4px; }
+  .cal-dow { text-align: center; font-size: 11.5px; color: var(--muted); padding-bottom: 4px; }
   .cal-cell { aspect-ratio: 1; display: flex; align-items: center; justify-content: center; border-radius: 9px; font-size: 13.5px; font-weight: 600; }
   .cal-cell.empty { visibility: hidden; }
   .cal-present { background: #DDF0DE; color: #1E5E27; }
@@ -92,13 +109,13 @@
   .cal-late { background: #FCEBC7; color: #8A5A0A; }
   .cal-weekend { background: #DCE7F7; color: #294A80; }
   .cal-holiday { background: #E4D6F5; color: #532E80; }
-  .cal-neutral { background: #fff; border: 1px solid #F0DAD5; color: #A98080; }
-  .cal-legend { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 18px; font-size: 12px; color: #6B4A4A; }
+  .cal-neutral { background: var(--card); border: 1px solid var(--border); color: var(--muted); }
+  .cal-legend { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 18px; font-size: 12px; color: var(--muted2); }
   .legend-dot { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-left: 4px; vertical-align: middle; }
   .holiday-table { width: 100%; border-collapse: collapse; }
-  .holiday-table td { padding: 9px 4px; border-bottom: 1px solid #F0DAD5; font-size: 13.5px; color: #2C2C2A; }
-  .holiday-table td.hdate { color: #A98080; font-size: 12px; }
-  .search-result-item { background: #fff; border: 1px solid #F0DAD5; border-radius: 12px; padding: 11px 14px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
+  .holiday-table td { padding: 9px 4px; border-bottom: 1px solid var(--border); font-size: 13.5px; color: var(--text); }
+  .holiday-table td.hdate { color: var(--muted); font-size: 12px; }
+  .search-result-item { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 11px 14px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
   .search-result-item:hover { border-color: #A63A3A; }
   .selected-student-bar { display: flex; justify-content: space-between; align-items: center; background: #A63A3A; color: #fff; border-radius: 14px; padding: 14px 16px; margin-bottom: 16px; }
   .selected-student-bar .name { font-size: 15px; font-weight: 700; }
@@ -107,48 +124,48 @@
 
   /* شريط المجموعات الرئيسي + الشريط الفرعي */
   .group-tabs { display: flex; gap: 8px; margin-bottom: 10px; overflow-x: auto; padding: 2px 2px 6px; }
-  .group-tab-btn { flex-shrink: 0; padding: 11px 18px; border-radius: 999px; background: #fff; border: 1px solid #E9CFC9; font-size: 14px; font-weight: 700; color: #6B4A4A; cursor: pointer; white-space: nowrap; }
+  .group-tab-btn { flex-shrink: 0; padding: 11px 18px; border-radius: 999px; background: var(--card); border: 1px solid var(--border2); font-size: 14px; font-weight: 700; color: var(--muted2); cursor: pointer; white-space: nowrap; }
   .group-tab-btn.active { background: #7A2626; color: #fff; border-color: #7A2626; box-shadow: 0 2px 8px rgba(122,38,38,0.3); }
   .sub-tabs { display: flex; gap: 6px; margin-bottom: 16px; overflow-x: auto; padding: 2px 2px 6px; }
-  .sub-tab-btn { flex-shrink: 0; padding: 8px 15px; border-radius: 999px; background: #FBEDE9; border: 1px solid #F0DAD5; font-size: 13px; color: #7A2626; cursor: pointer; white-space: nowrap; }
+  .sub-tab-btn { flex-shrink: 0; padding: 8px 15px; border-radius: 999px; background: var(--tint-card); border: 1px solid var(--border); font-size: 13px; color: #7A2626; cursor: pointer; white-space: nowrap; }
   .sub-tab-btn.active { background: #A63A3A; color: #fff; border-color: #A63A3A; }
 
   .void-row { opacity: 0.55; }
-  .void-badge { background: #F1EFE8; color: #8A8578; font-size: 10.5px; padding: 3px 8px; border-radius: 999px; font-weight: 600; }
-  .divider-line { height: 1px; background: #F0DAD5; margin: 22px 0 18px; }
+  .void-badge { background: var(--pill-bg); color: var(--pill-text); font-size: 10.5px; padding: 3px 8px; border-radius: 999px; font-weight: 600; }
+  .divider-line { height: 1px; background: var(--border); margin: 22px 0 18px; }
 
   /* لوحة التحكم التحليلية (المدير فقط) */
   .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 18px; }
-  .stat-card { background: #fff; border: 1px solid #F0DAD5; border-radius: 14px; padding: 16px 10px; text-align: center; }
+  .stat-card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 16px 10px; text-align: center; }
   .stat-icon { font-size: 24px; margin-bottom: 6px; }
   .stat-number { font-size: 23px; font-weight: 800; color: #7A2626; line-height: 1.1; }
-  .stat-label { font-size: 11px; color: #A98080; margin-top: 4px; }
+  .stat-label { font-size: 11px; color: var(--muted); margin-top: 4px; }
 
   .donut-row { display: flex; justify-content: center; gap: 18px; margin: 4px 0 20px; flex-wrap: wrap; }
   .donut-box { text-align: center; }
-  .donut-caption { font-size: 12px; color: #6B4A4A; margin-top: 6px; font-weight: 700; }
+  .donut-caption { font-size: 12px; color: var(--muted2); margin-top: 6px; font-weight: 700; }
 
   .cbc-row { display: flex; align-items: center; gap: 8px; margin-bottom: 9px; }
-  .cbc-label { font-size: 12px; color: #6B4A4A; width: 76px; flex-shrink: 0; font-weight: 600; }
-  .cbc-track { flex: 1; background: #F5EAE6; border-radius: 7px; height: 17px; overflow: hidden; }
+  .cbc-label { font-size: 12px; color: var(--muted2); width: 76px; flex-shrink: 0; font-weight: 600; }
+  .cbc-track { flex: 1; background: var(--pill-bg); border-radius: 7px; height: 17px; overflow: hidden; }
   .cbc-fill { height: 100%; background: linear-gradient(90deg,#A63A3A,#E29079); border-radius: 7px; transition: width .4s; }
-  .cbc-count { font-size: 12px; font-weight: 800; color: #2C2C2A; width: 24px; text-align: left; }
+  .cbc-count { font-size: 12px; font-weight: 800; color: var(--text); width: 24px; text-align: left; }
 
-  .class-summary-card { background: #fff; border: 1px solid #F0DAD5; border-radius: 14px; padding: 14px 16px; margin-bottom: 10px; }
+  .class-summary-card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 14px 16px; margin-bottom: 10px; }
   .class-summary-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
-  .class-summary-title { font-size: 14px; font-weight: 800; color: #2C2C2A; }
+  .class-summary-title { font-size: 14px; font-weight: 800; color: var(--text); }
   .sec-bar-row { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
-  .sec-bar-label { font-size: 11px; color: #A98080; width: 52px; flex-shrink: 0; }
-  .sec-bar-track { flex: 1; background: #F5EAE6; border-radius: 5px; height: 12px; overflow: hidden; }
+  .sec-bar-label { font-size: 11px; color: var(--muted); width: 52px; flex-shrink: 0; }
+  .sec-bar-track { flex: 1; background: var(--pill-bg); border-radius: 5px; height: 12px; overflow: hidden; }
   .sec-bar-fill { height: 100%; background: #7A9CA6; border-radius: 5px; transition: width .4s; }
-  .sec-bar-count { font-size: 11px; font-weight: 700; color: #2C2C2A; width: 18px; }
+  .sec-bar-count { font-size: 11px; font-weight: 700; color: var(--text); width: 18px; }
 </style>
 </head>
 <body>
 <div id="app"></div>
 
 <script>
-const API_URL = "https://script.google.com/macros/s/AKfycbz6ELxp6ppDgAvygOQdPeP9pdHWjzpOJuQwVmQHW3TGKggW-olcNVTcLxsYwRFUCOn-tQ/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbxNglMD_OyJZ7WBobsl-lWWJMc2Yzcp1gCkoCmSkepMAyJaxBMbIKjq1vmSUKIH5mNORA/exec";
 
 const SUBJECTS = ["لغة عربية", "لغة إنجليزية", "رياضيات", "علوم", "تربية إسلامية", "دراسات اجتماعية", "حاسب آلي", "تربية فنية", "تربية بدنية", "عام"];
 const EXAM_TYPES = ["المذاكرة الأولى", "المذاكرة الثانية", "الامتحان النهائي للفصل"];
@@ -186,6 +203,17 @@ let holCalMonth = new Date().getMonth();
 let addHolidayMsg = "";
 
 let clockIntervalStarted = false;
+
+// ---------------------------------------------------------------------------
+// الوضع الليلي/النهاري (مفتاح تخزين مستقل عن تطبيق الأهالي)
+// ---------------------------------------------------------------------------
+function applyStaffDarkModePref() {
+  if (localStorage.getItem("masar_staff_dark") === "1") document.body.classList.add("dark");
+}
+function toggleStaffDarkMode() {
+  document.body.classList.toggle("dark");
+  localStorage.setItem("masar_staff_dark", document.body.classList.contains("dark") ? "1" : "0");
+}
 
 // ---------------------------------------------------------------------------
 // سياق المدير: الصف والشعبة المختارين لتبويبات الحضور/السلوك/العلامات/الواجبات
@@ -271,7 +299,7 @@ function renderAdminContextPicker() {
     const sections = ["", "1", "2", "3"].map(sec =>
       `<option value="${sec}" ${sec === ctxSection ? "selected" : ""}>${sec === "" ? "كل الشعب" : "شعبة " + sec}</option>`).join("");
     return `
-      <div class="form-card" style="background:#FFF7F5;">
+      <div class="form-card" style="background:var(--tint-card);">
         <div class="section-title">🎯 اختر الصف والشعبة للعمل عليهما</div>
         <div class="form-field">
           <label>الصف</label>
@@ -299,7 +327,7 @@ function renderAdminContextPicker() {
   }).join("");
 
   return `
-    <div class="form-card" style="background:#FFF7F5;">
+    <div class="form-card" style="background:var(--tint-card);">
       <div class="section-title">🎯 اختر الصف الذي تعمل عليه</div>
       <div class="form-field" style="margin-bottom:0;">
         <select onchange="setTeacherContext(this.value);">
@@ -378,10 +406,48 @@ function startLiveClock() {
   }, 30000);
 }
 
+
+function saveStaffCreds(username, password) {
+  localStorage.setItem("masar_staff_user", username);
+  localStorage.setItem("masar_staff_pass", password);
+}
+function clearStaffCreds() {
+  localStorage.removeItem("masar_staff_user");
+  localStorage.removeItem("masar_staff_pass");
+}
+function getSavedStaffCreds() {
+  const username = localStorage.getItem("masar_staff_user");
+  const password = localStorage.getItem("masar_staff_pass");
+  return username && password ? { username, password } : null;
+}
+
+async function tryStaffAutoLogin() {
+  const saved = getSavedStaffCreds();
+  if (!saved) { renderLogin(); return; }
+  try {
+    const url = `${API_URL}?action=staffLogin&username=${encodeURIComponent(saved.username)}&password=${encodeURIComponent(saved.password)}`;
+    const res = await fetch(url);
+    const data = await res.json();
+    if (!data.ok) { clearStaffCreds(); renderLogin(); return; }
+    data._password = saved.password;
+    staffSession = data;
+    teacherTab = "roster";
+    adminGroup = data.role === "Admin" ? "dashboard" : "roster";
+    adminTab = data.role === "Admin" ? "dashboard" : "students";
+    renderDashboard();
+  } catch (err) {
+    renderLogin(); // تعذّر الاتصال؟ اعرض شاشة الدخول العادية بدل ما تعلق الصفحة
+  }
+}
+
 function renderLogin(errorMsg) {
   const app = document.getElementById("app");
   app.innerHTML = `
-    <div class="login-header">
+    <div class="login-header" style="position:relative;">
+      <button class="change-btn" onclick="toggleStaffDarkMode();renderLogin();" title="الوضع الليلي"
+        style="position:absolute; top:16px; left:16px; width:34px; height:34px; padding:0; font-size:16px;">
+        ${document.body.classList.contains('dark') ? '☀️' : '🌙'}
+      </button>
       <div class="avatar">م</div>
       <div class="school-name">مدرسة مسار للتميز</div>
       <div class="school-sub">بوابة المعلمين والإدارة</div>
@@ -391,6 +457,10 @@ function renderLogin(errorMsg) {
       <div class="field"><input id="userInput" placeholder="مثال: T01A" /></div>
       <label>كلمة السر</label>
       <div class="field"><input id="passInput" type="password" placeholder="كلمة السر" /></div>
+      <div class="remember-row">
+        <input type="checkbox" id="rememberStaffBox" ${getSavedStaffCreds() ? "checked" : ""} />
+        <label for="rememberStaffBox" style="margin:0;">تذكرني على هذا الجهاز</label>
+      </div>
       ${errorMsg ? `<div class="error">${errorMsg}</div>` : ""}
       <button type="submit" class="btn-main" id="loginBtn">تسجيل الدخول</button>
     </form>
@@ -408,6 +478,8 @@ function renderLogin(errorMsg) {
       const res = await fetch(url);
       const data = await res.json();
       if (!data.ok) { renderLogin(data.error || "حدث خطأ"); return; }
+      const remember = document.getElementById("rememberStaffBox").checked;
+      if (remember) saveStaffCreds(username, password); else clearStaffCreds();
       data._password = password;
       staffSession = data;
       teacherTab = "roster";
@@ -453,7 +525,7 @@ function renderGradeEditForm(g) {
       <div class="form-field"><label>الفصل</label><select id="egSemester">${semOpts}</select></div>
       <div class="form-field"><label>العلامة</label><input id="egScore" type="number" min="0" max="100" value="${g.Score}" /></div>
       <button class="btn-save" onclick="submitEditGrade('${g.Grade_ID}')">حفظ التعديل</button>
-      <button type="button" class="status-pill" style="width:100%;margin-top:8px;background:#F1EFE8;color:#6B4A4A;" onclick="editingGradeId=null;renderDashboard();">إلغاء</button>
+      <button type="button" class="status-pill" style="width:100%;margin-top:8px;background:var(--pill-bg);color:var(--muted2);" onclick="editingGradeId=null;renderDashboard();">إلغاء</button>
       <div id="egMsg"></div>
     </div>
   `;
@@ -602,12 +674,12 @@ function renderAdminGradesTab() {
               </div>
               <span class="badge-role" style="font-size:14px; padding:4px 12px;">${g.Score}</span>
             </div>
-            <div style="font-size:11.5px; color:${noteColor}; background:#F9F9F9; padding:6px; border-radius:6px; margin-top:4px; border:1px dashed #E9CFC9;">
+            <div style="font-size:11.5px; color:${noteColor}; background:var(--pill-bg); padding:6px; border-radius:6px; margin-top:4px; border:1px dashed var(--border2);">
               🔒 ${auditNote}
             </div>
-            ${isVoid ? `<div style="font-size:11.5px;color:#8A8578;margin-top:6px;">🚫 علامة ملغاة — السبب: ${g.Void_Reason || "غير مذكور"}</div>` : ""}
+            ${isVoid ? `<div style="font-size:11.5px;color:var(--pill-text);margin-top:6px;">🚫 علامة ملغاة — السبب: ${g.Void_Reason || "غير مذكور"}</div>` : ""}
             <div style="display:flex;gap:6px;margin-top:8px;">
-              <button class="status-pill" style="background:#F0DAD5;color:#7A2626;" onclick="editingGradeId='${g.Grade_ID}';renderDashboard();">تعديل</button>
+              <button class="status-pill" style="background:var(--edit-bg);color:var(--edit-text);" onclick="editingGradeId='${g.Grade_ID}';renderDashboard();">تعديل</button>
               <button class="status-pill ${isVoid ? "status-inactive" : "status-active"}" onclick="toggleGradeStatus('${g.Grade_ID}','${isVoid ? "Active" : "Void"}')">
                 ${isVoid ? "ملغاة — إعادة تفعيل" : "إلغاء العلامة"}
               </button>
@@ -725,7 +797,7 @@ function renderAdminStudentsTab() {
               <div class="meta">${s.Student_ID} · ${s.Class_Level || ""} ${s.Section ? "- شعبة " + s.Section : ""}</div>
             </div>
             <div style="display:flex;gap:6px;">
-              <button class="status-pill" style="background:#F0DAD5;color:#7A2626;" onclick="editingStudentId='${s.Student_ID}';renderDashboard();">تعديل</button>
+              <button class="status-pill" style="background:var(--edit-bg);color:var(--edit-text);" onclick="editingStudentId='${s.Student_ID}';renderDashboard();">تعديل</button>
               <button class="status-pill ${isActive ? "status-active" : "status-inactive"}" onclick="toggleStudentStatus('${s.Student_ID}', '${isActive ? "Inactive" : "Active"}')">
                 ${isActive ? "نشط" : "متوقف"}
               </button>
@@ -759,7 +831,7 @@ function renderEditStudentForm(s) {
           </select>
         </div>
         <button type="submit" class="btn-save" id="editStudentBtn">حفظ التعديلات</button>
-        <button type="button" class="status-pill" style="width:100%;margin-top:8px;background:#F1EFE8;color:#6B4A4A;" onclick="editingStudentId=null;renderDashboard();">إلغاء</button>
+        <button type="button" class="status-pill" style="width:100%;margin-top:8px;background:var(--pill-bg);color:var(--muted2);" onclick="editingStudentId=null;renderDashboard();">إلغاء</button>
         <div id="editStudentMsg"></div>
       </form>
     </div>
@@ -1053,7 +1125,7 @@ function renderAdminPaymentsTab() {
           </div>
           ${isVoid ? `<div style="font-size:11.5px;color:#A63A3A;margin-top:6px;">🚫 سبب الإلغاء: ${p.Void_Reason || "غير مذكور"}</div>` : ""}
           <div style="display:flex;gap:6px;margin-top:8px;">
-            <button class="status-pill" style="background:#F0DAD5;color:#7A2626;" onclick="editingPaymentId='${pid}';renderDashboard();">تعديل</button>
+            <button class="status-pill" style="background:var(--edit-bg);color:var(--edit-text);" onclick="editingPaymentId='${pid}';renderDashboard();">تعديل</button>
             <button class="status-pill ${isVoid ? "status-inactive" : "status-active"}" onclick="togglePaymentStatus('${pid}','${isVoid ? "Active" : "Void"}')">
               ${isVoid ? "إعادة تفعيل" : "إلغاء الدفعة"}
             </button>
@@ -1093,7 +1165,7 @@ function renderPaymentEditForm(p) {
       <div class="form-field"><label>ملاحظات</label><input id="epNotes" value="${p.Notes || ""}" /></div>
       <div class="form-field"><label>سبب التعديل (إجباري)</label><input id="epReason" placeholder="مثال: خطأ في إدخال المبلغ" required /></div>
       <button class="btn-save" onclick="submitEditPayment('${p.Payment_ID}')">حفظ التعديل</button>
-      <button type="button" class="status-pill" style="width:100%;margin-top:8px;background:#F1EFE8;color:#6B4A4A;" onclick="editingPaymentId=null;renderDashboard();">إلغاء</button>
+      <button type="button" class="status-pill" style="width:100%;margin-top:8px;background:var(--pill-bg);color:var(--muted2);" onclick="editingPaymentId=null;renderDashboard();">إلغاء</button>
       <div id="epMsg"></div>
     </div>
   `;
@@ -1249,7 +1321,7 @@ function renderAdminTeachersTab() {
         <button type="submit" class="btn-save" id="addTeacherBtn">إضافة المعلم</button>
         ${addTeacherMsg}
       </form>
-      <div style="font-size:11.5px;color:#A98080;margin-top:10px;">ملاحظة: حالة المعلم اللي بيدرّس نفس المادة لعدة صفوف (سادس، سابع، ثامن...) رح نحلها بخطوة لاحقة منفصلة.</div>
+      <div style="font-size:11.5px;color:var(--muted);margin-top:10px;">ملاحظة: حالة المعلم اللي بيدرّس نفس المادة لعدة صفوف (سادس، سابع، ثامن...) رح نحلها بخطوة لاحقة منفصلة.</div>
     </div>
   `;
 
@@ -1271,7 +1343,7 @@ function renderAdminTeachersTab() {
             <div class="form-field"><label>الصف</label><select id="editTeacherClass">${clsOpts}</select></div>
             <div class="form-field"><label>الشعبة</label><input id="editTeacherSection" value="${t.Section || ""}" /></div>
             <button type="submit" class="btn-save" id="editTeacherBtn">حفظ التعديلات</button>
-            <button type="button" class="status-pill" style="width:100%;margin-top:8px;background:#F1EFE8;color:#6B4A4A;" onclick="editingTeacherUser=null;renderDashboard();">إلغاء</button>
+            <button type="button" class="status-pill" style="width:100%;margin-top:8px;background:var(--pill-bg);color:var(--muted2);" onclick="editingTeacherUser=null;renderDashboard();">إلغاء</button>
             <div id="editTeacherMsg"></div>
           </form>
         </div>
@@ -1284,7 +1356,7 @@ function renderAdminTeachersTab() {
             <div class="meta">${t.Username} · ${t.Class_Level || ""} ${t.Section ? "- شعبة " + t.Section : ""}</div>
           </div>
           <div style="display:flex;gap:6px;">
-            <button class="status-pill" style="background:#F0DAD5;color:#7A2626;" onclick="editingTeacherUser='${t.Username}';renderDashboard();">تعديل</button>
+            <button class="status-pill" style="background:var(--edit-bg);color:var(--edit-text);" onclick="editingTeacherUser='${t.Username}';renderDashboard();">تعديل</button>
             <button class="status-pill ${isActive ? "status-active" : "status-inactive"}" onclick="toggleTeacherStatus('${t.Username}','${isActive ? "Inactive" : "Active"}')">
               ${isActive ? "نشط" : "معطّل"}
             </button>
@@ -1462,7 +1534,7 @@ function renderAdminBusTab() {
       <div class="supervisor-card" style="${isActive ? "" : "opacity:0.6;"}">
         <div class="supervisor-name">
           ${s.Supervisor_Name}
-          <span style="font-size:11.5px;color:#A98080;">(${s.Route_Area || "بدون منطقة"}) · ${busy} طالب</span>
+          <span style="font-size:11.5px;color:var(--muted);">(${s.Route_Area || "بدون منطقة"}) · ${busy} طالب</span>
         </div>
         <div class="form-field" style="margin-bottom:8px;">
           <label>الاسم</label>
@@ -1793,7 +1865,7 @@ function renderAdminHolidaysTab() {
         <tr>
           <td>${h.Holiday_Name || "عطلة"}</td>
           <td class="hdate">${d.getDate()} ${ARABIC_MONTHS[holCalMonth]}
-            <button class="status-pill" style="background:#F0DAD5;color:#7A2626;margin-right:6px;" onclick="deleteHoliday('${h.Holiday_ID || ""}','${formatYmdForDelete(d)}')">حذف</button>
+            <button class="status-pill" style="background:var(--edit-bg);color:var(--edit-text);margin-right:6px;" onclick="deleteHoliday('${h.Holiday_ID || ""}','${formatYmdForDelete(d)}')">حذف</button>
           </td>
         </tr>`;
     });
@@ -1981,7 +2053,7 @@ function renderTeacherAttendanceTab() {
         <select id="attendanceDateInput" onchange="attendanceDate=this.value; attendanceDraft={}; renderDashboard();">
           ${buildAttendanceDateOptions()}
         </select>
-        <div style="font-size:11px;color:#A98080;margin-top:5px;">لا يمكن تسجيل حضور ليوم لم يأتِ بعد</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:5px;">لا يمكن تسجيل حضور ليوم لم يأتِ بعد</div>
       </div>
       ${rows || '<div class="empty-box">لا يوجد طلاب</div>'}
       <button class="btn-save" id="saveAttendanceBtn" onclick="submitAttendance()">حفظ الحضور</button>
@@ -2474,7 +2546,7 @@ function renderAdminAnnouncementsTab() {
             <div class="form-field"><label>النص</label><textarea id="eaBody" rows="3">${a.Body || ""}</textarea></div>
             <div class="form-field"><label>التاريخ</label><input id="eaDate" type="date" value="${a.Date || ""}" /></div>
             <button class="btn-save" onclick="submitEditAnnouncement('${aid}')">حفظ التعديل</button>
-            <button type="button" class="status-pill" style="width:100%;margin-top:8px;background:#F1EFE8;color:#6B4A4A;" onclick="editingAnnId=null;renderDashboard();">إلغاء</button>
+            <button type="button" class="status-pill" style="width:100%;margin-top:8px;background:var(--pill-bg);color:var(--muted2);" onclick="editingAnnId=null;renderDashboard();">إلغاء</button>
             <div id="eaMsg"></div>
           </div>
         `;
@@ -2484,10 +2556,10 @@ function renderAdminAnnouncementsTab() {
             <div class="student-info">
               <div class="name">${a.Title || "بدون عنوان"}</div>
               <div class="meta">${a.Date || ""} · ${a.Audience || "الجميع"}</div>
-              <div style="font-size:12.5px;color:#6B4A4A;margin-top:6px;">${a.Body || ""}</div>
+              <div style="font-size:12.5px;color:var(--muted2);margin-top:6px;">${a.Body || ""}</div>
             </div>
             <div style="display:flex;gap:6px;margin-top:8px;">
-              <button class="status-pill" style="background:#F0DAD5;color:#7A2626;" onclick="editingAnnId='${aid}';renderDashboard();">تعديل</button>
+              <button class="status-pill" style="background:var(--edit-bg);color:var(--edit-text);" onclick="editingAnnId='${aid}';renderDashboard();">تعديل</button>
               <button class="status-pill ${isActive ? "status-active" : "status-inactive"}" onclick="toggleAnnouncementStatus('${aid}','${isActive ? "Inactive" : "Active"}')">
                 ${isActive ? "ظاهر" : "مخفي"}
               </button>
@@ -2644,7 +2716,7 @@ function renderAdminExamsTab() {
             <div class="form-field"><label>التاريخ</label><input id="eeDate" type="date" value="${ex.Exam_Date || ""}" /></div>
             <div class="form-field"><label>ملاحظات</label><input id="eeNotes" value="${ex.Notes || ""}" /></div>
             <button class="btn-save" onclick="submitEditExam('${eid}')">حفظ التعديل</button>
-            <button type="button" class="status-pill" style="width:100%;margin-top:8px;background:#F1EFE8;color:#6B4A4A;" onclick="editingExamId=null;renderDashboard();">إلغاء</button>
+            <button type="button" class="status-pill" style="width:100%;margin-top:8px;background:var(--pill-bg);color:var(--muted2);" onclick="editingExamId=null;renderDashboard();">إلغاء</button>
             <div id="eeMsg"></div>
           </div>
         `;
@@ -2656,7 +2728,7 @@ function renderAdminExamsTab() {
               <div class="meta">${ex.Class_Level || ""} · ${ex.Exam_Date || ""}${ex.Notes ? " · " + ex.Notes : ""}</div>
             </div>
             <div style="display:flex;gap:6px;margin-top:8px;">
-              <button class="status-pill" style="background:#F0DAD5;color:#7A2626;" onclick="editingExamId='${eid}';renderDashboard();">تعديل</button>
+              <button class="status-pill" style="background:var(--edit-bg);color:var(--edit-text);" onclick="editingExamId='${eid}';renderDashboard();">تعديل</button>
               <button class="status-pill ${isActive ? "status-active" : "status-inactive"}" onclick="toggleExamStatus('${eid}','${isActive ? "Inactive" : "Active"}')">
                 ${isActive ? "ظاهر" : "مخفي"}
               </button>
@@ -2787,7 +2859,7 @@ function renderAdminTeacherAssignmentsTab() {
         <button type="submit" class="btn-save" id="addTABtn">إسناد المادة</button>
         ${addTAMsg}
       </form>
-      <div style="font-size:11.5px;color:#A98080;margin-top:10px;">
+      <div style="font-size:11.5px;color:var(--muted);margin-top:10px;">
         المعلم الذي يدرّس عدة صفوف: أسند له سطراً لكل صف. المعلم بدون أي إسناد يعمل بصفه المسجّل في بطاقته.
       </div>
     </div>
@@ -2823,7 +2895,7 @@ function renderAdminTeacherAssignmentsTab() {
       const list = byTeacher[u];
       const tName = list[0].Teacher_Name || u;
       listHtml += `<div class="form-card" style="padding:12px 14px;">
-        <div class="supervisor-name">${tName} <span style="font-size:11.5px;color:#A98080;">(${u})</span></div>`;
+        <div class="supervisor-name">${tName} <span style="font-size:11.5px;color:var(--muted);">(${u})</span></div>`;
       list.forEach(r => {
         const isActive = String(r.Status || "Active").trim() !== "Inactive";
         const secLabel = String(r.Section || "").trim() === "" ? "كل الشعب" : "شعبة " + r.Section;
@@ -3093,6 +3165,9 @@ function renderDashboard() {
         <div id="liveClock" style="color:#F3D3D0;font-size:11px;margin-top:4px;">${getCurrentDateTimeText()}</div>
       </div>
       <div style="display: flex; gap: 12px; align-items: center;">
+        <button class="logout-btn" onclick="toggleStaffDarkMode();renderDashboard();" title="الوضع الليلي">
+          ${document.body.classList.contains('dark') ? '☀️' : '🌙'}
+        </button>
         <button id="refreshBtn" class="logout-btn">🔄 تحديث</button>
         <button id="logoutBtn" class="logout-btn">خروج</button>
       </div>
@@ -3126,6 +3201,7 @@ function renderDashboard() {
   });
 
   document.getElementById("logoutBtn").addEventListener("click", function () {
+    clearStaffCreds();
     staffSession = null;
     adminTab = "students";
     teacherTab = "roster";
@@ -3214,7 +3290,8 @@ function renderDashboard() {
   startLiveClock();
 }
 
-renderLogin();
+applyStaffDarkModePref();
+tryStaffAutoLogin();
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", () => {
     navigator.serviceWorker.register("./sw.js").catch(() => {});
