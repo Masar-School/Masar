@@ -6,7 +6,7 @@
 <title>مدرسة مسار للتميز</title>
 <link rel="manifest" href="manifest-parent.json">
 <meta name="theme-color" content="#16233F">
-<link rel="apple-touch-icon" href="icons/icon-parent-192.png">
+<link rel="apple-touch-icon" href="icon-parent-192.png">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -165,7 +165,7 @@
 
 <script>
 // تأكد من وضع الرابط الجديد للـ Web App هنا
-const API_URL = "https://script.google.com/macros/s/AKfycbz6ELxp6ppDgAvygOQdPeP9pdHWjzpOJuQwVmQHW3TGKggW-olcNVTcLxsYwRFUCOn-tQ/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbxNglMD_OyJZ7WBobsl-lWWJMc2Yzcp1gCkoCmSkepMAyJaxBMbIKjq1vmSUKIH5mNORA/exec";
 
 let session = null;
 let currentChildIndex = 0;
@@ -236,6 +236,10 @@ function renderLogin(errorMsg) {
   const saved = getSavedCreds();
   app.innerHTML = `
     <div class="login-header">
+      <button class="icon-btn" onclick="toggleDarkMode();renderLogin();" title="الوضع الليلي"
+        style="position:absolute; top:16px; left:16px;">
+        ${document.body.classList.contains('dark') ? '☀️' : '🌙'}
+      </button>
       <div class="avatar">م</div>
       <div class="school-name">مدرسة مسار للتميز</div>
       <div class="school-sub">بوابة أولياء الأمور</div>

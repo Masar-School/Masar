@@ -8,10 +8,10 @@ const PRECACHE_URLS = [
   "./Masar-staff.html",
   "./manifest-parent.json",
   "./manifest-staff.json",
-  "./icons/icon-parent-192.png",
-  "./icons/icon-parent-512.png",
-  "./icons/icon-staff-192.png",
-  "./icons/icon-staff-512.png",
+  "./icon-parent-192.png",
+  "./icon-parent-512.png",
+  "./icon-staff-192.png",
+  "./icon-staff-512.png",
 ];
 
 self.addEventListener("install", (event) => {
