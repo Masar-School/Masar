@@ -367,6 +367,11 @@ function renderResults(child) {
 
   const s1Rows = hasSemesterColumn ? rows.filter(r => normalizeSemester(r.Semester) === "1") : rows;
   const s2Rows = hasSemesterColumn ? rows.filter(r => normalizeSemester(r.Semester) === "2") : [];
+  const showTabs = hasSemesterColumn && s2Rows.length > 0;
+
+  // إذا لم تكن التبويبات ظاهرة (لا يوجد فصل ثاني بعد)، اعتبر العرض دائماً "الفصل الأول"
+  // حتى لا يبقى تبويب "الفصل الثاني" أو "الفصلين" مختاراً من طالب سابق كان له فصلان
+  if (!showTabs) currentSemesterView = "1";
 
   const s1Subjects = computeSubjectAverages(s1Rows);
   const s2Subjects = computeSubjectAverages(s2Rows);
@@ -378,11 +383,19 @@ function renderResults(child) {
   const s2Overall = s2Graded.length ? s2Graded.reduce((a, s) => a + s.avg, 0) / s2Graded.length : null;
 
   const finalAvg = (s1Overall !== null && s2Overall !== null) ? (s1Overall + s2Overall) / 2 : null;
+  const round1 = (n) => Math.round(n * 10) / 10;
 
+  // معدّل الفصل المختار تحديداً — يتغيّر حسب التبويب المفتوح، وليس رسالة عامة ثابتة
   let summaryLine;
-  if (finalAvg !== null) summaryLine = `المعدل النهائي (الفصلين): ${Math.round(finalAvg * 10) / 10}`;
-  else if (s1Overall !== null) summaryLine = `معدل الفصل الأول (مؤقت): ${Math.round(s1Overall * 10) / 10}`;
-  else summaryLine = `لا توجد نتائج كافية بعد لحساب المعدل`;
+  if (!showTabs) {
+    summaryLine = s1Overall !== null ? `معدل الفصل الأول: ${round1(s1Overall)}` : `لا توجد نتائج كافية بعد لحساب المعدل`;
+  } else if (currentSemesterView === "2") {
+    summaryLine = s2Overall !== null ? `معدل الفصل الثاني: ${round1(s2Overall)}` : `لا توجد نتائج كافية للفصل الثاني بعد`;
+  } else if (currentSemesterView === "both") {
+    summaryLine = finalAvg !== null ? `المعدل النهائي (الفصلين): ${round1(finalAvg)}` : `المعدل النهائي غير متاح بعد — يحتاج نتائج الفصلين معاً`;
+  } else {
+    summaryLine = s1Overall !== null ? `معدل الفصل الأول: ${round1(s1Overall)}` : `لا توجد نتائج كافية للفصل الأول بعد`;
+  }
 
   let html = `
     <button class="print-btn" onclick="printSection('grades', ${currentChildIndex})">🖨 طباعة / حفظ PDF</button>
@@ -391,17 +404,26 @@ function renderResults(child) {
     <div style="font-size:13.5px;color:var(--muted2);margin-bottom:14px;">${summaryLine}</div>
   `;
 
-  // إظهار التبويبات فقط إذا كان هناك نتائج مسجلة في الفصل الثاني
-  if (hasSemesterColumn && s2Rows.length > 0) {
+  // إظهار التبويبات (الفصل الأول / الفصل الثاني / الفصلين) فقط إذا كان هناك نتائج مسجلة في الفصل الثاني
+  if (showTabs) {
     html += `
       <div class="child-chips" style="margin-bottom:10px;">
         <button class="chip ${currentSemesterView === "1" ? "active" : ""}" onclick="currentSemesterView='1';renderApp();">الفصل الأول</button>
         <button class="chip ${currentSemesterView === "2" ? "active" : ""}" onclick="currentSemesterView='2';renderApp();">الفصل الثاني</button>
+        <button class="chip ${currentSemesterView === "both" ? "active" : ""}" onclick="currentSemesterView='both';renderApp();">الفصلين</button>
       </div>
     `;
-    html += currentSemesterView === "1"
-      ? (s1Subjects.length ? renderClassicTable(s1Subjects) : `<div class="empty-box">لا توجد نتائج للفصل الأول بعد</div>`)
-      : (s2Subjects.length ? renderClassicTable(s2Subjects) : `<div class="empty-box">لا توجد نتائج للفصل الثاني بعد</div>`);
+
+    if (currentSemesterView === "2") {
+      html += s2Subjects.length ? renderClassicTable(s2Subjects) : `<div class="empty-box">لا توجد نتائج للفصل الثاني بعد</div>`;
+    } else if (currentSemesterView === "both") {
+      html += `<div style="font-size:13px;font-weight:700;color:var(--text);margin:6px 0 8px;">الفصل الأول</div>`;
+      html += s1Subjects.length ? renderClassicTable(s1Subjects) : `<div class="empty-box">لا توجد نتائج للفصل الأول بعد</div>`;
+      html += `<div style="font-size:13px;font-weight:700;color:var(--text);margin:18px 0 8px;">الفصل الثاني</div>`;
+      html += s2Subjects.length ? renderClassicTable(s2Subjects) : `<div class="empty-box">لا توجد نتائج للفصل الثاني بعد</div>`;
+    } else {
+      html += s1Subjects.length ? renderClassicTable(s1Subjects) : `<div class="empty-box">لا توجد نتائج للفصل الأول بعد</div>`;
+    }
   } else {
     html += s1Subjects.length ? renderClassicTable(s1Subjects) : `<div class="empty-box">لا توجد نتائج مسجلة حتى الآن</div>`;
   }
@@ -751,11 +773,14 @@ function shareResultsWhatsapp(childIdx) {
   const child = session.children[childIdx];
   const rows = session.grades.filter(g => String(g.Student_ID).trim() === String(child.Student_ID).trim());
   const hasSemesterColumn = rows.some(r => r.Semester !== undefined && String(r.Semester).trim() !== "");
-  const semRows = hasSemesterColumn ? rows.filter(r => normalizeSemester(r.Semester) === currentSemesterView) : rows;
+  const semRows = hasSemesterColumn
+    ? (currentSemesterView === "both" ? rows : rows.filter(r => normalizeSemester(r.Semester) === currentSemesterView))
+    : rows;
   const subjects = computeSubjectAverages(semRows);
 
+  const semesterLabel = currentSemesterView === "both" ? "الفصلين" : (currentSemesterView === "2" ? "الفصل الثاني" : "الفصل الأول");
   let text = `📋 كشف علامات: ${child.Student_Name} - ${child.Class_Level}\n`;
-  text += `مدرسة مسار للتميز${hasSemesterColumn ? " - الفصل " + (currentSemesterView === "1" ? "الأول" : "الثاني") : ""}\n\n`;
+  text += `مدرسة مسار للتميز${hasSemesterColumn ? " - " + semesterLabel : ""}\n\n`;
   subjects.forEach(s => {
     const subjectClean = s.subj.replace(/[^\u0600-\u06FF\sa-zA-Z]/g, "").trim() || s.subj;
     text += `${subjectClean}: ${s.avg === null ? "لا توجد نتيجة بعد" : Math.round(s.avg * 10) / 10}\n`;
