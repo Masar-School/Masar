@@ -165,7 +165,7 @@
 <div id="app"></div>
 
 <script>
-const API_URL = "https://script.google.com/macros/s/AKfycbxNglMD_OyJZ7WBobsl-lWWJMc2Yzcp1gCkoCmSkepMAyJaxBMbIKjq1vmSUKIH5mNORA/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbwJOMPtTnIZVIZ8yWV_Lv5OH83NtPGwyUykwSrU55F74H4MM9yySiy6cO0Q21I_eQAACQ/exec";
 
 const SUBJECTS = ["لغة عربية", "لغة إنجليزية", "رياضيات", "علوم", "تربية إسلامية", "دراسات اجتماعية", "حاسب آلي", "تربية فنية", "تربية بدنية", "عام"];
 const EXAM_TYPES = ["المذاكرة الأولى", "المذاكرة الثانية", "الامتحان النهائي للفصل"];
@@ -178,7 +178,7 @@ let adminTab = "students";     // التبويب الفرعي المفتوح
 let studentSearch = "";
 let addStudentMsg = "";
 
-let teacherTab = "roster";
+let teacherTab = "dashboard";
 let attendanceDate = null;
 let attendanceDraft = {};
 let attendanceMsg = "";
@@ -203,6 +203,43 @@ let holCalMonth = new Date().getMonth();
 let addHolidayMsg = "";
 
 let clockIntervalStarted = false;
+
+// حساب عمر الطالب من تاريخ الميلاد — يرجع نص جاهز للعرض أو "" إذا كان التاريخ فارغاً
+function calcAgeLabel(birthDateStr) {
+  const raw = String(birthDateStr || "").trim();
+  if (!raw) return "";
+  const bd = new Date(raw + (raw.length === 10 ? "T00:00:00" : ""));
+  if (isNaN(bd.getTime())) return "";
+  const today = new Date(staffSession && staffSession.todayDate ? staffSession.todayDate + "T00:00:00" : Date.now());
+  let years = today.getFullYear() - bd.getFullYear();
+  const m = today.getMonth() - bd.getMonth();
+  if (m < 0 || (m === 0 && today.getDate() < bd.getDate())) years--;
+  if (years < 0 || years > 100) return "";
+  return years + " سنة";
+}
+
+// يبني "الاسم (العمر)" جاهزاً للعرض، أو الاسم فقط إذا لم يكن هناك تاريخ ميلاد
+function nameWithAge(name, birthDateStr) {
+  const age = calcAgeLabel(birthDateStr);
+  return age ? `${name} (${age})` : name;
+}
+
+// نفس الفكرة، لكن اعتماداً على رقم الطالب فقط (لسجلات لا تحمل تاريخ الميلاد مباشرة
+// مثل صفوف العلامات والسلوك — نبحث عن الطالب بقوائم الجلسة المتوفرة)
+function findStudentById(sid) {
+  const pools = [staffSession.students, staffSession.allStudents, staffSession.roster];
+  for (const pool of pools) {
+    if (pool) {
+      const found = pool.find(s => String(s.Student_ID) === String(sid));
+      if (found) return found;
+    }
+  }
+  return null;
+}
+function nameWithAgeById(name, sid) {
+  const st = findStudentById(sid);
+  return st ? nameWithAge(name, st.Birth_Date) : name;
+}
 
 // ---------------------------------------------------------------------------
 // الوضع الليلي/النهاري (مفتاح تخزين مستقل عن تطبيق الأهالي)
@@ -234,27 +271,81 @@ function sectionMatches(scopeSection, studentSection) {
 }
 
 // الصفوف/الشعب التي يحق للمعلم العمل عليها (قد تكون عدة صفوف)
+// خيارات الصف/الشعبة المتاحة للمعلم — كل خيار = شعبة حقيقية واحدة يُختار لها بشكل صريح
+// "كل الشعب" بالتوزيع تعني صلاحية التدريس، لكنها لا تعني حصة واحدة بنفس اليوم لكل الشعب —
+// أستاذ الرياضة مثلاً بيدخل شعبة 1 يوم الأحد وشعبة 2 يوم الاثنين، فلازم يختار شعبة محددة
+// دائماً قبل تسجيل الحضور، حتى ما تختلط بيانات يوم بيوم، ولا تنعكس غلط على معلم تاني بنفس الصف.
 function getTeacherClassOptions() {
   const scopes = staffSession.scopes || [];
+  const roster = staffSession.roster || [];
   const pairs = [];
+
   scopes.forEach(sc => {
-    const key = sc.Class_Level + "|" + (sc.Section || "");
-    if (!pairs.some(p => p.key === key)) {
-      pairs.push({ key: key, Class_Level: sc.Class_Level, Section: sc.Section || "" });
+    const isAllSections = !sc.Section || sc.Section === "*";
+
+    if (!isAllSections) {
+      const key = sc.Class_Level + "|" + sc.Section;
+      if (!pairs.some(p => p.key === key)) {
+        pairs.push({ key: key, Class_Level: sc.Class_Level, Section: sc.Section });
+      }
+      return;
+    }
+
+    // فكّك "كل الشعب" إلى الشعب الحقيقية الموجودة فعلاً بهذا الصف (من قائمة الطلاب)
+    const realSections = [];
+    roster.forEach(s => {
+      if (String(s.Class_Level || "").trim() === sc.Class_Level) {
+        const sec = String(s.Section || "").trim();
+        if (sec && realSections.indexOf(sec) === -1) realSections.push(sec);
+      }
+    });
+
+    if (realSections.length === 0) {
+      // لا يوجد طلاب مسجّلون لهذا الصف بعد — أبقِ خياراً مؤقتاً عاماً
+      const key = sc.Class_Level + "|";
+      if (!pairs.some(p => p.key === key)) pairs.push({ key: key, Class_Level: sc.Class_Level, Section: "" });
+    } else {
+      realSections.sort().forEach(sec => {
+        const key = sc.Class_Level + "|" + sec;
+        if (!pairs.some(p => p.key === key)) pairs.push({ key: key, Class_Level: sc.Class_Level, Section: sec });
+      });
     }
   });
+
   return pairs;
 }
 
 // المواد التي يحق للمعلم إدخالها في الصف/الشعبة المختارة
+// "عام" و"*" لهما نفس المعنى: هذا المعلم يدرّس كل المواد لهذا الصف (مربي صف/معلم عام)
+// الصف/الشعبة/المادة الفعلية لأي معلم = من "توزيع المواد" حصراً (مصدر الحقيقة الوحيد بعد الإنشاء)
+function describeTeacherScope(username) {
+  const rows = (staffSession.teacherAssignments || []).filter(r =>
+    String(r.Username).trim().toLowerCase() === String(username).trim().toLowerCase() &&
+    String(r.Status || "Active").trim() !== "Inactive"
+  );
+  if (rows.length === 0) return "⚠️ بدون توزيع مواد بعد";
+  return rows.map(r => {
+    const sec = String(r.Section || "").trim() === "" ? "كل الشعب" : "شعبة " + r.Section;
+    const subj = (r.Subject === "*" || r.Subject === "عام") ? "كل المواد" : r.Subject;
+    return `${r.Class_Level} (${sec}) - ${subj}`;
+  }).join(" · ");
+}
+
+
 function getAllowedSubjects() {
   if (isAdmin()) return SUBJECTS;
   const scopes = staffSession.scopes || [];
+  const options = getTeacherClassOptions();
+  // معلم بصف واحد فقط: لا حاجة لمطابقة ctxClass (قد تكون فاضية دائماً لأنه لا يُطلب منه الاختيار)
+  const singleScope = options.length <= 1;
   const out = [];
   scopes.forEach(sc => {
-    if (sc.Class_Level === ctxClass && sectionMatches(sc.Section, ctxSection)) {
-      if (sc.Subject === "*") { SUBJECTS.forEach(x => { if (out.indexOf(x) === -1) out.push(x); }); }
-      else if (out.indexOf(sc.Subject) === -1) out.push(sc.Subject);
+    const matches = singleScope || (sc.Class_Level === ctxClass && sectionMatches(sc.Section, ctxSection));
+    if (!matches) return;
+    if (sc.Subject === "*" || sc.Subject === "عام") {
+      SUBJECTS.forEach(x => { if (x !== "عام" && out.indexOf(x) === -1) out.push(x); });
+    } else if (out.indexOf(sc.Subject) === -1) {
+      out.push(sc.Subject);
     }
   });
   return out;
@@ -296,7 +387,7 @@ function renderAdminContextPicker() {
   if (isAdmin()) {
     const classes = CLASS_LEVELS_LIST.map(c =>
       `<option value="${c}" ${c === ctxClass ? "selected" : ""}>${c}</option>`).join("");
-    const sections = ["", "1", "2", "3"].map(sec =>
+    const sections = ["", "1", "2", "3", "4", "5", "6", "7", "8"].map(sec =>
       `<option value="${sec}" ${sec === ctxSection ? "selected" : ""}>${sec === "" ? "كل الشعب" : "شعبة " + sec}</option>`).join("");
     return `
       <div class="form-card" style="background:var(--tint-card);">
@@ -431,7 +522,7 @@ async function tryStaffAutoLogin() {
     if (!data.ok) { clearStaffCreds(); renderLogin(); return; }
     data._password = saved.password;
     staffSession = data;
-    teacherTab = "roster";
+    teacherTab = "dashboard";
     adminGroup = data.role === "Admin" ? "dashboard" : "roster";
     adminTab = data.role === "Admin" ? "dashboard" : "students";
     renderDashboard();
@@ -463,6 +554,7 @@ function renderLogin(errorMsg) {
       </div>
       ${errorMsg ? `<div class="error">${errorMsg}</div>` : ""}
       <button type="submit" class="btn-main" id="loginBtn">تسجيل الدخول</button>
+      ${forgotPasswordUrl() ? `<a href="${forgotPasswordUrl()}" target="_blank" style="display:block;text-align:center;margin-top:14px;font-size:13px;color:var(--muted2);">نسيت كلمة السر؟ راسل الإدارة على واتساب</a>` : ""}
     </form>
   `;
 
@@ -482,7 +574,7 @@ function renderLogin(errorMsg) {
       if (remember) saveStaffCreds(username, password); else clearStaffCreds();
       data._password = password;
       staffSession = data;
-      teacherTab = "roster";
+      teacherTab = "dashboard";
       adminGroup = data.role === "Admin" ? "dashboard" : "roster";
       adminTab = data.role === "Admin" ? "dashboard" : "students";
       renderDashboard();
@@ -615,7 +707,7 @@ function renderAdminGradesTab() {
         html += `
           <div class="search-result-item" onclick="adminGradeSelectedStudentId='${s.Student_ID}';renderDashboard();">
             <div class="student-info">
-              <div class="name">${s.Student_Name}</div>
+              <div class="name">${nameWithAge(s.Student_Name, s.Birth_Date)}</div>
               <div class="meta">${s.Class_Level || ""} ${s.Section ? "- شعبة " + s.Section : ""}</div>
             </div>
             <span>◀</span>
@@ -633,7 +725,7 @@ function renderAdminGradesTab() {
   let detailsHtml = `
     <div class="selected-student-bar">
       <div>
-        <div class="name">${student.Student_Name}</div>
+        <div class="name">${nameWithAge(student.Student_Name, student.Birth_Date)}</div>
         <div class="meta">${student.Class_Level || ""} ${student.Section ? "- شعبة " + student.Section : ""}</div>
       </div>
       <button class="change-btn" onclick="adminGradeSelectedStudentId='';adminGradeSearchTerm='';renderDashboard();">تغيير الطالب</button>
@@ -699,24 +791,10 @@ function renderAdminGradesTab() {
 
 let addParentMsg = "";
 let editingStudentId = null;
+let editingParentId = null;
+let parentSearch = "";
 
-function renderAdminStudentsTab() {
-  let students = staffSession.students || [];
-  const searchBox = `
-    <div class="search-field-admin">
-      <input id="studentSearchInput" placeholder="ابحث باسم الطالب..." value="${studentSearch}" oninput="studentSearch=this.value;renderDashboard();" />
-      <span>🔎</span>
-    </div>
-  `;
-  if (studentSearch.trim() !== "") {
-    const term = studentSearch.trim();
-    students = students.filter(s => String(s.Student_Name || "").includes(term));
-  }
-
-  const parentOptions = (staffSession.parents || [])
-    .map(p => `<option value="${p.Parent_ID}">${p.Parent_ID} - ${p.Parent_Name}</option>`)
-    .join("");
-
+function renderAdminParentsTab() {
   const addParentCard = `
     <div class="form-card">
       <div class="section-title">👪 إضافة ولي أمر جديد</div>
@@ -739,6 +817,26 @@ function renderAdminStudentsTab() {
     </div>
   `;
 
+  return addParentCard + renderParentsListSection();
+}
+
+function renderAdminStudentsTab() {
+  let students = staffSession.students || [];
+  const searchBox = `
+    <div class="search-field-admin">
+      <input id="studentSearchInput" placeholder="ابحث باسم الطالب..." value="${studentSearch}" oninput="studentSearch=this.value;renderDashboard();" />
+      <span>🔎</span>
+    </div>
+  `;
+  if (studentSearch.trim() !== "") {
+    const term = studentSearch.trim();
+    students = students.filter(s => String(s.Student_Name || "").includes(term));
+  }
+
+  const parentOptions = (staffSession.parents || [])
+    .map(p => `<option value="${p.Parent_ID}">${p.Parent_ID} - ${p.Parent_Name}</option>`)
+    .join("");
+
   const formCard = `
     <div class="form-card">
       <div class="section-title">➕ إضافة طالب جديد</div>
@@ -749,11 +847,16 @@ function renderAdminStudentsTab() {
         </div>
         <div class="form-field">
           <label>الصف</label>
-          <input id="newStudentClass" placeholder="مثال: الصف الأول" required />
+          <select id="newStudentClass" required>
+            <option value="">اختر الصف</option>
+            ${CLASS_LEVELS_LIST.map(c => `<option value="${c}">${c}</option>`).join("")}
+          </select>
         </div>
         <div class="form-field">
           <label>الشعبة</label>
-          <input id="newStudentSection" placeholder="مثال: 1" value="1" />
+          <select id="newStudentSection">
+            ${Array.from({length:8},(_,i)=>i+1).map(n => `<option value="${n}">شعبة ${n}</option>`).join("")}
+          </select>
         </div>
         <div class="form-field">
           <label>ولي الأمر</label>
@@ -765,6 +868,10 @@ function renderAdminStudentsTab() {
         <div class="form-field">
           <label>الرسوم السنوية (اختياري)</label>
           <input id="newStudentFee" type="number" />
+        </div>
+        <div class="form-field">
+          <label>تاريخ الميلاد (اختياري)</label>
+          <input id="newStudentBirthDate" type="date" />
         </div>
         <div class="form-field">
           <label>مشرف الباص (اختياري)</label>
@@ -793,8 +900,8 @@ function renderAdminStudentsTab() {
         listHtml += `
           <div class="student-row">
             <div class="student-info">
-              <div class="name">${s.Student_Name}</div>
-              <div class="meta">${s.Student_ID} · ${s.Class_Level || ""} ${s.Section ? "- شعبة " + s.Section : ""}</div>
+              <div class="name">${nameWithAge(s.Student_Name, s.Birth_Date)}</div>
+              <div class="meta">${s.Class_Level || ""} ${s.Section ? "- شعبة " + s.Section : ""}</div>
             </div>
             <div style="display:flex;gap:6px;">
               <button class="status-pill" style="background:var(--edit-bg);color:var(--edit-text);" onclick="editingStudentId='${s.Student_ID}';renderDashboard();">تعديل</button>
@@ -808,21 +915,169 @@ function renderAdminStudentsTab() {
     });
   }
 
-  return addParentCard + formCard + searchBox + listHtml;
+  return formCard + searchBox + listHtml;
+}
+
+// ---------------------------------------------------------------------------
+// قائمة أولياء الأمور — عرض وتعديل بياناتهم وكلمات سرّهم (المدير فقط)
+// ---------------------------------------------------------------------------
+
+function renderParentsListSection() {
+  let parents = (staffSession.parents || []).slice();
+  const searchBox = `
+    <div class="search-field-admin">
+      <input id="parentSearchInput" placeholder="ابحث باسم أو هاتف ولي الأمر..." value="${parentSearch}" oninput="parentSearch=this.value;renderDashboard();" />
+      <span>🔎</span>
+    </div>
+  `;
+  if (parentSearch.trim() !== "") {
+    const term = parentSearch.trim();
+    parents = parents.filter(p =>
+      String(p.Parent_Name || "").includes(term) ||
+      String(p.Phone || "").includes(term) ||
+      String(p.Parent_ID || "").includes(term)
+    );
+  }
+
+  let listHtml = `<div class="section-title">👪 أولياء الأمور (${parents.length})</div>`;
+  if (parents.length === 0) {
+    listHtml += `<div class="empty-box">لا يوجد أولياء أمور مطابقين</div>`;
+  } else {
+    parents.forEach(p => {
+      const isParentActive = String(p.Status || "Active").trim() !== "Inactive";
+      if (editingParentId === p.Parent_ID) {
+        listHtml += renderEditParentForm(p);
+      } else {
+        listHtml += `
+          <div class="student-row">
+            <div class="student-info">
+              <div class="name">${p.Parent_Name}</div>
+              <div class="meta">📞 ${p.Phone || "بدون هاتف"} &nbsp;·&nbsp; 🔑 ${p.PIN_Code || "—"}</div>
+            </div>
+            <div style="display:flex;gap:6px;">
+              <button class="status-pill" style="background:var(--edit-bg);color:var(--edit-text);" onclick="editingParentId='${p.Parent_ID}';renderDashboard();">تعديل</button>
+              <button class="status-pill ${isParentActive ? "status-active" : "status-inactive"}" onclick="toggleParentStatus('${p.Parent_ID}','${isParentActive ? "Inactive" : "Active"}')">
+                ${isParentActive ? "نشط" : "متوقف"}
+              </button>
+            </div>
+          </div>
+        `;
+      }
+    });
+  }
+
+  return `<div class="form-card" style="background:var(--tint-card);">` + searchBox + listHtml + `</div>`;
+}
+
+function renderEditParentForm(p) {
+  return `
+    <div class="form-card">
+      <div class="section-title">تعديل بيانات: ${p.Parent_Name}</div>
+      <form id="editParentForm" data-pid="${p.Parent_ID}">
+        <div class="form-field"><label>اسم ولي الأمر</label><input id="epName" value="${p.Parent_Name || ""}" required /></div>
+        <div class="form-field"><label>رقم الهاتف</label><input id="epPhone" value="${p.Phone || ""}" required /></div>
+        <div class="form-field"><label>كلمة السر (PIN)</label><input id="epPin" value="${p.PIN_Code || ""}" required /></div>
+        <button type="submit" class="btn-save" id="editParentBtn">حفظ التعديلات</button>
+        <button type="button" class="status-pill" style="width:100%;margin-top:8px;background:var(--pill-bg);color:var(--muted2);" onclick="editingParentId=null;renderDashboard();">إلغاء</button>
+        <div id="editParentMsg"></div>
+      </form>
+    </div>
+  `;
+}
+
+async function toggleParentStatus(parentId, newStatus) {
+  const payload = {
+    action: "setParentStatus",
+    adminUsername: staffSession.username,
+    adminPassword: staffSession._password,
+    Parent_ID: parentId,
+    Status: newStatus
+  };
+  try {
+    const res = await fetch(API_URL, { method: "POST", body: JSON.stringify(payload) });
+    const data = await res.json();
+    if (data.ok) {
+      const p = (staffSession.parents || []).find(x => x.Parent_ID === parentId);
+      if (p) p.Status = newStatus;
+      renderDashboard();
+    } else {
+      alert(data.error || "حدث خطأ");
+    }
+  } catch (err) {
+    alert("تعذر الاتصال بالخادم");
+  }
+}
+
+async function submitEditParent(e) {
+  e.preventDefault();
+  const pid = e.target.getAttribute("data-pid");
+  const newName = document.getElementById("epName").value.trim();
+  const newPhone = document.getElementById("epPhone").value.trim();
+
+  const dups = findNameDuplicates(staffSession.parents, "Parent_Name", newName).filter(d => d.Parent_ID !== pid);
+  if (!confirmDuplicateName(dups, d => `${d.Parent_Name} — ${d.Parent_ID}`, "ولي أمر")) return;
+
+  const btn = document.getElementById("editParentBtn");
+  btn.disabled = true;
+  btn.textContent = "جارِ الحفظ...";
+
+  const payload = {
+    action: "updateParent",
+    adminUsername: staffSession.username,
+    adminPassword: staffSession._password,
+    Parent_ID: pid,
+    Parent_Name: newName,
+    Phone: newPhone,
+    PIN_Code: document.getElementById("epPin").value.trim()
+  };
+
+  try {
+    const res = await fetch(API_URL, { method: "POST", body: JSON.stringify(payload) });
+    const data = await res.json();
+    if (data.ok) {
+      const p = (staffSession.parents || []).find(x => x.Parent_ID === pid);
+      if (p) Object.assign(p, { Parent_Name: payload.Parent_Name, Phone: payload.Phone, PIN_Code: payload.PIN_Code });
+      // مزامنة اسم الوالد بالنسخة المحلية من سجلات الطلاب أيضاً
+      (staffSession.students || []).forEach(s => { if (s.Parent_ID === pid) s.Parent_Name = payload.Parent_Name; });
+      editingParentId = null;
+      renderDashboard();
+    } else {
+      document.getElementById("editParentMsg").innerHTML = `<div class="form-msg err">${data.error}</div>`;
+    }
+  } catch (err) {
+    document.getElementById("editParentMsg").innerHTML = `<div class="form-msg err">تعذر الاتصال بالخادم</div>`;
+  }
 }
 
 function renderEditStudentForm(s) {
   const supOptions = (staffSession.supervisors || [])
     .map(sup => `<option value="${sup.Supervisor_ID}|${sup.Supervisor_Name}" ${String(s.Supervisor_ID) === sup.Supervisor_ID ? "selected" : ""}>${sup.Supervisor_Name}</option>`)
     .join("");
+  const parentOptionsEdit = (staffSession.parents || [])
+    .map(p => `<option value="${p.Parent_ID}" ${String(s.Parent_ID) === p.Parent_ID ? "selected" : ""}>${p.Parent_ID} - ${p.Parent_Name}</option>`)
+    .join("");
+  const classOptionsEdit = CLASS_LEVELS_LIST
+    .map(c => `<option value="${c}" ${String(s.Class_Level || "").trim() === c ? "selected" : ""}>${c}</option>`)
+    .join("");
   return `
     <div class="form-card">
-      <div class="section-title">تعديل بيانات: ${s.Student_Name}</div>
+      <div class="section-title">تعديل بيانات: ${nameWithAge(s.Student_Name, s.Birth_Date)}</div>
       <form id="editStudentForm" data-sid="${s.Student_ID}">
         <div class="form-field"><label>اسم الطالب</label><input id="editName" value="${s.Student_Name || ""}" required /></div>
-        <div class="form-field"><label>الصف</label><input id="editClass" value="${s.Class_Level || ""}" required /></div>
-        <div class="form-field"><label>الشعبة</label><input id="editSection" value="${s.Section || ""}" /></div>
+        <div class="form-field"><label>الصف</label><select id="editClass" required>${classOptionsEdit}</select></div>
+        <div class="form-field">
+          <label>الشعبة</label>
+          <select id="editSection">
+            ${Array.from({length:8},(_,i)=>i+1).map(n => `<option value="${n}" ${String(s.Section || "").trim() === String(n) ? "selected" : ""}>شعبة ${n}</option>`).join("")}
+          </select>
+        </div>
+        <div class="form-field">
+          <label>ولي الأمر</label>
+          <select id="editParent" required>${parentOptionsEdit}</select>
+          <div style="font-size:11px;color:var(--muted);margin-top:5px;">غيّر هذا الحقل فقط إذا كان الوالد المسجّل خطأً</div>
+        </div>
         <div class="form-field"><label>الرسوم السنوية</label><input id="editFee" type="number" value="${String(s.Tuition_Fee || "").replace(/[^0-9.]/g, "")}" /></div>
+        <div class="form-field"><label>تاريخ الميلاد (اختياري)</label><input id="editBirthDate" type="date" value="${s.Birth_Date || ""}" /></div>
         <div class="form-field">
           <label>مشرف الباص</label>
           <select id="editSupervisor">
@@ -907,6 +1162,15 @@ async function submitEditStudent(e) {
   btn.textContent = "جارِ الحفظ...";
 
   const supVal = document.getElementById("editSupervisor").value.split("|");
+  const newParentId = document.getElementById("editParent").value;
+  const parentObj = (staffSession.parents || []).find(p => p.Parent_ID === newParentId);
+
+  const originalStudent = (staffSession.students || []).find(x => x.Student_ID === sid);
+  if (originalStudent && newParentId !== String(originalStudent.Parent_ID || "")) {
+    if (!confirm(`تنبيه: أنت على وشك تغيير ولي أمر هذا الطالب إلى "${parentObj ? parentObj.Parent_Name : newParentId}". هل أنت متأكد؟`)) {
+      return;
+    }
+  }
 
   const payload = {
     action: "updateStudent",
@@ -916,7 +1180,10 @@ async function submitEditStudent(e) {
     Student_Name: newName,
     Class_Level: document.getElementById("editClass").value.trim(),
     Section: document.getElementById("editSection").value.trim(),
+    Parent_ID: newParentId,
+    Parent_Name: parentObj ? parentObj.Parent_Name : "",
     Tuition_Fee: document.getElementById("editFee").value,
+    Birth_Date: document.getElementById("editBirthDate").value,
     Supervisor_ID: supVal[0] || "",
     Supervisor_Name: supVal[1] || ""
   };
@@ -967,6 +1234,7 @@ async function submitAddStudent(e) {
     Section: document.getElementById("newStudentSection").value.trim(),
     Parent_ID: document.getElementById("newStudentParent").value,
     Tuition_Fee: document.getElementById("newStudentFee").value,
+    Birth_Date: document.getElementById("newStudentBirthDate").value,
     Supervisor_ID: supVal[0] || "",
     Supervisor_Name: supVal[1] || ""
   };
@@ -988,6 +1256,7 @@ async function submitAddStudent(e) {
         Parent_ID: payload.Parent_ID,
         Parent_Name: parentObj ? parentObj.Parent_Name : "",
         Tuition_Fee: payload.Tuition_Fee,
+        Birth_Date: payload.Birth_Date,
         Supervisor_ID: payload.Supervisor_ID,
         Supervisor_Name: payload.Supervisor_Name,
         Status: "Active"
@@ -1072,7 +1341,7 @@ function renderAdminPaymentsTab() {
       <div class="summary-row"><span>المتبقي</span><span>$${remaining.toLocaleString()}</span></div>
       <div class="summary-children">
         عدد الأطفال المسجلين: ${children.length}
-        ${children.map(c => `<div>• ${c.Student_Name} — ${c.Class_Level || ""}</div>`).join("")}
+        ${children.map(c => `<div>• ${nameWithAge(c.Student_Name, c.Birth_Date)} — ${c.Class_Level || ""}</div>`).join("")}
       </div>
     </div>
   `;
@@ -1316,8 +1585,8 @@ function renderAdminTeachersTab() {
         <div class="form-field"><label>اسم المعلم</label><input id="newTeacherName" required /></div>
         <div class="form-field"><label>اسم المستخدم</label><input id="newTeacherUsername" required /></div>
         <div class="form-field"><label>كلمة السر</label><input id="newTeacherPassword" required /></div>
-        <div class="form-field"><label>الصف الذي سيدرّسه</label><select id="newTeacherClass">${classOptions}</select></div>
-        <div class="form-field"><label>الشعبة</label><input id="newTeacherSection" placeholder="مثال: 1" value="1" /></div>
+        <div class="form-field"><label>الصف الأساسي (اختياري — يمكن إضافة صفوف/مواد أخرى لاحقاً من "توزيع المواد")</label><select id="newTeacherClass"><option value="">بدون — أضيفه لاحقاً من توزيع المواد</option>${classOptions}</select></div>
+        <div class="form-field"><label>الشعبة</label><select id="newTeacherSection"><option value="">بدون (يدرّس كل الشعب)</option>${Array.from({length:8},(_,i)=>i+1).map(n => `<option value="${n}">شعبة ${n}</option>`).join("")}</select></div>
         <button type="submit" class="btn-save" id="addTeacherBtn">إضافة المعلم</button>
         ${addTeacherMsg}
       </form>
@@ -1326,13 +1595,12 @@ function renderAdminTeachersTab() {
   `;
 
   const teachers = (staffSession.teachers || []).filter(t => String(t.Role || "").trim() !== "Admin");
+
   let listHtml = `<div class="section-title">المعلمون الحاليون (${teachers.length})</div>`;
   teachers.forEach(t => {
     const isActive = String(t.Status || "Active").trim() !== "Inactive";
 
     if (editingTeacherUser === t.Username) {
-      const clsOpts = CLASS_LEVELS_LIST.map(c =>
-        `<option value="${c}" ${String(t.Class_Level || "").trim() === c ? "selected" : ""}>${c}</option>`).join("");
       listHtml += `
         <div class="form-card">
           <div class="section-title">تعديل بيانات: ${t.Name || t.Username}</div>
@@ -1340,8 +1608,7 @@ function renderAdminTeachersTab() {
             <div class="form-field"><label>اسم المعلم</label><input id="editTeacherName" value="${t.Name || ""}" required /></div>
             <div class="form-field"><label>الهاتف</label><input id="editTeacherPhone" value="${t.Phone || ""}" /></div>
             <div class="form-field"><label>كلمة السر (اتركها فارغة لعدم التغيير)</label><input id="editTeacherPassword" placeholder="••••" /></div>
-            <div class="form-field"><label>الصف</label><select id="editTeacherClass">${clsOpts}</select></div>
-            <div class="form-field"><label>الشعبة</label><input id="editTeacherSection" value="${t.Section || ""}" /></div>
+            <div style="font-size:11.5px;color:var(--muted);margin:6px 0 2px;">لتغيير الصف أو الشعبة أو المادة: استخدم تبويب "توزيع المواد" — هذا المكان الوحيد لضمان عدم تضارب البيانات.</div>
             <button type="submit" class="btn-save" id="editTeacherBtn">حفظ التعديلات</button>
             <button type="button" class="status-pill" style="width:100%;margin-top:8px;background:var(--pill-bg);color:var(--muted2);" onclick="editingTeacherUser=null;renderDashboard();">إلغاء</button>
             <div id="editTeacherMsg"></div>
@@ -1353,7 +1620,7 @@ function renderAdminTeachersTab() {
         <div class="student-row">
           <div class="student-info">
             <div class="name">${t.Name || t.Username}</div>
-            <div class="meta">${t.Username} · ${t.Class_Level || ""} ${t.Section ? "- شعبة " + t.Section : ""}</div>
+            <div class="meta">${t.Username} · ${describeTeacherScope(t.Username)}</div>
           </div>
           <div style="display:flex;gap:6px;">
             <button class="status-pill" style="background:var(--edit-bg);color:var(--edit-text);" onclick="editingTeacherUser='${t.Username}';renderDashboard();">تعديل</button>
@@ -1388,7 +1655,7 @@ async function submitAddTeacher(e) {
   const dups = findNameDuplicates(staffSession.teachers, "Name", tName);
   if (!confirmDuplicateName(
         dups,
-        d => `${d.Name} — ${d.Username} · ${d.Class_Level || ""}${d.Section ? " شعبة " + d.Section : ""}`,
+        d => `${d.Name} — ${d.Username} · ${describeTeacherScope(d.Username)}`,
         "معلم")) {
     renderDashboard();
     return;
@@ -1433,7 +1700,7 @@ async function submitEditTeacher(e) {
     .filter(d => d.Username !== username);
   if (!confirmDuplicateName(
         dups,
-        d => `${d.Name} — ${d.Username} · ${d.Class_Level || ""}${d.Section ? " شعبة " + d.Section : ""}`,
+        d => `${d.Name} — ${d.Username} · ${describeTeacherScope(d.Username)}`,
         "معلم")) {
     return;
   }
@@ -1449,9 +1716,7 @@ async function submitEditTeacher(e) {
     adminPassword: staffSession._password,
     Username: username,
     Name: newName,
-    Phone: document.getElementById("editTeacherPhone").value.trim(),
-    Class_Level: document.getElementById("editTeacherClass").value,
-    Section: document.getElementById("editTeacherSection").value.trim()
+    Phone: document.getElementById("editTeacherPhone").value.trim()
   };
   if (newPass !== "") payload.Password = newPass;
 
@@ -1460,10 +1725,7 @@ async function submitEditTeacher(e) {
     const data = await res.json();
     if (data.ok) {
       const t = staffSession.teachers.find(x => x.Username === username);
-      if (t) {
-        t.Name = payload.Name; t.Phone = payload.Phone;
-        t.Class_Level = payload.Class_Level; t.Section = payload.Section;
-      }
+      if (t) { t.Name = payload.Name; t.Phone = payload.Phone; }
       editingTeacherUser = null;
     } else {
       document.getElementById("editTeacherMsg").innerHTML = `<div class="form-msg err">${data.error}</div>`;
@@ -1756,7 +2018,7 @@ function renderAttendanceSearchTab() {
         html += `
           <div class="search-result-item" onclick="attSelectedStudentId='${s.Student_ID}';attCalYear=new Date().getFullYear();attCalMonth=new Date().getMonth();renderDashboard();">
             <div class="student-info">
-              <div class="name">${s.Student_Name}</div>
+              <div class="name">${nameWithAge(s.Student_Name, s.Birth_Date)}</div>
               <div class="meta">${s.Class_Level || ""} ${s.Section ? "- شعبة " + s.Section : ""}</div>
             </div>
             <span>◀</span>
@@ -1806,7 +2068,7 @@ function renderAttendanceSearchTab() {
   return `
     <div class="selected-student-bar">
       <div>
-        <div class="name">${student.Student_Name}</div>
+        <div class="name">${nameWithAge(student.Student_Name, student.Birth_Date)}</div>
         <div class="meta">${student.Class_Level || ""} ${student.Section ? "- شعبة " + student.Section : ""}</div>
       </div>
       <button class="change-btn" onclick="attSelectedStudentId='';attSearchTerm='';renderDashboard();">تغيير الطالب</button>
@@ -1964,6 +2226,149 @@ async function deleteHoliday(holidayId, date) {
 // لوحة المعلم - طلابي 
 // ---------------------------------------------------------------------------
 
+function renderTeacherDashboardTab() {
+  const roster = staffSession.roster || [];
+  const scopes = staffSession.scopes || [];
+  const myUsername = staffSession.username;
+
+  // الصفوف/الشعب المسندة لهذا المعلم (بدون تكرار)
+  const classSectionPairs = [];
+  scopes.forEach(sc => {
+    const label = sc.Class_Level + (sc.Section && sc.Section !== "*" ? " - شعبة " + sc.Section : " (كل الشعب)");
+    if (classSectionPairs.indexOf(label) === -1) classSectionPairs.push(label);
+  });
+
+  // المواد التي يدرّسها فعلياً (باستثناء "*" الخاصة بمربي الصف)
+  const subjects = [];
+  scopes.forEach(sc => { if (sc.Subject && sc.Subject !== "*" && sc.Subject !== "عام" && subjects.indexOf(sc.Subject) === -1) subjects.push(sc.Subject); });
+  const isGeneral = scopes.some(sc => sc.Subject === "*" || sc.Subject === "عام");
+
+  // إحصاءات "بواسطتي أنا" — تفرّق مساهمتي عن باقي المعلمين المشاركين بنفس الصف
+  const myGrades = (staffSession.grades || []).filter(g => String(g.Teacher_User || "").trim() === myUsername);
+  const myNotes = (staffSession.behaviorNotes || []).filter(n => String(n.Teacher_User || "").trim() === myUsername);
+  const myAssignments = (staffSession.assignments || []).filter(h => String(h.Teacher_User || "").trim() === myUsername);
+
+  // هل سجّلت حضور اليوم لطلابي؟
+  const todayAtt = (staffSession.attendance || []).filter(a => String(a.Date).trim() === staffSession.todayDate);
+  const iRecordedToday = todayAtt.some(a => String(a.Teacher_User || "").trim() === myUsername);
+  const anyoneRecordedToday = todayAtt.length > 0;
+
+  // نسبة حضور طلابي (كل السجلات المتوفرة)
+  const allMyAtt = staffSession.attendance || [];
+  const presentCount = allMyAtt.filter(a => String(a.Status).trim() === "حاضر").length;
+  const attendancePct = allMyAtt.length > 0 ? (presentCount / allMyAtt.length) * 100 : null;
+
+  // طلاب بحاجة لمتابعة: غياب مرتين أو أكثر خلال آخر 7 أيام
+  const cutoff = new Date(staffSession.todayDate + "T00:00:00");
+  cutoff.setDate(cutoff.getDate() - 7);
+  const cutoffStr = `${cutoff.getFullYear()}-${String(cutoff.getMonth()+1).padStart(2,"0")}-${String(cutoff.getDate()).padStart(2,"0")}`;
+  const absenceCounts = {};
+  allMyAtt.forEach(a => {
+    if (String(a.Status).trim() === "غائب" && String(a.Date).trim() >= cutoffStr) {
+      const sid = String(a.Student_ID).trim();
+      absenceCounts[sid] = (absenceCounts[sid] || 0) + 1;
+    }
+  });
+  const flagged = Object.keys(absenceCounts)
+    .filter(sid => absenceCounts[sid] >= 2)
+    .map(sid => {
+      const st = roster.find(r => String(r.Student_ID) === sid);
+      return { name: st ? st.Student_Name : sid, count: absenceCounts[sid] };
+    })
+    .sort((a, b) => b.count - a.count);
+
+  // أقرب امتحان قادم يخصّني
+  const upcomingExams = (staffSession.exams || [])
+    .filter(ex => String(ex.Exam_Date || "").trim() >= staffSession.todayDate)
+    .sort((a, b) => String(a.Exam_Date).localeCompare(String(b.Exam_Date)));
+  const nextExam = upcomingExams[0];
+
+  // آخر إعلان
+  const latestAnn = (staffSession.announcements || []).slice(-1)[0];
+
+  // ---------------- البناء ----------------
+
+  const statCards = `
+    <div class="stat-grid">
+      <div class="stat-card"><div class="stat-icon">🎓</div><div class="stat-number">${roster.length}</div><div class="stat-label">طالب لديّ</div></div>
+      <div class="stat-card"><div class="stat-icon">🏫</div><div class="stat-number">${classSectionPairs.length}</div><div class="stat-label">صف/شعبة أُدرّسها</div></div>
+      <div class="stat-card"><div class="stat-icon">📚</div><div class="stat-number">${isGeneral ? "الكل" : subjects.length}</div><div class="stat-label">${isGeneral ? "كل المواد لطلاب الصف" : "مادة أدرّسها"}</div></div>
+      <div class="stat-card"><div class="stat-icon">📝</div><div class="stat-number">${myGrades.length}</div><div class="stat-label">علامة أدخلتها</div></div>
+      <div class="stat-card"><div class="stat-icon">✍️</div><div class="stat-number">${myNotes.length}</div><div class="stat-label">ملاحظة سلوك أضفتها</div></div>
+      <div class="stat-card"><div class="stat-icon">📋</div><div class="stat-number">${myAssignments.length}</div><div class="stat-label">واجب أضفته</div></div>
+    </div>
+  `;
+
+  const attendanceAlert = `
+    <div class="form-card" style="background:${iRecordedToday ? "var(--tint-card)" : "#FBEDE9"};">
+      <div class="section-title" style="margin:0;">
+        ${iRecordedToday ? "✅ سجّلت حضور اليوم" : (anyoneRecordedToday ? "ℹ️ حضور اليوم مسجّل من معلم آخر" : "⚠️ لم يُسجَّل حضور اليوم بعد")}
+      </div>
+    </div>
+  `;
+
+  let donuts = "";
+  if (attendancePct !== null) {
+    donuts = `
+      <div class="donut-row">
+        <div class="donut-box">
+          ${buildDonutSVG(attendancePct, "#2E7D5B", "#E1F5EE", Math.round(attendancePct) + "%", "معدّل حضور طلابي")}
+          <div class="donut-caption">نسبة الحضور الإجمالية</div>
+        </div>
+      </div>
+    `;
+  }
+
+  let attentionCard = "";
+  if (flagged.length > 0) {
+    attentionCard = `
+      <div class="form-card">
+        <div class="section-title">🔔 طلاب بحاجة لمتابعة (غياب متكرر خلال 7 أيام)</div>
+        ${flagged.map(f => `
+          <div class="student-row">
+            <div class="student-info"><div class="name">${f.name}</div></div>
+            <span class="badge-role">${f.count} أيام غياب</span>
+          </div>
+        `).join("")}
+      </div>
+    `;
+  }
+
+  let examCard = "";
+  if (nextExam) {
+    examCard = `
+      <div class="form-card">
+        <div class="section-title">📅 أقرب امتحان</div>
+        <div class="student-row">
+          <div class="student-info">
+            <div class="name">${nextExam.Subject || ""} — ${nextExam.Exam_Type || ""}</div>
+            <div class="meta">${nextExam.Class_Level || ""} · ${nextExam.Exam_Date}</div>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  let annCard = "";
+  if (latestAnn) {
+    annCard = `
+      <div class="form-card">
+        <div class="section-title">📢 آخر إعلان</div>
+        <div class="student-row" style="flex-direction:column;align-items:stretch;">
+          <div class="student-info">
+            <div class="name">${latestAnn.Title || ""}</div>
+            <div class="meta">${latestAnn.Date || ""}</div>
+            <div style="font-size:12.5px;color:var(--text);margin-top:6px;">${latestAnn.Body || ""}</div>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  return statCards + attendanceAlert + donuts + attentionCard + examCard + annCard;
+}
+
+
 function renderTeacherRosterTab() {
   const roster = getActiveRoster();
   let html = renderAdminContextPicker();
@@ -1975,7 +2380,7 @@ function renderTeacherRosterTab() {
     roster.forEach(s => {
       html += `
         <div class="roster-item">
-          <span class="roster-name">${s.Student_Name}</span>
+          <span class="roster-name">${nameWithAge(s.Student_Name, s.Birth_Date)}</span>
           <span class="roster-id">🚌 ${s.Supervisor_Name || "—"}</span>
         </div>
       `;
@@ -2012,7 +2417,7 @@ function renderTeacherAttendanceTab() {
     const current = attendanceDraft[s.Student_ID] || "حاضر";
     rows += `
       <div class="attendance-row">
-        <span class="roster-name">${s.Student_Name}</span>
+        <span class="roster-name">${nameWithAge(s.Student_Name, s.Birth_Date)}</span>
         <div class="attendance-toggle">
           <button type="button" class="att-btn ${current === "حاضر" ? "att-present" : ""}" onclick="setAttendanceDraft('${s.Student_ID}','حاضر')">حاضر</button>
           <button type="button" class="att-btn ${current === "غائب" ? "att-absent" : ""}" onclick="setAttendanceDraft('${s.Student_ID}','غائب')">غائب</button>
@@ -2138,7 +2543,7 @@ async function submitAttendance() {
 function renderTeacherBehaviorTab() {
   const roster = getActiveRoster();
   if (needsContextPick()) return renderAdminContextPicker() + `<div class="empty-box">اختر الصف أولاً لإضافة ملاحظة سلوك</div>`;
-  const studentOptions = roster.map(s => `<option value="${s.Student_ID}">${s.Student_Name}</option>`).join("");
+  const studentOptions = roster.map(s => `<option value="${s.Student_ID}">${nameWithAge(s.Student_Name, s.Birth_Date)}</option>`).join("");
 
   const recentNotes = (staffSession.behaviorNotes || [])
     .slice()
@@ -2153,7 +2558,7 @@ function renderTeacherBehaviorTab() {
       listHtml += `
         <div class="student-row">
           <div class="student-info">
-            <div class="name">${n.Student_Name}</div>
+            <div class="name">${nameWithAgeById(n.Student_Name, n.Student_ID)}</div>
             <div class="meta">${n.Date} · ${n.Note_Text}</div>
           </div>
         </div>
@@ -2233,7 +2638,7 @@ async function submitBehaviorNote(e) {
 function renderTeacherGradesTab() {
   const roster = getActiveRoster();
   if (needsContextPick()) return renderAdminContextPicker() + `<div class="empty-box">اختر الصف أولاً لإضافة علامة</div>`;
-  const studentOptions = roster.map(s => `<option value="${s.Student_ID}">${s.Student_Name}</option>`).join("");
+  const studentOptions = roster.map(s => `<option value="${s.Student_ID}">${nameWithAge(s.Student_Name, s.Birth_Date)}</option>`).join("");
   const allowed = getAllowedSubjects();
   const subjectOptions = allowed.map(s => `<option value="${s}">${s}</option>`).join("");
   const examOptions = EXAM_TYPES.map(s => `<option value="${s}">${s}</option>`).join("");
@@ -2248,7 +2653,7 @@ function renderTeacherGradesTab() {
       listHtml += `
         <div class="student-row">
           <div class="student-info">
-            <div class="name">${g.Student_Name}</div>
+            <div class="name">${nameWithAgeById(g.Student_Name, g.Student_ID)}</div>
             <div class="meta">${g.Subject} · ${g.Exam_Type} · ${g.Semester}</div>
           </div>
           <span class="badge-role">${g.Score}</span>
@@ -2382,6 +2787,28 @@ function renderTeacherAssignmentsTab() {
   `;
 }
 
+function renderTeacherAnnouncementsTab() {
+  const anns = (staffSession.announcements || []).slice().reverse();
+  let html = `<div class="section-title">📢 إعلانات المدرسة (${anns.length})</div>`;
+  if (anns.length === 0) {
+    html += `<div class="empty-box">لا توجد إعلانات حالياً</div>`;
+  } else {
+    anns.forEach(a => {
+      html += `
+        <div class="student-row" style="flex-direction:column;align-items:stretch;">
+          <div class="student-info">
+            <div class="name">${a.Title || "بدون عنوان"}</div>
+            <div class="meta">${a.Date || ""}</div>
+            <div style="font-size:12.5px;color:var(--text);margin-top:6px;">${a.Body || ""}</div>
+          </div>
+        </div>
+      `;
+    });
+  }
+  return html;
+}
+
+
 async function submitAssignment(e) {
   e.preventDefault();
   const btn = document.getElementById("assignmentBtn");
@@ -2435,8 +2862,9 @@ async function submitAssignment(e) {
 const ADMIN_GROUPS = [
   { id: "dashboard", label: "🏠 الرئيسية", tabs: [
       { id: "dashboard", label: "نظرة عامة" } ] },
-  { id: "students", label: "الطلاب",   tabs: [
-      { id: "students",         label: "إدارة الطلاب" },
+  { id: "students", label: "أولياء الأمور والطلاب", tabs: [
+      { id: "parents",          label: "أولياء الأمور" },
+      { id: "students",         label: "الطلاب" },
       { id: "roster",           label: "قوائم الصفوف" } ] },
   { id: "money",    label: "المالية",  tabs: [
       { id: "payments",         label: "الدفعات" } ] },
@@ -2454,12 +2882,14 @@ const ADMIN_GROUPS = [
   { id: "school",   label: "المدرسة",  tabs: [
       { id: "announcements",    label: "الإعلانات" },
       { id: "exams",            label: "جداول الامتحانات" },
-      { id: "holidays",         label: "تقويم العطل" } ] },
+      { id: "holidays",         label: "تقويم العطل" },
+      { id: "settings",         label: "⚙️ الإعدادات" } ] },
 ];
 
 const ADMIN_TAB_RENDERERS = {
   dashboard:        () => renderAdminDashboardTab(),
   students:         () => renderAdminStudentsTab(),
+  parents:          () => renderAdminParentsTab(),
   roster:           () => renderTeacherRosterTab(),
   payments:         () => renderAdminPaymentsTab(),
   grades:           () => renderMergedGradesTab(),
@@ -2473,6 +2903,7 @@ const ADMIN_TAB_RENDERERS = {
   announcements:    () => renderAdminAnnouncementsTab(),
   exams:            () => renderAdminExamsTab(),
   holidays:         () => renderAdminHolidaysTab(),
+  settings:         () => renderAdminSettingsTab(),
 };
 
 // اختيار مجموعة يفتح أول تبويب فيها
@@ -2830,15 +3261,19 @@ async function toggleExamStatus(examId, newStatus) {
 
 let addTAMsg = "";
 let taFilterTeacher = "";
+// يحتفظ بآخر قيم مُدخلة بنموذج التوزيع حتى لا ترتد القوائم لأول خيار بعد الحفظ
+let taLastValues = { teacher: "", classLevel: "", section: "", subject: "" };
 
 function renderAdminTeacherAssignmentsTab() {
   const teachers = (staffSession.teachers || []).filter(t =>
     String(t.Role || "").trim() !== "Admin" && String(t.Status || "Active").trim() !== "Inactive"
   );
   const teacherOptions = teachers.map(t =>
-    `<option value="${t.Username}">${t.Name || t.Username} (${t.Username})</option>`).join("");
-  const classOptions = CLASS_LEVELS_LIST.map(c => `<option value="${c}">${c}</option>`).join("");
-  const subjectOptions = SUBJECTS.map(x => `<option value="${x}">${x}</option>`).join("");
+    `<option value="${t.Username}" ${t.Username === taLastValues.teacher ? "selected" : ""}>${t.Name || t.Username} (${t.Username})</option>`).join("");
+  const classOptions = CLASS_LEVELS_LIST.map(c =>
+    `<option value="${c}" ${c === taLastValues.classLevel ? "selected" : ""}>${c}</option>`).join("");
+  const subjectOptions = SUBJECTS.map(x =>
+    `<option value="${x}" ${x === taLastValues.subject ? "selected" : ""}>${x}</option>`).join("");
 
   const addCard = `
     <div class="form-card">
@@ -2849,10 +3284,8 @@ function renderAdminTeacherAssignmentsTab() {
         <div class="form-field">
           <label>الشعبة</label>
           <select id="taSection">
-            <option value="">كل شعب هذا الصف</option>
-            <option value="1">شعبة 1</option>
-            <option value="2">شعبة 2</option>
-            <option value="3">شعبة 3</option>
+            <option value="" ${taLastValues.section === "" ? "selected" : ""}>كل شعب هذا الصف</option>
+            ${Array.from({length:8},(_,i)=>i+1).map(n => `<option value="${n}" ${String(n) === taLastValues.section ? "selected" : ""}>شعبة ${n}</option>`).join("")}
           </select>
         </div>
         <div class="form-field"><label>المادة</label><select id="taSubject" required>${subjectOptions}</select></div>
@@ -2932,6 +3365,9 @@ async function submitAddTeacherAssignment(e) {
     Section: document.getElementById("taSection").value,
     Subject: document.getElementById("taSubject").value
   };
+
+  // احفظ القيم المُختارة حتى تبقى ظاهرة بالنموذج بعد إعادة الرسم (مفيد لإضافة عدة مواد بالتتابع لنفس المعلم/الصف)
+  taLastValues = { teacher: payload.Username, classLevel: payload.Class_Level, section: payload.Section, subject: payload.Subject };
 
   try {
     const res = await fetch(API_URL, { method: "POST", body: JSON.stringify(payload) });
@@ -3118,6 +3554,66 @@ function renderAdminDashboardTab() {
 }
 
 
+let settingsMsg = "";
+
+function getSettingValue(key) {
+  const rows = staffSession.settings || [];
+  const row = rows.find(r => String(r.Key || "").trim() === key);
+  return row ? String(row.Value || "").trim() : "";
+}
+
+function renderAdminSettingsTab() {
+  const whatsapp = getSettingValue("Admin_WhatsApp");
+  return `
+    <div class="form-card">
+      <div class="section-title">⚙️ إعدادات التواصل</div>
+      <form id="settingsForm">
+        <div class="form-field">
+          <label>رقم واتساب الإدارة (لاستقبال طلبات "نسيت كلمة السر")</label>
+          <input id="settingWhatsapp" type="tel" placeholder="مثال: 963912345678 (بدون + أو صفر البداية)" value="${whatsapp}" />
+        </div>
+        <div style="font-size:11.5px;color:var(--muted);margin-bottom:10px;">
+          هذا الرقم يظهر لكل الأهالي والمعلمين بشاشة الدخول عند الضغط على "نسيت كلمة السر". اكتبه بصيغة دولية بدون + أو أصفار زائدة (مثال لسوريا: 9639xxxxxxxx).
+        </div>
+        <button type="submit" class="btn-save" id="saveSettingsBtn">حفظ</button>
+        ${settingsMsg}
+      </form>
+    </div>
+  `;
+}
+
+async function submitSettings(e) {
+  e.preventDefault();
+  const btn = document.getElementById("saveSettingsBtn");
+  btn.disabled = true;
+  btn.textContent = "جارِ الحفظ...";
+
+  const payload = {
+    action: "updateSetting",
+    adminUsername: staffSession.username,
+    adminPassword: staffSession._password,
+    Key: "Admin_WhatsApp",
+    Value: document.getElementById("settingWhatsapp").value.trim()
+  };
+
+  try {
+    const res = await fetch(API_URL, { method: "POST", body: JSON.stringify(payload) });
+    const data = await res.json();
+    if (data.ok) {
+      if (!staffSession.settings) staffSession.settings = [];
+      const row = staffSession.settings.find(r => r.Key === "Admin_WhatsApp");
+      if (row) row.Value = payload.Value; else staffSession.settings.push({ Key: "Admin_WhatsApp", Value: payload.Value });
+      settingsMsg = `<div class="form-msg ok">تم الحفظ ✓</div>`;
+    } else {
+      settingsMsg = `<div class="form-msg err">${data.error}</div>`;
+    }
+  } catch (err) {
+    settingsMsg = `<div class="form-msg err">تعذر الاتصال بالخادم</div>`;
+  }
+  renderDashboard();
+}
+
+
 function renderDashboard() {
   const activeId = document.activeElement ? document.activeElement.id : null;
   const app = document.getElementById("app");
@@ -3138,20 +3634,24 @@ function renderDashboard() {
   } else {
     contentHtml = `
       <div class="admin-tabs" id="teacherTabsBar">
+        <button class="admin-tab-btn ${teacherTab === "dashboard" ? "active" : ""}" onclick="teacherTab='dashboard';renderDashboard();">🏠 الرئيسية</button>
         <button class="admin-tab-btn ${teacherTab === "roster" ? "active" : ""}" onclick="teacherTab='roster';renderDashboard();">طلابي</button>
         <button class="admin-tab-btn ${teacherTab === "attendance" ? "active" : ""}" onclick="teacherTab='attendance';renderDashboard();">تسجيل الحضور</button>
         <button class="admin-tab-btn ${teacherTab === "attendanceSearch" ? "active" : ""}" onclick="teacherTab='attendanceSearch';renderDashboard();">سجل الحضور</button>
         <button class="admin-tab-btn ${teacherTab === "behavior" ? "active" : ""}" onclick="teacherTab='behavior';renderDashboard();">السلوك</button>
         <button class="admin-tab-btn ${teacherTab === "grades" ? "active" : ""}" onclick="teacherTab='grades';renderDashboard();">العلامات</button>
         <button class="admin-tab-btn ${teacherTab === "assignments" ? "active" : ""}" onclick="teacherTab='assignments';renderDashboard();">الواجبات</button>
+        <button class="admin-tab-btn ${teacherTab === "announcements" ? "active" : ""}" onclick="teacherTab='announcements';renderDashboard();">📢 الإعلانات</button>
       </div>
     `;
-    if (teacherTab === "roster") contentHtml += renderTeacherRosterTab();
+    if (teacherTab === "dashboard") contentHtml += renderTeacherDashboardTab();
+    else if (teacherTab === "roster") contentHtml += renderTeacherRosterTab();
     else if (teacherTab === "attendance") contentHtml += renderTeacherAttendanceTab();
     else if (teacherTab === "attendanceSearch") contentHtml += renderAttendanceSearchTab();
     else if (teacherTab === "behavior") contentHtml += renderTeacherBehaviorTab();
     else if (teacherTab === "grades") contentHtml += renderTeacherGradesTab();
     else if (teacherTab === "assignments") contentHtml += renderTeacherAssignmentsTab();
+    else if (teacherTab === "announcements") contentHtml += renderTeacherAnnouncementsTab();
   }
 
   app.innerHTML = `
@@ -3207,6 +3707,8 @@ function renderDashboard() {
     teacherTab = "roster";
     attendanceDraft = {};
     editingStudentId = null;
+    editingParentId = null;
+    parentSearch = "";
     editingTeacherUser = null;
     ctxClass = "";
     ctxSection = "";
@@ -3223,6 +3725,9 @@ function renderDashboard() {
 
   const addParentForm = document.getElementById("addParentForm");
   if (addParentForm) addParentForm.addEventListener("submit", submitAddParent);
+
+  const editParentForm = document.getElementById("editParentForm");
+  if (editParentForm) editParentForm.addEventListener("submit", submitEditParent);
 
   const editStudentForm = document.getElementById("editStudentForm");
   if (editStudentForm) editStudentForm.addEventListener("submit", submitEditStudent);
@@ -3250,6 +3755,9 @@ function renderDashboard() {
 
   const addTAForm = document.getElementById("addTAForm");
   if (addTAForm) addTAForm.addEventListener("submit", submitAddTeacherAssignment);
+
+  const settingsForm = document.getElementById("settingsForm");
+  if (settingsForm) settingsForm.addEventListener("submit", submitSettings);
 
   const addAnnForm = document.getElementById("addAnnForm");
   if (addAnnForm) addAnnForm.addEventListener("submit", submitAddAnnouncement);
@@ -3290,8 +3798,27 @@ function renderDashboard() {
   startLiveClock();
 }
 
-applyStaffDarkModePref();
-tryStaffAutoLogin();
+let staffAdminWhatsapp = "";
+
+async function fetchStaffPublicSettings() {
+  try {
+    const res = await fetch(`${API_URL}?action=getPublicSettings`);
+    const data = await res.json();
+    if (data.ok) staffAdminWhatsapp = data.Admin_WhatsApp || "";
+  } catch (err) { /* تجاهل — الزر سيظهر بدون رقم إن تعذّر الجلب */ }
+}
+
+function forgotPasswordUrl() {
+  if (!staffAdminWhatsapp) return "";
+  const msg = encodeURIComponent("مرحباً، نسيت كلمة سري لتطبيق مسار (بوابة الطاقم). اسم المستخدم: ");
+  return `https://wa.me/${staffAdminWhatsapp}?text=${msg}`;
+}
+
+(async function bootstrapStaffApp() {
+  applyStaffDarkModePref();
+  await fetchStaffPublicSettings();
+  tryStaffAutoLogin();
+})();
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", () => {
     navigator.serviceWorker.register("./sw.js").catch(() => {});

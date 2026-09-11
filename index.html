@@ -165,7 +165,7 @@
 
 <script>
 // تأكد من وضع الرابط الجديد للـ Web App هنا
-const API_URL = "https://script.google.com/macros/s/AKfycbxNglMD_OyJZ7WBobsl-lWWJMc2Yzcp1gCkoCmSkepMAyJaxBMbIKjq1vmSUKIH5mNORA/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbwJOMPtTnIZVIZ8yWV_Lv5OH83NtPGwyUykwSrU55F74H4MM9yySiy6cO0Q21I_eQAACQ/exec";
 
 let session = null;
 let currentChildIndex = 0;
@@ -259,6 +259,7 @@ function renderLogin(errorMsg) {
       </div>
       <div id="loginError">${errorMsg ? `<div class="error">${errorMsg}</div>` : ""}</div>
       <button type="submit" class="btn-main" id="loginBtn">تسجيل الدخول</button>
+      ${forgotPasswordUrlParent() ? `<a href="${forgotPasswordUrlParent()}" target="_blank" style="display:block;text-align:center;margin-top:14px;font-size:13px;color:var(--muted2);">نسيت كلمة السر؟ راسل الإدارة على واتساب</a>` : ""}
     </form>
   `;
 
@@ -386,7 +387,7 @@ function renderResults(child) {
   let html = `
     <button class="print-btn" onclick="printSection('grades', ${currentChildIndex})">🖨 طباعة / حفظ PDF</button>
     <button class="whatsapp-btn" onclick="shareResultsWhatsapp(${currentChildIndex})">📤 مشاركة عبر واتساب</button>
-    <div style="font-size:14px;font-weight:600;color:var(--text);margin-bottom:14px;">${child.Student_Name} - ${child.Class_Level}</div>
+    <div style="font-size:14px;font-weight:600;color:var(--text);margin-bottom:14px;">${childNameWithAge(child.Student_Name, child.Birth_Date)} - ${child.Class_Level}</div>
     <div style="font-size:13.5px;color:var(--muted2);margin-bottom:14px;">${summaryLine}</div>
   `;
 
@@ -450,6 +451,24 @@ function renderAssignments(child) {
 const ARABIC_MONTHS = ["كانون الثاني","شباط","آذار","نيسان","أيار","حزيران","تموز","آب","أيلول","تشرين الأول","تشرين الثاني","كانون الأول"];
 const ARABIC_DOW_FULL = ["الأحد","الاثنين","الثلاثاء","الأربعاء","الخميس","الجمعة","السبت"];
 let clockIntervalStarted = false;
+
+// حساب عمر الطفل من تاريخ الميلاد لعرضه بجانب اسمه
+function calcChildAgeLabel(birthDateStr) {
+  const raw = String(birthDateStr || "").trim();
+  if (!raw) return "";
+  const bd = new Date(raw + (raw.length === 10 ? "T00:00:00" : ""));
+  if (isNaN(bd.getTime())) return "";
+  const today = new Date();
+  let years = today.getFullYear() - bd.getFullYear();
+  const m = today.getMonth() - bd.getMonth();
+  if (m < 0 || (m === 0 && today.getDate() < bd.getDate())) years--;
+  if (years < 0 || years > 100) return "";
+  return years + " سنة";
+}
+function childNameWithAge(name, birthDateStr) {
+  const age = calcChildAgeLabel(birthDateStr);
+  return age ? `${name} (${age})` : name;
+}
 
 function getCurrentDateTimeText() {
   const now = new Date();
@@ -792,7 +811,7 @@ function renderApp() {
   }
 
   const chips = session.children
-    .map((c, i) => `<button class="chip ${i === currentChildIndex ? "active" : ""}" data-idx="${i}">${c.Student_Name}</button>`)
+    .map((c, i) => `<button class="chip ${i === currentChildIndex ? "active" : ""}" data-idx="${i}">${childNameWithAge(c.Student_Name, c.Birth_Date)}</button>`)
     .join("");
 
   const gradesCount = (session.grades || []).filter(g => String(g.Student_ID).trim() === String(child.Student_ID).trim()).length;
@@ -894,8 +913,27 @@ function renderApp() {
   }
 }
 
-applyDarkModePref();
-tryAutoLogin();
+let parentAdminWhatsapp = "";
+
+async function fetchParentPublicSettings() {
+  try {
+    const res = await fetch(`${API_URL}?action=getPublicSettings`);
+    const data = await res.json();
+    if (data.ok) parentAdminWhatsapp = data.Admin_WhatsApp || "";
+  } catch (err) { /* تجاهل — الزر سيظهر بدون رقم إن تعذّر الجلب */ }
+}
+
+function forgotPasswordUrlParent() {
+  if (!parentAdminWhatsapp) return "";
+  const msg = encodeURIComponent("مرحباً، نسيت كلمة سري لتطبيق مسار (بوابة أولياء الأمور). رقم هاتفي: ");
+  return `https://wa.me/${parentAdminWhatsapp}?text=${msg}`;
+}
+
+(async function bootstrapParentApp() {
+  applyDarkModePref();
+  await fetchParentPublicSettings();
+  tryAutoLogin();
+})();
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", () => {
     navigator.serviceWorker.register("./sw.js").catch(() => {});
