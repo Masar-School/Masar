@@ -72,7 +72,7 @@
   .form-msg.ok { color: #2E7D5B; }
   .form-msg.err { color: #A63A3A; }
 
-  .student-row { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 11px 14px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; }
+  .student-row { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 11px 14px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; row-gap: 8px; }
   .student-info .name { font-size: 13.5px; font-weight: 500; color: var(--text); }
   .student-info .meta { font-size: 11.5px; color: var(--muted); margin-top: 2px; }
   .status-pill { font-size: 11px; padding: 4px 10px; border-radius: 999px; font-weight: 600; border: none; cursor: pointer; }
@@ -165,7 +165,7 @@
 <div id="app"></div>
 
 <script>
-const API_URL = "https://script.google.com/macros/s/AKfycbwJOMPtTnIZVIZ8yWV_Lv5OH83NtPGwyUykwSrU55F74H4MM9yySiy6cO0Q21I_eQAACQ/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbyZkweLYjgE1HJFDvkCMNAtjQucH8FBOTUIauiI1bkEkEW1ZnjaWRoGeDPVJRpHR3CkQg/exec";
 
 const SUBJECTS = ["لغة عربية", "لغة إنجليزية", "رياضيات", "علوم", "تربية إسلامية", "دراسات اجتماعية", "حاسب آلي", "تربية فنية", "تربية بدنية", "عام"];
 const EXAM_TYPES = ["المذاكرة الأولى", "المذاكرة الثانية", "الامتحان النهائي للفصل"];
@@ -203,6 +203,62 @@ let holCalMonth = new Date().getMonth();
 let addHolidayMsg = "";
 
 let clockIntervalStarted = false;
+
+// ---------------------------------------------------------------------------
+// إرسال بيانات الدخول عبر واتساب (يفتح محادثة الشخص مباشرة برسالة جاهزة)
+// ---------------------------------------------------------------------------
+
+const PARENT_APP_URL = "https://masar-school.github.io/Masar/index.html";
+const STAFF_APP_URL = "https://masar-school.github.io/Masar/Masar-staff.html";
+
+// يحوّل رقماً محلياً (0999111444 أو 999111444 حتى لو ضاع الصفر بالشيت) لصيغة دولية —
+// بافتراض سوريا للأرقام القصيرة، وعدم لمس أي رقم طويل (على الأغلب دولي جاهز أصلاً، مثل رقم أجنبي)
+// كلمة السر دائماً = آخر 6 أرقام من رقم الهاتف — قاعدة إلزامية (الخادم يفرضها أيضاً كحماية أخيرة)
+function autofillPinFromPhone() {
+  const pinField = document.getElementById("newParentPin");
+  if (!pinField) return;
+  const digits = document.getElementById("newParentPhone").value.replace(/[^\d]/g, "");
+  pinField.value = digits.slice(-6);
+}
+
+
+function toWhatsappNumber(phone) {
+  let p = String(phone || "").replace(/[^\d]/g, "");
+  if (!p) return "";
+  if (p.startsWith("00")) p = p.slice(2);       // 00 دولي بادئة => احذفها
+  if (p.startsWith("963")) return p;             // سوري دولي جاهز أصلاً
+  if (p.length >= 11) return p;                  // رقم طويل — غالباً دولي جاهز (أجنبي)، لا تلمسه
+  if (p.startsWith("0")) p = p.slice(1);         // احذف الصفر البادئ إن وُجد
+  return "963" + p;                              // رقم محلي سوري قصير — أضف رمز الدولة
+}
+
+function sendParentCredentials(phone, name, pin) {
+  const num = toWhatsappNumber(phone);
+  if (!num) { alert("لا يوجد رقم هاتف مسجّل لهذا الشخص"); return; }
+  const msg =
+`مرحباً ${name} 👋
+تم تفعيل حسابكم على تطبيق مدرسة مسار للتميز لمتابعة أبنائكم.
+
+🔗 رابط الدخول: ${PARENT_APP_URL}
+📱 رقم الهاتف: ${phone}
+🔑 كلمة السر: ${pin}
+
+ننصح بحفظ الرابط على الشاشة الرئيسية لسهولة الوصول لاحقاً.`;
+  window.open(`https://wa.me/${num}?text=${encodeURIComponent(msg)}`, "_blank");
+}
+
+function sendTeacherCredentials(phone, name, username, password) {
+  const num = toWhatsappNumber(phone);
+  if (!num) { alert("لا يوجد رقم هاتف مسجّل لهذا المعلم"); return; }
+  const msg =
+`مرحباً ${name} 👋
+تم تفعيل حسابك على تطبيق مسار الخاص بالمعلمين والإدارة.
+
+🔗 رابط الدخول: ${STAFF_APP_URL}
+👤 اسم المستخدم: ${username}
+🔑 كلمة السر: ${password}`;
+  window.open(`https://wa.me/${num}?text=${encodeURIComponent(msg)}`, "_blank");
+}
 
 // حساب عمر الطالب من تاريخ الميلاد — يرجع نص جاهز للعرض أو "" إذا كان التاريخ فارغاً
 function calcAgeLabel(birthDateStr) {
@@ -260,7 +316,14 @@ let ctxClass = "";
 let ctxSection = "";
 
 function isAdmin() {
-  return staffSession && staffSession.role === "Admin";
+  return staffSession && (staffSession.role === "Admin" || staffSession.role === "Owner");
+}
+function isOwner() {
+  return staffSession && staffSession.role === "Owner";
+}
+function isAdminRoleClient(role) {
+  const r = String(role || "").trim();
+  return r === "Admin" || r === "Owner";
 }
 
 // شعبة فارغة أو "*" في النطاق تعني: كل شعب هذا الصف
@@ -523,8 +586,8 @@ async function tryStaffAutoLogin() {
     data._password = saved.password;
     staffSession = data;
     teacherTab = "dashboard";
-    adminGroup = data.role === "Admin" ? "dashboard" : "roster";
-    adminTab = data.role === "Admin" ? "dashboard" : "students";
+    adminGroup = (data.role === "Admin" || data.role === "Owner") ? "dashboard" : "roster";
+    adminTab = (data.role === "Admin" || data.role === "Owner") ? "dashboard" : "students";
     renderDashboard();
   } catch (err) {
     renderLogin(); // تعذّر الاتصال؟ اعرض شاشة الدخول العادية بدل ما تعلق الصفحة
@@ -575,8 +638,8 @@ function renderLogin(errorMsg) {
       data._password = password;
       staffSession = data;
       teacherTab = "dashboard";
-      adminGroup = data.role === "Admin" ? "dashboard" : "roster";
-      adminTab = data.role === "Admin" ? "dashboard" : "students";
+      adminGroup = (data.role === "Admin" || data.role === "Owner") ? "dashboard" : "roster";
+      adminTab = (data.role === "Admin" || data.role === "Owner") ? "dashboard" : "students";
       renderDashboard();
     } catch (err) {
       renderLogin("تعذر الاتصال بالخادم.");
@@ -805,11 +868,12 @@ function renderAdminParentsTab() {
         </div>
         <div class="form-field">
           <label>رقم الهاتف</label>
-          <input id="newParentPhone" type="tel" required />
+          <input id="newParentPhone" type="tel" required oninput="autofillPinFromPhone()" />
         </div>
         <div class="form-field">
           <label>كلمة السر (PIN)</label>
-          <input id="newParentPin" required />
+          <input id="newParentPin" readonly style="background:var(--pill-bg);" />
+          <div style="font-size:11px;color:var(--muted);margin-top:5px;">تُشتق تلقائياً وإلزامياً من آخر 6 أرقام برقم الهاتف — غير قابلة للتعديل اليدوي.</div>
         </div>
         <button type="submit" class="btn-save" id="addParentBtn">إضافة ولي الأمر</button>
         ${addParentMsg}
@@ -954,7 +1018,8 @@ function renderParentsListSection() {
               <div class="name">${p.Parent_Name}</div>
               <div class="meta">📞 ${p.Phone || "بدون هاتف"} &nbsp;·&nbsp; 🔑 ${p.PIN_Code || "—"}</div>
             </div>
-            <div style="display:flex;gap:6px;">
+            <div style="display:flex;gap:6px;flex-wrap:wrap;">
+              <button class="status-pill" style="background:#25D366;color:#fff;" onclick="sendParentCredentials('${p.Phone || ""}','${(p.Parent_Name||"").replace(/'/g,"")}','${p.PIN_Code || ""}')">📤 واتساب</button>
               <button class="status-pill" style="background:var(--edit-bg);color:var(--edit-text);" onclick="editingParentId='${p.Parent_ID}';renderDashboard();">تعديل</button>
               <button class="status-pill ${isParentActive ? "status-active" : "status-inactive"}" onclick="toggleParentStatus('${p.Parent_ID}','${isParentActive ? "Inactive" : "Active"}')">
                 ${isParentActive ? "نشط" : "متوقف"}
@@ -975,8 +1040,12 @@ function renderEditParentForm(p) {
       <div class="section-title">تعديل بيانات: ${p.Parent_Name}</div>
       <form id="editParentForm" data-pid="${p.Parent_ID}">
         <div class="form-field"><label>اسم ولي الأمر</label><input id="epName" value="${p.Parent_Name || ""}" required /></div>
-        <div class="form-field"><label>رقم الهاتف</label><input id="epPhone" value="${p.Phone || ""}" required /></div>
-        <div class="form-field"><label>كلمة السر (PIN)</label><input id="epPin" value="${p.PIN_Code || ""}" required /></div>
+        <div class="form-field"><label>رقم الهاتف</label><input id="epPhone" value="${p.Phone || ""}" required oninput="document.getElementById('epPin').value = this.value.replace(/[^\\d]/g,'').slice(-6);" /></div>
+        <div class="form-field">
+          <label>كلمة السر (PIN)</label>
+          <input id="epPin" value="${p.PIN_Code || ""}" readonly style="background:var(--pill-bg);" />
+          <div style="font-size:11px;color:var(--muted);margin-top:5px;">تتحدّث تلقائياً وإلزامياً حسب آخر 6 أرقام من رقم الهاتف أعلاه.</div>
+        </div>
         <button type="submit" class="btn-save" id="editParentBtn">حفظ التعديلات</button>
         <button type="button" class="status-pill" style="width:100%;margin-top:8px;background:var(--pill-bg);color:var(--muted2);" onclick="editingParentId=null;renderDashboard();">إلغاء</button>
         <div id="editParentMsg"></div>
@@ -1594,7 +1663,7 @@ function renderAdminTeachersTab() {
     </div>
   `;
 
-  const teachers = (staffSession.teachers || []).filter(t => String(t.Role || "").trim() !== "Admin");
+  const teachers = (staffSession.teachers || []).filter(t => !isAdminRoleClient(t.Role));
 
   let listHtml = `<div class="section-title">المعلمون الحاليون (${teachers.length})</div>`;
   teachers.forEach(t => {
@@ -1622,7 +1691,8 @@ function renderAdminTeachersTab() {
             <div class="name">${t.Name || t.Username}</div>
             <div class="meta">${t.Username} · ${describeTeacherScope(t.Username)}</div>
           </div>
-          <div style="display:flex;gap:6px;">
+          <div style="display:flex;gap:6px;flex-wrap:wrap;">
+            <button class="status-pill" style="background:#25D366;color:#fff;" onclick="sendTeacherCredentials('${t.Phone || ""}','${(t.Name||t.Username).replace(/'/g,"")}','${t.Username}','${t.Password || ""}')">📤 واتساب</button>
             <button class="status-pill" style="background:var(--edit-bg);color:var(--edit-text);" onclick="editingTeacherUser='${t.Username}';renderDashboard();">تعديل</button>
             <button class="status-pill ${isActive ? "status-active" : "status-inactive"}" onclick="toggleTeacherStatus('${t.Username}','${isActive ? "Inactive" : "Active"}')">
               ${isActive ? "نشط" : "معطّل"}
@@ -1944,11 +2014,11 @@ function ymd(y, m, d) {
 }
 
 function getAllStudentsForSearch() {
-  if (staffSession.role === "Admin") return staffSession.students || [];
+  if (isAdmin()) return staffSession.students || [];
   return staffSession.allStudents || [];
 }
 function getAllAttendanceForSearch() {
-  if (staffSession.role === "Admin") return staffSession.attendance || [];
+  if (isAdmin()) return staffSession.attendance || [];
   return staffSession.allAttendance || [];
 }
 function getHolidaysList() {
@@ -2878,7 +2948,8 @@ const ADMIN_GROUPS = [
   { id: "staff",    label: "الطاقم",   tabs: [
       { id: "teachers",         label: "المعلمون" },
       { id: "teacherAssign",    label: "توزيع المواد" },
-      { id: "bus",              label: "الباص" } ] },
+      { id: "bus",              label: "الباص" },
+      { id: "adminAccounts",    label: "👑 حسابات الإدارة", ownerOnly: true } ] },
   { id: "school",   label: "المدرسة",  tabs: [
       { id: "announcements",    label: "الإعلانات" },
       { id: "exams",            label: "جداول الامتحانات" },
@@ -2904,13 +2975,20 @@ const ADMIN_TAB_RENDERERS = {
   exams:            () => renderAdminExamsTab(),
   holidays:         () => renderAdminHolidaysTab(),
   settings:         () => renderAdminSettingsTab(),
+  adminAccounts:    () => renderAdminAccountsTab(),
 };
 
-// اختيار مجموعة يفتح أول تبويب فيها
+// تبويبات المجموعة المرئية فعلياً — تُخفي أي تبويب "ownerOnly" عن غير المالك
+function visibleTabs(group) {
+  return group.tabs.filter(t => !t.ownerOnly || isOwner());
+}
+
+// اختيار مجموعة يفتح أول تبويب مرئي فيها
 function selectAdminGroup(groupId) {
   adminGroup = groupId;
   const g = ADMIN_GROUPS.find(x => x.id === groupId);
-  if (g && g.tabs.length) adminTab = g.tabs[0].id;
+  const tabs = g ? visibleTabs(g) : [];
+  if (tabs.length) adminTab = tabs[0].id;
   renderDashboard();
 }
 
@@ -2920,9 +2998,10 @@ function renderAdminTabBars() {
   ).join("");
 
   const current = ADMIN_GROUPS.find(g => g.id === adminGroup) || ADMIN_GROUPS[0];
-  // الشريط الفرعي يظهر فقط إذا كانت المجموعة تحوي أكثر من تبويب
-  const subBar = current.tabs.length > 1
-    ? `<div class="sub-tabs" id="subTabsBar">` + current.tabs.map(t =>
+  const currentTabs = visibleTabs(current);
+  // الشريط الفرعي يظهر فقط إذا كانت المجموعة تحوي أكثر من تبويب مرئي
+  const subBar = currentTabs.length > 1
+    ? `<div class="sub-tabs" id="subTabsBar">` + currentTabs.map(t =>
         `<button class="sub-tab-btn ${t.id === adminTab ? "active" : ""}" onclick="adminTab='${t.id}';renderDashboard();">${t.label}</button>`
       ).join("") + `</div>`
     : "";
@@ -3266,7 +3345,7 @@ let taLastValues = { teacher: "", classLevel: "", section: "", subject: "" };
 
 function renderAdminTeacherAssignmentsTab() {
   const teachers = (staffSession.teachers || []).filter(t =>
-    String(t.Role || "").trim() !== "Admin" && String(t.Status || "Active").trim() !== "Inactive"
+    !isAdminRoleClient(t.Role) && String(t.Status || "Active").trim() !== "Inactive"
   );
   const teacherOptions = teachers.map(t =>
     `<option value="${t.Username}" ${t.Username === taLastValues.teacher ? "selected" : ""}>${t.Name || t.Username} (${t.Username})</option>`).join("");
@@ -3438,7 +3517,7 @@ function renderAdminDashboardTab() {
   const activeStudents = allStudents.filter(s => String(s.Status || "Active").trim() !== "Inactive");
   const parents = staffSession.parents || [];
   const teachers = (staffSession.teachers || []).filter(t =>
-    String(t.Role || "").trim() !== "Admin" && String(t.Status || "Active").trim() !== "Inactive");
+    !isAdminRoleClient(t.Role) && String(t.Status || "Active").trim() !== "Inactive");
   const supervisors = (staffSession.supervisors || []).filter(s => String(s.Status || "Active").trim() !== "Inactive");
 
   // --- المالية: نأخذ آخر Total_Required وآخر Remaining_Balance مسجّلين لكل والد (وليس مجموع كل الصفوف) ---
@@ -3614,6 +3693,149 @@ async function submitSettings(e) {
 }
 
 
+let addAdminMsg = "";
+let editingAdminUser = null;
+
+function renderAdminAccountsTab() {
+  // حماية إضافية بالواجهة: حتى لو وصل غير المالك لهذا التبويب بأي طريقة، لا يشوف محتواه
+  if (!isOwner()) return `<div class="empty-box">هذا القسم متاح لمالك البرنامج فقط</div>`;
+
+  const admins = (staffSession.teachers || []).filter(t => isAdminRoleClient(t.Role));
+
+  const addCard = `
+    <div class="form-card">
+      <div class="section-title">👑 إضافة حساب مدير جديد</div>
+      <form id="addAdminForm">
+        <div class="form-field"><label>اسم المستخدم</label><input id="newAdminUsername" required /></div>
+        <div class="form-field"><label>كلمة السر</label><input id="newAdminPassword" required /></div>
+        <div class="form-field"><label>الاسم الكامل</label><input id="newAdminName" /></div>
+        <div class="form-field"><label>رقم الهاتف</label><input id="newAdminPhone" type="tel" /></div>
+        <div class="form-field">
+          <label>الصلاحية</label>
+          <select id="newAdminRole">
+            <option value="Admin">مدير (Admin)</option>
+            <option value="Owner">مالك (Owner) — يقدر يضيف مدراء آخرين</option>
+          </select>
+        </div>
+        <button type="submit" class="btn-save" id="addAdminBtn">إضافة</button>
+        ${addAdminMsg}
+      </form>
+      <div style="font-size:11.5px;color:var(--muted);margin-top:10px;">
+        هذا القسم لا يظهر إلا لحسابك أنت (المالك). حسابات "مدير" العادية لا تقدر تشوفه ولا تضيف مدراء جدد.
+      </div>
+    </div>
+  `;
+
+  let listHtml = `<div class="section-title">حسابات الإدارة الحالية (${admins.length})</div>`;
+  admins.forEach(t => {
+    const isActive = String(t.Status || "Active").trim() !== "Inactive";
+    const isSelf = t.Username === staffSession.username;
+    const roleLabel = String(t.Role).trim() === "Owner" ? "مالك" : "مدير";
+
+    if (editingAdminUser === t.Username) {
+      listHtml += `
+        <div class="form-card">
+          <div class="section-title">تعديل: ${t.Name || t.Username}</div>
+          <form id="editAdminForm" data-user="${t.Username}">
+            <div class="form-field"><label>الاسم</label><input id="eaName" value="${t.Name || ""}" required /></div>
+            <div class="form-field"><label>الهاتف</label><input id="eaPhone" value="${t.Phone || ""}" /></div>
+            <div class="form-field"><label>كلمة السر (اتركها فارغة لعدم التغيير)</label><input id="eaPassword" placeholder="••••" /></div>
+            <button type="submit" class="btn-save" id="editAdminBtn">حفظ</button>
+            <button type="button" class="status-pill" style="width:100%;margin-top:8px;background:var(--pill-bg);color:var(--muted2);" onclick="editingAdminUser=null;renderDashboard();">إلغاء</button>
+            <div id="editAdminMsg"></div>
+          </form>
+        </div>
+      `;
+    } else {
+      listHtml += `
+        <div class="student-row">
+          <div class="student-info">
+            <div class="name">${t.Name || t.Username} ${isSelf ? "(أنت)" : ""}</div>
+            <div class="meta">${t.Username} · ${roleLabel}</div>
+          </div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap;">
+            <button class="status-pill" style="background:#25D366;color:#fff;" onclick="sendTeacherCredentials('${t.Phone || ""}','${(t.Name||t.Username).replace(/'/g,"")}','${t.Username}','${t.Password || ""}')">📤 واتساب</button>
+            <button class="status-pill" style="background:var(--edit-bg);color:var(--edit-text);" onclick="editingAdminUser='${t.Username}';renderDashboard();">تعديل</button>
+            ${!isSelf ? `<button class="status-pill ${isActive ? "status-active" : "status-inactive"}" onclick="toggleTeacherStatus('${t.Username}','${isActive ? "Inactive" : "Active"}')">${isActive ? "نشط" : "معطّل"}</button>` : ""}
+          </div>
+        </div>
+      `;
+    }
+  });
+
+  return addCard + listHtml;
+}
+
+async function submitAddAdmin(e) {
+  e.preventDefault();
+  const btn = document.getElementById("addAdminBtn");
+  btn.disabled = true;
+  btn.textContent = "جارِ الحفظ...";
+
+  const payload = {
+    action: "addTeacher",
+    adminUsername: staffSession.username,
+    adminPassword: staffSession._password,
+    Username: document.getElementById("newAdminUsername").value.trim(),
+    Password: document.getElementById("newAdminPassword").value.trim(),
+    Name: document.getElementById("newAdminName").value.trim(),
+    Phone: document.getElementById("newAdminPhone").value.trim(),
+    Role: document.getElementById("newAdminRole").value
+  };
+
+  try {
+    const res = await fetch(API_URL, { method: "POST", body: JSON.stringify(payload) });
+    const data = await res.json();
+    if (data.ok) {
+      addAdminMsg = `<div class="form-msg ok">تمت الإضافة ✓</div>`;
+      staffSession.teachers.push({
+        Username: payload.Username, Name: payload.Name, Phone: payload.Phone,
+        Role: payload.Role, Status: "Active", Password: payload.Password
+      });
+    } else {
+      addAdminMsg = `<div class="form-msg err">${data.error}</div>`;
+    }
+  } catch (err) {
+    addAdminMsg = `<div class="form-msg err">تعذر الاتصال بالخادم</div>`;
+  }
+  renderDashboard();
+}
+
+async function submitEditAdmin(e) {
+  e.preventDefault();
+  const username = e.target.getAttribute("data-user");
+  const btn = document.getElementById("editAdminBtn");
+  btn.disabled = true;
+  btn.textContent = "جارِ الحفظ...";
+
+  const newPass = document.getElementById("eaPassword").value.trim();
+  const payload = {
+    action: "updateTeacher",
+    adminUsername: staffSession.username,
+    adminPassword: staffSession._password,
+    Username: username,
+    Name: document.getElementById("eaName").value.trim(),
+    Phone: document.getElementById("eaPhone").value.trim()
+  };
+  if (newPass !== "") payload.Password = newPass;
+
+  try {
+    const res = await fetch(API_URL, { method: "POST", body: JSON.stringify(payload) });
+    const data = await res.json();
+    if (data.ok) {
+      const t = staffSession.teachers.find(x => x.Username === username);
+      if (t) { t.Name = payload.Name; t.Phone = payload.Phone; if (newPass) t.Password = newPass; }
+      editingAdminUser = null;
+      renderDashboard();
+    } else {
+      document.getElementById("editAdminMsg").innerHTML = `<div class="form-msg err">${data.error}</div>`;
+    }
+  } catch (err) {
+    document.getElementById("editAdminMsg").innerHTML = `<div class="form-msg err">تعذر الاتصال بالخادم</div>`;
+  }
+}
+
+
 function renderDashboard() {
   const activeId = document.activeElement ? document.activeElement.id : null;
   const app = document.getElementById("app");
@@ -3627,7 +3849,7 @@ function renderDashboard() {
   };
 
   let contentHtml = "";
-  if (staffSession.role === "Admin") {
+  if (isAdmin()) {
     contentHtml = renderAdminTabBars();
     const renderer = ADMIN_TAB_RENDERERS[adminTab];
     contentHtml += renderer ? renderer() : `<div class="empty-box">اختر قسماً</div>`;
@@ -3659,7 +3881,7 @@ function renderDashboard() {
       <div>
         <div style="color:#fff;font-size:15px;font-weight:600;">${staffSession.name || staffSession.username}</div>
         <div style="color:#F3D3D0;font-size:12px;">
-          <span class="badge-role">${staffSession.role === "Admin" ? "مدير" : "معلم"}</span>
+          <span class="badge-role">${staffSession.role === "Owner" ? "مالك" : (staffSession.role === "Admin" ? "مدير" : "معلم")}</span>
           ${staffSession.role === "Teacher" ? " · " + staffSession.classLevel + (staffSession.section ? " - شعبة " + staffSession.section : "") : ""}
         </div>
         <div id="liveClock" style="color:#F3D3D0;font-size:11px;margin-top:4px;">${getCurrentDateTimeText()}</div>
@@ -3708,6 +3930,7 @@ function renderDashboard() {
     attendanceDraft = {};
     editingStudentId = null;
     editingParentId = null;
+    editingAdminUser = null;
     parentSearch = "";
     editingTeacherUser = null;
     ctxClass = "";
@@ -3758,6 +3981,12 @@ function renderDashboard() {
 
   const settingsForm = document.getElementById("settingsForm");
   if (settingsForm) settingsForm.addEventListener("submit", submitSettings);
+
+  const addAdminForm = document.getElementById("addAdminForm");
+  if (addAdminForm) addAdminForm.addEventListener("submit", submitAddAdmin);
+
+  const editAdminForm = document.getElementById("editAdminForm");
+  if (editAdminForm) editAdminForm.addEventListener("submit", submitEditAdmin);
 
   const addAnnForm = document.getElementById("addAnnForm");
   if (addAnnForm) addAnnForm.addEventListener("submit", submitAddAnnouncement);

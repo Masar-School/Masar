@@ -165,7 +165,7 @@
 
 <script>
 // تأكد من وضع الرابط الجديد للـ Web App هنا
-const API_URL = "https://script.google.com/macros/s/AKfycbwJOMPtTnIZVIZ8yWV_Lv5OH83NtPGwyUykwSrU55F74H4MM9yySiy6cO0Q21I_eQAACQ/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbyZkweLYjgE1HJFDvkCMNAtjQucH8FBOTUIauiI1bkEkEW1ZnjaWRoGeDPVJRpHR3CkQg/exec";
 
 let session = null;
 let currentChildIndex = 0;
@@ -245,9 +245,9 @@ function renderLogin(errorMsg) {
       <div class="school-sub">بوابة أولياء الأمور</div>
     </div>
     <form id="loginForm">
-      <label>رقم هاتف ولي الأمر</label>
+      <label>اسم المستخدم (آخر 6 أرقام من هاتفك)</label>
       <div class="field">
-        <input id="idInput" type="tel" placeholder="مثال: 0999111444" value="${saved ? saved.phone : ""}" />
+        <input id="idInput" type="tel" placeholder="مثال: 222444" value="${saved ? saved.phone : ""}" />
       </div>
       <label>كلمة السر (PIN)</label>
       <div class="field">
