@@ -165,7 +165,7 @@
 <div id="app"></div>
 
 <script>
-const API_URL = "https://script.google.com/macros/s/AKfycbyZkweLYjgE1HJFDvkCMNAtjQucH8FBOTUIauiI1bkEkEW1ZnjaWRoGeDPVJRpHR3CkQg/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbwE9KAJm_v0ILcaTmpzEzAMXinxBhLKk4VJ9S3QtDVwYNZOqBpjF8TXYyuixUnLsv-L-g/exec";
 
 const SUBJECTS = ["لغة عربية", "لغة إنجليزية", "رياضيات", "علوم", "تربية إسلامية", "دراسات اجتماعية", "حاسب آلي", "تربية فنية", "تربية بدنية", "عام"];
 const EXAM_TYPES = ["المذاكرة الأولى", "المذاكرة الثانية", "الامتحان النهائي للفصل"];
@@ -213,12 +213,12 @@ const STAFF_APP_URL = "https://masar-school.github.io/Masar/Masar-staff.html";
 
 // يحوّل رقماً محلياً (0999111444 أو 999111444 حتى لو ضاع الصفر بالشيت) لصيغة دولية —
 // بافتراض سوريا للأرقام القصيرة، وعدم لمس أي رقم طويل (على الأغلب دولي جاهز أصلاً، مثل رقم أجنبي)
-// كلمة السر دائماً = آخر 6 أرقام من رقم الهاتف — قاعدة إلزامية (الخادم يفرضها أيضاً كحماية أخيرة)
-function autofillPinFromPhone() {
-  const pinField = document.getElementById("newParentPin");
-  if (!pinField) return;
+// اسم الدخول = آخر 6 أرقام من رقم الهاتف (للعرض فقط هنا؛ الخادم يحسبه فعلياً وقت الدخول)
+function previewLoginUsername() {
+  const el = document.getElementById("loginUsernamePreview");
+  if (!el) return;
   const digits = document.getElementById("newParentPhone").value.replace(/[^\d]/g, "");
-  pinField.value = digits.slice(-6);
+  el.textContent = digits.length >= 4 ? "اسم الدخول سيكون: " + digits.slice(-6) : "";
 }
 
 
@@ -235,12 +235,13 @@ function toWhatsappNumber(phone) {
 function sendParentCredentials(phone, name, pin) {
   const num = toWhatsappNumber(phone);
   if (!num) { alert("لا يوجد رقم هاتف مسجّل لهذا الشخص"); return; }
+  const loginUsername = String(phone || "").replace(/\D/g, "").slice(-6);
   const msg =
 `مرحباً ${name} 👋
 تم تفعيل حسابكم على تطبيق مدرسة مسار للتميز لمتابعة أبنائكم.
 
 🔗 رابط الدخول: ${PARENT_APP_URL}
-📱 رقم الهاتف: ${phone}
+👤 اسم المستخدم: ${loginUsername}
 🔑 كلمة السر: ${pin}
 
 ننصح بحفظ الرابط على الشاشة الرئيسية لسهولة الوصول لاحقاً.`;
@@ -868,12 +869,13 @@ function renderAdminParentsTab() {
         </div>
         <div class="form-field">
           <label>رقم الهاتف</label>
-          <input id="newParentPhone" type="tel" required oninput="autofillPinFromPhone()" />
+          <input id="newParentPhone" type="tel" required oninput="previewLoginUsername()" />
+          <div id="loginUsernamePreview" style="font-size:11px;color:var(--muted);margin-top:5px;"></div>
         </div>
         <div class="form-field">
-          <label>كلمة السر (PIN)</label>
-          <input id="newParentPin" readonly style="background:var(--pill-bg);" />
-          <div style="font-size:11px;color:var(--muted);margin-top:5px;">تُشتق تلقائياً وإلزامياً من آخر 6 أرقام برقم الهاتف — غير قابلة للتعديل اليدوي.</div>
+          <label>كلمة السر</label>
+          <input id="newParentPin" required />
+          <div style="font-size:11px;color:var(--muted);margin-top:5px;">كلمة سر مستقلة تحددها أنت — لا علاقة لها برقم الهاتف.</div>
         </div>
         <button type="submit" class="btn-save" id="addParentBtn">إضافة ولي الأمر</button>
         ${addParentMsg}
@@ -986,6 +988,7 @@ function renderAdminStudentsTab() {
 // قائمة أولياء الأمور — عرض وتعديل بياناتهم وكلمات سرّهم (المدير فقط)
 // ---------------------------------------------------------------------------
 
+
 function renderParentsListSection() {
   let parents = (staffSession.parents || []).slice();
   const searchBox = `
@@ -1016,7 +1019,7 @@ function renderParentsListSection() {
           <div class="student-row">
             <div class="student-info">
               <div class="name">${p.Parent_Name}</div>
-              <div class="meta">📞 ${p.Phone || "بدون هاتف"} &nbsp;·&nbsp; 🔑 ${p.PIN_Code || "—"}</div>
+              <div class="meta">👤 ${(p.Phone||"").replace(/\D/g,"").slice(-6) || "—"} &nbsp;·&nbsp; 🔑 ${p.PIN_Code || "—"} &nbsp;·&nbsp; 📞 ${p.Phone || "بدون هاتف"}</div>
             </div>
             <div style="display:flex;gap:6px;flex-wrap:wrap;">
               <button class="status-pill" style="background:#25D366;color:#fff;" onclick="sendParentCredentials('${p.Phone || ""}','${(p.Parent_Name||"").replace(/'/g,"")}','${p.PIN_Code || ""}')">📤 واتساب</button>
@@ -1040,11 +1043,15 @@ function renderEditParentForm(p) {
       <div class="section-title">تعديل بيانات: ${p.Parent_Name}</div>
       <form id="editParentForm" data-pid="${p.Parent_ID}">
         <div class="form-field"><label>اسم ولي الأمر</label><input id="epName" value="${p.Parent_Name || ""}" required /></div>
-        <div class="form-field"><label>رقم الهاتف</label><input id="epPhone" value="${p.Phone || ""}" required oninput="document.getElementById('epPin').value = this.value.replace(/[^\\d]/g,'').slice(-6);" /></div>
         <div class="form-field">
-          <label>كلمة السر (PIN)</label>
-          <input id="epPin" value="${p.PIN_Code || ""}" readonly style="background:var(--pill-bg);" />
-          <div style="font-size:11px;color:var(--muted);margin-top:5px;">تتحدّث تلقائياً وإلزامياً حسب آخر 6 أرقام من رقم الهاتف أعلاه.</div>
+          <label>رقم الهاتف</label>
+          <input id="epPhone" value="${p.Phone || ""}" required />
+          <div style="font-size:11px;color:var(--muted);margin-top:5px;">اسم الدخول الحالي المشتق من هذا الرقم: ${(p.Phone||"").replace(/\D/g,"").slice(-6) || "—"}</div>
+        </div>
+        <div class="form-field">
+          <label>كلمة السر</label>
+          <input id="epPin" value="${p.PIN_Code || ""}" required />
+          <div style="font-size:11px;color:var(--muted);margin-top:5px;">كلمة سر مستقلة — عدّلها هنا مباشرة إذا احتجت.</div>
         </div>
         <button type="submit" class="btn-save" id="editParentBtn">حفظ التعديلات</button>
         <button type="button" class="status-pill" style="width:100%;margin-top:8px;background:var(--pill-bg);color:var(--muted2);" onclick="editingParentId=null;renderDashboard();">إلغاء</button>
@@ -2940,6 +2947,7 @@ const ADMIN_GROUPS = [
       { id: "payments",         label: "الدفعات" } ] },
   { id: "academic", label: "الأكاديمي", tabs: [
       { id: "grades",           label: "العلامات" },
+      { id: "ranking",          label: "🏆 الترتيب" },
       { id: "behavior",         label: "السلوك" },
       { id: "assignments",      label: "الواجبات" } ] },
   { id: "attend",   label: "الحضور",   tabs: [
@@ -2964,6 +2972,7 @@ const ADMIN_TAB_RENDERERS = {
   roster:           () => renderTeacherRosterTab(),
   payments:         () => renderAdminPaymentsTab(),
   grades:           () => renderMergedGradesTab(),
+  ranking:          () => renderAdminRankingTab(),
   behavior:         () => renderTeacherBehaviorTab(),
   assignments:      () => renderTeacherAssignmentsTab(),
   attendance:       () => renderTeacherAttendanceTab(),
@@ -3496,6 +3505,187 @@ async function toggleTeacherAssignment(assignmentId, newStatus) {
 // لوحة التحكم التحليلية (المدير فقط) — نظرة عامة على كامل المدرسة
 // ---------------------------------------------------------------------------
 
+// ---------------------------------------------------------------------------
+// حساب معدلات الطلاب والترتيب — مطابق لمنطق الخادم بالضبط (نفس النتيجة، بدون طلب إضافي)
+// ---------------------------------------------------------------------------
+
+function computeStudentOverallAverage(studentGrades) {
+  const bySubject = {};
+  studentGrades.forEach(g => {
+    if (String(g.Status || "Active").trim() === "Void") return;
+    const subj = String(g.Subject || "").trim();
+    const score = Number(g.Score);
+    if (!subj || isNaN(score)) return;
+    if (!bySubject[subj]) bySubject[subj] = [];
+    bySubject[subj].push(score);
+  });
+  const subjectAverages = Object.keys(bySubject).map(s => {
+    const arr = bySubject[s];
+    return arr.reduce((a, b) => a + b, 0) / arr.length;
+  });
+  if (subjectAverages.length === 0) return null;
+  return subjectAverages.reduce((a, b) => a + b, 0) / subjectAverages.length;
+}
+
+function computeStudentSubjectAverage(studentGrades, subject) {
+  const scores = studentGrades
+    .filter(g => String(g.Status || "Active").trim() !== "Void" && String(g.Subject || "").trim() === subject)
+    .map(g => Number(g.Score))
+    .filter(n => !isNaN(n));
+  if (scores.length === 0) return null;
+  return scores.reduce((a, b) => a + b, 0) / scores.length;
+}
+
+// ---------------------------------------------------------------------------
+// لوحة الترتيب — المدير (ترتيب دقيق لكل شعبة + مقارنة معدلات الشعب بنفس الصف)
+// ---------------------------------------------------------------------------
+
+function renderAdminRankingTab() {
+  const picker = renderAdminContextPicker();
+  if (!ctxClass) return picker + `<div class="empty-box">اختر الصف والشعبة أولاً لعرض الترتيب</div>`;
+  if (!ctxSection) return picker + `<div class="empty-box">اختر شعبة محددة (وليس "كل الشعب") لعرض ترتيب دقيق وعادل</div>`;
+
+  const roster = getActiveRoster();
+  const allGrades = staffSession.grades || [];
+  const ranked = roster.map(s => {
+    const sg = allGrades.filter(g => String(g.Student_ID) === String(s.Student_ID));
+    return { name: s.Student_Name, avg: computeStudentOverallAverage(sg) };
+  }).sort((a, b) => {
+    if (a.avg === null) return 1;
+    if (b.avg === null) return -1;
+    return b.avg - a.avg;
+  });
+
+  let rankingHtml = `<div class="form-card"><div class="section-title">🏆 الترتيب الدقيق — ${ctxClass}${ctxSection ? " شعبة " + ctxSection : ""}</div>`;
+  if (ranked.length === 0) {
+    rankingHtml += `<div class="empty-box">لا يوجد طلاب بهذه الشعبة</div>`;
+  } else {
+    ranked.forEach((r, i) => {
+      rankingHtml += `
+        <div class="student-row">
+          <div class="student-info"><div class="name">${i + 1}. ${r.name}</div></div>
+          <span class="badge-role">${r.avg !== null ? Math.round(r.avg * 10) / 10 : "—"}</span>
+        </div>
+      `;
+    });
+  }
+  rankingHtml += `</div>`;
+
+  // مقارنة معدلات كل شعب هذا الصف مع بعضها (وليس دمج ترتيب الطلاب) — أعدل لمقارنة أداء المعلمين/الشعب
+  const allStudentsInClass = (staffSession.students || []).filter(s =>
+    String(s.Status || "Active").trim() !== "Inactive" && String(s.Class_Level || "").trim() === ctxClass
+  );
+  const sections = {};
+  allStudentsInClass.forEach(s => {
+    const sec = String(s.Section || "").trim() || "بدون شعبة";
+    if (!sections[sec]) sections[sec] = [];
+    const sg = allGrades.filter(g => String(g.Student_ID) === String(s.Student_ID));
+    const avg = computeStudentOverallAverage(sg);
+    if (avg !== null) sections[sec].push(avg);
+  });
+  const sectionNames = Object.keys(sections).sort();
+  const sectionAverages = sectionNames.map(sec => {
+    const arr = sections[sec];
+    return arr.length ? arr.reduce((a, b) => a + b, 0) / arr.length : null;
+  });
+  const maxSectionAvg = Math.max(1, ...sectionAverages.filter(a => a !== null));
+
+  let compareHtml = `<div class="form-card"><div class="section-title">📊 مقارنة أداء الشعب — ${ctxClass}</div>`;
+  if (sectionNames.length === 0) {
+    compareHtml += `<div class="empty-box">لا توجد بيانات كافية</div>`;
+  } else {
+    sectionNames.forEach((sec, i) => {
+      const avg = sectionAverages[i];
+      const pct = avg !== null ? (avg / maxSectionAvg) * 100 : 0;
+      compareHtml += `
+        <div class="cbc-row">
+          <span class="cbc-label">شعبة ${sec}</span>
+          <div class="cbc-track"><div class="cbc-fill" style="width:${pct}%;"></div></div>
+          <span class="cbc-count">${avg !== null ? Math.round(avg * 10) / 10 : "—"}</span>
+        </div>
+      `;
+    });
+  }
+  compareHtml += `</div>`;
+
+  return picker + rankingHtml + compareHtml;
+}
+
+// ---------------------------------------------------------------------------
+// لوحة الترتيب — المعلم (ترتيب دقيق حسب مادته أو معدله العام إذا كان مربي صف)
+// ---------------------------------------------------------------------------
+
+function renderTeacherRankingTab() {
+  if (needsContextPick()) return renderAdminContextPicker() + `<div class="empty-box">اختر الصف أولاً لعرض الترتيب</div>`;
+
+  const roster = getActiveRoster();
+  const allGrades = staffSession.grades || [];
+  const scopes = staffSession.scopes || [];
+
+  // هل هذا المعلم مختص بمادة واحدة بهذا الصف، أو مربي صف/معلم عام؟
+  const relevantScope = scopes.find(sc =>
+    sc.Class_Level === ctxClass && sectionMatches(sc.Section, ctxSection)
+  );
+  const isSubjectSpecific = relevantScope && relevantScope.Subject !== "*" && relevantScope.Subject !== "عام";
+  const subject = isSubjectSpecific ? relevantScope.Subject : null;
+
+  const ranked = roster.map(s => {
+    const sg = allGrades.filter(g => String(g.Student_ID) === String(s.Student_ID));
+    const avg = subject ? computeStudentSubjectAverage(sg, subject) : computeStudentOverallAverage(sg);
+    return { name: s.Student_Name, avg: avg };
+  }).sort((a, b) => {
+    if (a.avg === null) return 1;
+    if (b.avg === null) return -1;
+    return b.avg - a.avg;
+  });
+
+  let html = renderAdminContextPicker();
+  html += `<div class="form-card"><div class="section-title">🏆 ترتيب طلابي${subject ? " — مادة " + subject : " (المعدل العام)"}</div>`;
+  if (ranked.length === 0) {
+    html += `<div class="empty-box">لا يوجد طلاب بهذه الشعبة</div>`;
+  } else {
+    ranked.forEach((r, i) => {
+      html += `
+        <div class="student-row">
+          <div class="student-info"><div class="name">${i + 1}. ${r.name}</div></div>
+          <span class="badge-role">${r.avg !== null ? Math.round(r.avg * 10) / 10 : "—"}</span>
+        </div>
+      `;
+    });
+  }
+  html += `</div>`;
+
+  // إحصائية عامة: متوسط الصف/الشعبة المختارة (ومقارنة الشعب الأخرى إذا كان المعلم يدرّس أكثر من شعبة بنفس الصف)
+  const myClassScopes = getTeacherClassOptions().filter(o => o.Class_Level === ctxClass);
+  if (myClassScopes.length > 1) {
+    let compareHtml = `<div class="form-card"><div class="section-title">📊 مقارنة شعبي بنفس الصف</div>`;
+    myClassScopes.forEach(o => {
+      const secStudents = (staffSession.allStudents || staffSession.roster || []).filter(s =>
+        String(s.Class_Level || "").trim() === o.Class_Level && String(s.Section || "").trim() === o.Section
+      );
+      const avgs = secStudents.map(s => {
+        const sg = allGrades.filter(g => String(g.Student_ID) === String(s.Student_ID));
+        return subject ? computeStudentSubjectAverage(sg, subject) : computeStudentOverallAverage(sg);
+      }).filter(a => a !== null);
+      const sectionAvg = avgs.length ? avgs.reduce((a, b) => a + b, 0) / avgs.length : null;
+      compareHtml += `
+        <div class="student-row">
+          <div class="student-info"><div class="name">شعبة ${o.Section}</div></div>
+          <span class="badge-role">${sectionAvg !== null ? Math.round(sectionAvg * 10) / 10 : "—"}</span>
+        </div>
+      `;
+    });
+    compareHtml += `</div>`;
+    html += compareHtml;
+  } else {
+    const avgs = ranked.map(r => r.avg).filter(a => a !== null);
+    const classAvg = avgs.length ? avgs.reduce((a, b) => a + b, 0) / avgs.length : null;
+    html += `<div class="form-card"><div class="section-title">📊 متوسط الشعبة</div><div style="font-size:22px;font-weight:800;color:#7A2626;text-align:center;">${classAvg !== null ? Math.round(classAvg * 10) / 10 : "لا توجد بيانات كافية"}</div></div>`;
+  }
+
+  return html;
+}
+
 function buildDonutSVG(percent, color, trackColor, centerBig, centerSmall) {
   const r = 42, c = 2 * Math.PI * r;
   const pct = Math.max(0, Math.min(100, percent));
@@ -3864,6 +4054,7 @@ function renderDashboard() {
         <button class="admin-tab-btn ${teacherTab === "grades" ? "active" : ""}" onclick="teacherTab='grades';renderDashboard();">العلامات</button>
         <button class="admin-tab-btn ${teacherTab === "assignments" ? "active" : ""}" onclick="teacherTab='assignments';renderDashboard();">الواجبات</button>
         <button class="admin-tab-btn ${teacherTab === "announcements" ? "active" : ""}" onclick="teacherTab='announcements';renderDashboard();">📢 الإعلانات</button>
+        <button class="admin-tab-btn ${teacherTab === "ranking" ? "active" : ""}" onclick="teacherTab='ranking';renderDashboard();">🏆 الترتيب</button>
       </div>
     `;
     if (teacherTab === "dashboard") contentHtml += renderTeacherDashboardTab();
@@ -3874,6 +4065,7 @@ function renderDashboard() {
     else if (teacherTab === "grades") contentHtml += renderTeacherGradesTab();
     else if (teacherTab === "assignments") contentHtml += renderTeacherAssignmentsTab();
     else if (teacherTab === "announcements") contentHtml += renderTeacherAnnouncementsTab();
+    else if (teacherTab === "ranking") contentHtml += renderTeacherRankingTab();
   }
 
   app.innerHTML = `

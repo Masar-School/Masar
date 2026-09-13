@@ -165,7 +165,7 @@
 
 <script>
 // تأكد من وضع الرابط الجديد للـ Web App هنا
-const API_URL = "https://script.google.com/macros/s/AKfycbyZkweLYjgE1HJFDvkCMNAtjQucH8FBOTUIauiI1bkEkEW1ZnjaWRoGeDPVJRpHR3CkQg/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbwE9KAJm_v0ILcaTmpzEzAMXinxBhLKk4VJ9S3QtDVwYNZOqBpjF8TXYyuixUnLsv-L-g/exec";
 
 let session = null;
 let currentChildIndex = 0;
@@ -247,7 +247,7 @@ function renderLogin(errorMsg) {
     <form id="loginForm">
       <label>اسم المستخدم (آخر 6 أرقام من هاتفك)</label>
       <div class="field">
-        <input id="idInput" type="tel" placeholder="مثال: 222444" value="${saved ? saved.phone : ""}" />
+        <input id="idInput" type="tel" placeholder="مثال: 424717" value="${saved ? saved.phone : ""}" />
       </div>
       <label>كلمة السر (PIN)</label>
       <div class="field">
@@ -741,6 +741,33 @@ function renderMore(child) {
       `;
     });
   }
+
+  // لوحة الأوائل — تشمل كل الصفوف/الشعب التي لأحد أبناء ولي الأمر فيها طالب، مهما كان الطفل المختار حالياً بالأعلى
+  const honorRoll = session.honorRoll || [];
+  html += `<div class="section-title" style="margin-top:20px;">🏆 لوحة تكريم الأوائل</div>`;
+  if (honorRoll.length === 0) {
+    html += `<div class="empty-box" style="padding:20px;">لا تتوفر بيانات كافية لعرض لوحة الأوائل بعد</div>`;
+  } else {
+    honorRoll.forEach(entry => {
+      const top = entry.TopStudents || [];
+      html += `<div style="font-size:13px;font-weight:700;color:var(--text);margin:12px 0 8px;">${entry.Class_Level}${entry.Section ? " - شعبة " + entry.Section : ""}</div>`;
+      if (top.length === 0) {
+        html += `<div class="empty-box" style="padding:16px;">لا توجد علامات كافية بعد لهذا الصف</div>`;
+      } else {
+        top.forEach((s, i) => {
+          const medals = ["🥇", "🥈", "🥉", "🏅"];
+          html += `
+            <div class="exam-item">
+              <div>
+                <div class="exam-subject">${medals[i] || "🏅"} ${s.Student_Name}</div>
+              </div>
+            </div>
+          `;
+        });
+      }
+    });
+  }
+
   return html;
 }
 
