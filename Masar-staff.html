@@ -1019,10 +1019,10 @@ function renderParentsListSection() {
           <div class="student-row">
             <div class="student-info">
               <div class="name">${p.Parent_Name}</div>
-              <div class="meta">👤 ${(p.Phone||"").replace(/\D/g,"").slice(-6) || "—"} &nbsp;·&nbsp; 🔑 ${p.PIN_Code || "—"} &nbsp;·&nbsp; 📞 ${p.Phone || "بدون هاتف"}</div>
+              <div class="meta">👤 ${String(p.Phone||"").replace(/\D/g,"").slice(-6) || "—"} &nbsp;·&nbsp; 🔑 ${p.PIN_Code || "—"} &nbsp;·&nbsp; 📞 ${p.Phone || "بدون هاتف"}</div>
             </div>
             <div style="display:flex;gap:6px;flex-wrap:wrap;">
-              <button class="status-pill" style="background:#25D366;color:#fff;" onclick="sendParentCredentials('${p.Phone || ""}','${(p.Parent_Name||"").replace(/'/g,"")}','${p.PIN_Code || ""}')">📤 واتساب</button>
+              <button class="status-pill" style="background:#25D366;color:#fff;" onclick="sendParentCredentials('${p.Phone || ""}','${String(p.Parent_Name||"").replace(/'/g,"")}','${p.PIN_Code || ""}')">📤 واتساب</button>
               <button class="status-pill" style="background:var(--edit-bg);color:var(--edit-text);" onclick="editingParentId='${p.Parent_ID}';renderDashboard();">تعديل</button>
               <button class="status-pill ${isParentActive ? "status-active" : "status-inactive"}" onclick="toggleParentStatus('${p.Parent_ID}','${isParentActive ? "Inactive" : "Active"}')">
                 ${isParentActive ? "نشط" : "متوقف"}
@@ -1046,7 +1046,7 @@ function renderEditParentForm(p) {
         <div class="form-field">
           <label>رقم الهاتف</label>
           <input id="epPhone" value="${p.Phone || ""}" required />
-          <div style="font-size:11px;color:var(--muted);margin-top:5px;">اسم الدخول الحالي المشتق من هذا الرقم: ${(p.Phone||"").replace(/\D/g,"").slice(-6) || "—"}</div>
+          <div style="font-size:11px;color:var(--muted);margin-top:5px;">اسم الدخول الحالي المشتق من هذا الرقم: ${String(p.Phone||"").replace(/\D/g,"").slice(-6) || "—"}</div>
         </div>
         <div class="form-field">
           <label>كلمة السر</label>
@@ -1699,7 +1699,7 @@ function renderAdminTeachersTab() {
             <div class="meta">${t.Username} · ${describeTeacherScope(t.Username)}</div>
           </div>
           <div style="display:flex;gap:6px;flex-wrap:wrap;">
-            <button class="status-pill" style="background:#25D366;color:#fff;" onclick="sendTeacherCredentials('${t.Phone || ""}','${(t.Name||t.Username).replace(/'/g,"")}','${t.Username}','${t.Password || ""}')">📤 واتساب</button>
+            <button class="status-pill" style="background:#25D366;color:#fff;" onclick="sendTeacherCredentials('${t.Phone || ""}','${String(t.Name||t.Username).replace(/'/g,"")}','${t.Username}','${t.Password || ""}')">📤 واتساب</button>
             <button class="status-pill" style="background:var(--edit-bg);color:var(--edit-text);" onclick="editingTeacherUser='${t.Username}';renderDashboard();">تعديل</button>
             <button class="status-pill ${isActive ? "status-active" : "status-inactive"}" onclick="toggleTeacherStatus('${t.Username}','${isActive ? "Inactive" : "Active"}')">
               ${isActive ? "نشط" : "معطّل"}
@@ -3944,7 +3944,7 @@ function renderAdminAccountsTab() {
             <div class="meta">${t.Username} · ${roleLabel}</div>
           </div>
           <div style="display:flex;gap:6px;flex-wrap:wrap;">
-            <button class="status-pill" style="background:#25D366;color:#fff;" onclick="sendTeacherCredentials('${t.Phone || ""}','${(t.Name||t.Username).replace(/'/g,"")}','${t.Username}','${t.Password || ""}')">📤 واتساب</button>
+            <button class="status-pill" style="background:#25D366;color:#fff;" onclick="sendTeacherCredentials('${t.Phone || ""}','${String(t.Name||t.Username).replace(/'/g,"")}','${t.Username}','${t.Password || ""}')">📤 واتساب</button>
             <button class="status-pill" style="background:var(--edit-bg);color:var(--edit-text);" onclick="editingAdminUser='${t.Username}';renderDashboard();">تعديل</button>
             ${!isSelf ? `<button class="status-pill ${isActive ? "status-active" : "status-inactive"}" onclick="toggleTeacherStatus('${t.Username}','${isActive ? "Inactive" : "Active"}')">${isActive ? "نشط" : "معطّل"}</button>` : ""}
           </div>
