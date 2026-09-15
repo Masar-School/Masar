@@ -27,7 +27,8 @@
 
   .header { background: var(--header); padding: 20px 18px; display: flex; align-items: center; justify-content: space-between; border-bottom-left-radius: 20px; border-bottom-right-radius: 20px; }
   .login-header { background: var(--header); padding: 56px 24px 40px; text-align: center; border-bottom-left-radius: 28px; border-bottom-right-radius: 28px; position: relative; }
-  .avatar { width: 64px; height: 64px; border-radius: 50%; background: var(--gold); display: flex; align-items: center; justify-content: center; margin: 0 auto 16px; font-size: 26px; font-weight: 700; color: var(--header); }
+  .avatar { width: 128px; height: 128px; border-radius: 50%; background: #fff; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.15); }
+  .avatar img { width: 100%; height: 100%; object-fit: contain; }
   .avatar-small { width: 40px; height: 40px; border-radius: 50%; background: var(--gold); display: flex; align-items: center; justify-content: center; font-weight: 700; color: var(--header); }
   .school-name { color: #fff; font-size: 20px; font-weight: 600; }
   .school-sub { color: #B9C2D4; font-size: 13px; margin-top: 4px; }
@@ -240,14 +241,14 @@ function renderLogin(errorMsg) {
         style="position:absolute; top:16px; left:16px;">
         ${document.body.classList.contains('dark') ? '☀️' : '🌙'}
       </button>
-      <div class="avatar">م</div>
+      <div class="avatar"><img src="masar-logo.png" alt="شعار مدرسة مسار للتميز" /></div>
       <div class="school-name">مدرسة مسار للتميز</div>
       <div class="school-sub">بوابة أولياء الأمور</div>
     </div>
     <form id="loginForm">
       <label>اسم المستخدم (آخر 6 أرقام من هاتفك)</label>
       <div class="field">
-        <input id="idInput" type="tel" placeholder="مثال: 222444" value="${saved ? saved.phone : ""}" />
+        <input id="idInput" type="tel" placeholder="مثال: 424717" value="${saved ? saved.phone : ""}" />
       </div>
       <label>كلمة السر (PIN)</label>
       <div class="field">
@@ -981,9 +982,13 @@ function forgotPasswordUrlParent() {
   return `https://wa.me/${parentAdminWhatsapp}?text=${msg}`;
 }
 
-(async function bootstrapParentApp() {
+(function bootstrapParentApp() {
   applyDarkModePref();
-  await fetchParentPublicSettings();
+  // لا ننتظر جلب رقم واتساب الإدارة — يشتغل بالخلفية بالتوازي مع محاولة الدخول،
+  // حتى لا تتعطل شاشة الدخول بالكامل لثوانٍ إضافية بانتظار طلب غير ضروري لعرضها.
+  fetchParentPublicSettings().then(() => {
+    if (!session) renderLogin(); // أعد الرسم فقط إذا لسا واقف على شاشة الدخول، لإظهار زر واتساب
+  });
   tryAutoLogin();
 })();
 if ("serviceWorker" in navigator) {
