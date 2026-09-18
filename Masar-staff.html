@@ -166,7 +166,7 @@
 <div id="app"></div>
 
 <script>
-const API_URL = "https://script.google.com/macros/s/AKfycbwE9KAJm_v0ILcaTmpzEzAMXinxBhLKk4VJ9S3QtDVwYNZOqBpjF8TXYyuixUnLsv-L-g/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbzvkc_KpGWbAzUnBJx1EGGzX83gyjy-SGp-Cvgf3W-GEInkTbLGyRiAl42OYqFdomBtXg/exec";
 
 const SUBJECTS = ["لغة عربية", "لغة إنجليزية", "رياضيات", "علوم", "تربية إسلامية", "دراسات اجتماعية", "حاسب آلي", "تربية فنية", "تربية بدنية", "عام"];
 const EXAM_TYPES = ["المذاكرة الأولى", "المذاكرة الثانية", "الامتحان النهائي للفصل"];
@@ -245,7 +245,9 @@ function sendParentCredentials(phone, name, pin) {
 👤 اسم المستخدم: ${loginUsername}
 🔑 كلمة السر: ${pin}
 
-ننصح بحفظ الرابط على الشاشة الرئيسية لسهولة الوصول لاحقاً.`;
+ننصح بحفظ الرابط على الشاشة الرئيسية لسهولة الوصول لاحقاً.
+
+⚠️ في حال وجود أي خطأ بالمعلومات المسجّلة (الاسم، الصف، بيانات الأبناء...)، يرجى التواصل مع إدارة المدرسة لتصحيحها.`;
   window.open(`https://wa.me/${num}?text=${encodeURIComponent(msg)}`, "_blank");
 }
 
@@ -258,7 +260,9 @@ function sendTeacherCredentials(phone, name, username, password) {
 
 🔗 رابط الدخول: ${STAFF_APP_URL}
 👤 اسم المستخدم: ${username}
-🔑 كلمة السر: ${password}`;
+🔑 كلمة السر: ${password}
+
+⚠️ في حال وجود أي خطأ بالمعلومات المسجّلة (الاسم، الصف، المادة...)، يرجى التواصل مع إدارة المدرسة لتصحيحها.`;
   window.open(`https://wa.me/${num}?text=${encodeURIComponent(msg)}`, "_blank");
 }
 
@@ -612,7 +616,7 @@ function renderLogin(errorMsg) {
     </div>
     <form id="loginForm">
       <label>اسم المستخدم</label>
-      <div class="field"><input id="userInput" placeholder="مثال: T011" /></div>
+      <div class="field"><input id="userInput" placeholder="مثال: T01A" /></div>
       <label>كلمة السر</label>
       <div class="field"><input id="passInput" type="password" placeholder="كلمة السر" /></div>
       <div class="remember-row">
@@ -943,6 +947,14 @@ function renderAdminStudentsTab() {
           <input id="newStudentBirthDate" type="date" />
         </div>
         <div class="form-field">
+          <label>اسم الأم (اختياري)</label>
+          <input id="newStudentMotherName" placeholder="لم يتم إدخال معلومات بعد" />
+        </div>
+        <div class="form-field">
+          <label>ملاحظات صحية / أمراض (اختياري)</label>
+          <textarea id="newStudentIllness" rows="2" placeholder="لم يتم إدخال معلومات بعد"></textarea>
+        </div>
+        <div class="form-field">
           <label>مشرف الباص (اختياري)</label>
           <select id="newStudentSupervisor">
             <option value="">بدون</option>
@@ -970,7 +982,7 @@ function renderAdminStudentsTab() {
           <div class="student-row">
             <div class="student-info">
               <div class="name">${nameWithAge(s.Student_Name, s.Birth_Date)}</div>
-              <div class="meta">${s.Class_Level || ""} ${s.Section ? "- شعبة " + s.Section : ""}</div>
+              <div class="meta">${s.Class_Level || ""} ${s.Section ? "- شعبة " + s.Section : ""}${s.Illness && s.Illness.trim() ? " · ⚕️ " + s.Illness : ""}</div>
             </div>
             <div style="display:flex;gap:6px;">
               <button class="status-pill" style="background:var(--edit-bg);color:var(--edit-text);" onclick="editingStudentId='${s.Student_ID}';renderDashboard();">تعديل</button>
@@ -1157,6 +1169,8 @@ function renderEditStudentForm(s) {
         </div>
         <div class="form-field"><label>الرسوم السنوية</label><input id="editFee" type="number" value="${String(s.Tuition_Fee || "").replace(/[^0-9.]/g, "")}" /></div>
         <div class="form-field"><label>تاريخ الميلاد (اختياري)</label><input id="editBirthDate" type="date" value="${s.Birth_Date || ""}" /></div>
+        <div class="form-field"><label>اسم الأم (اختياري)</label><input id="editMotherName" value="${s.Mother_Name || ""}" placeholder="لم يتم إدخال معلومات بعد" /></div>
+        <div class="form-field"><label>ملاحظات صحية / أمراض (اختياري)</label><textarea id="editIllness" rows="2" placeholder="لم يتم إدخال معلومات بعد">${s.Illness || ""}</textarea></div>
         <div class="form-field">
           <label>مشرف الباص</label>
           <select id="editSupervisor">
@@ -1263,6 +1277,8 @@ async function submitEditStudent(e) {
     Parent_Name: parentObj ? parentObj.Parent_Name : "",
     Tuition_Fee: document.getElementById("editFee").value,
     Birth_Date: document.getElementById("editBirthDate").value,
+    Mother_Name: document.getElementById("editMotherName").value.trim(),
+    Illness: document.getElementById("editIllness").value.trim(),
     Supervisor_ID: supVal[0] || "",
     Supervisor_Name: supVal[1] || ""
   };
@@ -1314,6 +1330,8 @@ async function submitAddStudent(e) {
     Parent_ID: document.getElementById("newStudentParent").value,
     Tuition_Fee: document.getElementById("newStudentFee").value,
     Birth_Date: document.getElementById("newStudentBirthDate").value,
+    Mother_Name: document.getElementById("newStudentMotherName").value.trim(),
+    Illness: document.getElementById("newStudentIllness").value.trim(),
     Supervisor_ID: supVal[0] || "",
     Supervisor_Name: supVal[1] || ""
   };
@@ -1336,6 +1354,8 @@ async function submitAddStudent(e) {
         Parent_Name: parentObj ? parentObj.Parent_Name : "",
         Tuition_Fee: payload.Tuition_Fee,
         Birth_Date: payload.Birth_Date,
+        Mother_Name: payload.Mother_Name,
+        Illness: payload.Illness,
         Supervisor_ID: payload.Supervisor_ID,
         Supervisor_Name: payload.Supervisor_Name,
         Status: "Active"
