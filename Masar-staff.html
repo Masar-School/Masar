@@ -185,7 +185,7 @@
 <div id="app"></div>
 
 <script>
-const API_URL = "https://script.google.com/macros/s/AKfycbyVcIpkLd5rmNYheBKjSFLwGTyF_593I06QRWD7K7x6l4wZ7SqBhfuGMWtltwKKyGnW/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbxlDZU8RyKRpjH6xJiGdHRfRVatXW6EcvY3Y268pndtqfNFaZlFpBnDdCAzVeXK0d2Tlw/exec";
 
 const SUBJECTS = ["لغة عربية", "لغة إنجليزية", "رياضيات", "علوم", "تربية إسلامية", "دراسات اجتماعية", "حاسب آلي", "تربية فنية", "تربية بدنية", "عام"];
 const EXAM_TYPES = ["المذاكرة الأولى", "المذاكرة الثانية", "الامتحان النهائي للفصل"];
@@ -268,6 +268,16 @@ function sendParentCredentials(phone, name, pin) {
 
 ⚠️ في حال وجود أي خطأ بالمعلومات المسجّلة (الاسم، الصف، بيانات الأبناء...)، يرجى التواصل مع إدارة المدرسة لتصحيحها.`;
   window.open(`https://wa.me/${num}?text=${encodeURIComponent(msg)}`, "_blank");
+}
+
+// آخر حساب أُضيف (معلم/مدير) — لعرض زر "إرسال بواتساب" مباشرة بعد الإضافة دون الحاجة للبحث عنه بالقائمة
+const lastAddedCreds = { teacher: null, admin: null };
+function credentialsWhatsappButtonHtml(kind) {
+  return `<div style="margin-top:8px;"><button type="button" class="status-pill" style="background:#25D366;color:#fff;" onclick="sendLastAddedCredentials('${kind}')">📤 إرسال بيانات الدخول عبر واتساب</button></div>`;
+}
+function sendLastAddedCredentials(kind) {
+  const c = lastAddedCreds[kind];
+  if (c) sendTeacherCredentials(c.phone, c.name, c.username, c.password);
 }
 
 function sendTeacherCredentials(phone, name, username, password) {
@@ -1906,6 +1916,10 @@ function renderAdminTeachersTab() {
         <div class="form-field"><label>اسم المعلم</label><input id="newTeacherName" required /></div>
         <div class="form-field"><label>اسم المستخدم</label><input id="newTeacherUsername" required /></div>
         <div class="form-field"><label>كلمة السر</label><input id="newTeacherPassword" required /></div>
+        <div class="form-field">
+          <label>رقم الهاتف (اختياري — لإرسال بيانات الدخول للمعلم عبر واتساب)</label>
+          <input id="newTeacherPhone" type="tel" placeholder="مثال: 0991234567" autocomplete="off" />
+        </div>
         <div class="form-field"><label>الصف الأساسي (اختياري — يمكن إضافة صفوف/مواد أخرى لاحقاً من "توزيع المواد")</label><select id="newTeacherClass"><option value="">بدون — أضيفه لاحقاً من توزيع المواد</option>${classOptions}</select></div>
         <div class="form-field"><label>الشعبة</label><select id="newTeacherSection"><option value="">بدون (يدرّس كل الشعب)</option>${Array.from({length:8},(_,i)=>i+1).map(n => `<option value="${n}">شعبة ${n}</option>`).join("")}</select></div>
         <button type="submit" class="btn-save" id="addTeacherBtn">إضافة المعلم</button>
@@ -1962,6 +1976,14 @@ async function submitAddTeacher(e) {
   e.preventDefault();
   const tName = document.getElementById("newTeacherName").value.trim();
   const tUser = document.getElementById("newTeacherUsername").value.trim();
+  const tPhone = document.getElementById("newTeacherPhone").value.trim();
+
+  // الهاتف اختياري، لكن إن كُتب يجب أن يكون رقماً معقولاً حتى يعمل رابط واتساب
+  if (tPhone && tPhone.replace(/\D/g, "").length < 7) {
+    addTeacherMsg = `<div class="form-msg err">رقم الهاتف غير صالح. اتركه فارغاً أو اكتب الرقم كاملاً (مثال: 0991234567).</div>`;
+    renderDashboard();
+    return;
+  }
 
   // منع تكرار اسم المستخدم نهائياً (هو معرّف الدخول)
   const userClash = (staffSession.teachers || []).find(
@@ -1994,6 +2016,7 @@ async function submitAddTeacher(e) {
     Name: tName,
     Username: tUser,
     Password: document.getElementById("newTeacherPassword").value.trim(),
+    Phone: tPhone,
     Class_Level: document.getElementById("newTeacherClass").value,
     Section: document.getElementById("newTeacherSection").value.trim()
   };
@@ -2002,7 +2025,8 @@ async function submitAddTeacher(e) {
     const res = await fetch(API_URL, { method: "POST", body: JSON.stringify(payload) });
     const data = await res.json();
     if (data.ok) {
-      addTeacherMsg = `<div class="form-msg ok">تمت إضافة المعلم ✓</div>`;
+      lastAddedCreds.teacher = { phone: tPhone, name: tName || tUser, username: tUser, password: payload.Password };
+      addTeacherMsg = `<div class="form-msg ok">تمت إضافة المعلم ✓${tPhone ? credentialsWhatsappButtonHtml("teacher") : ""}</div>`;
       staffSession.teachers.push({ ...payload, Role: "Teacher" });
     } else {
       addTeacherMsg = `<div class="form-msg err">${data.error}</div>`;
@@ -3346,7 +3370,7 @@ const ADMIN_GROUPS = [
       { id: "teachers",         label: "المعلمون" },
       { id: "teacherAssign",    label: "توزيع المواد" },
       { id: "bus",              label: "الباص" },
-      { id: "adminAccounts",    label: "👑 حسابات الإدارة", ownerOnly: true } ] },
+      { id: "adminAccounts",    label: "👑 حسابات الإدارة" } ] },
   { id: "school",   label: "المدرسة",  tabs: [
       { id: "announcements",    label: "الإعلانات" },
       { id: "exams",            label: "جداول الامتحانات" },
@@ -4300,8 +4324,8 @@ let addAdminMsg = "";
 let editingAdminUser = null;
 
 function renderAdminAccountsTab() {
-  // حماية إضافية بالواجهة: حتى لو وصل غير المالك لهذا التبويب بأي طريقة، لا يشوف محتواه
-  if (!isOwner()) return `<div class="empty-box">هذا القسم متاح لمالك البرنامج فقط</div>`;
+  // المدير والمالك يقدران يضيفان حسابات مدير جديدة. أما تعديل/تعطيل حسابات الإدارة الأخرى فيبقى للمالك فقط.
+  if (!isAdmin()) return `<div class="empty-box">هذا القسم متاح للإدارة فقط</div>`;
 
   const admins = (staffSession.teachers || []).filter(t => isAdminRoleClient(t.Role));
 
@@ -4312,19 +4336,24 @@ function renderAdminAccountsTab() {
         <div class="form-field"><label>اسم المستخدم</label><input id="newAdminUsername" required /></div>
         <div class="form-field"><label>كلمة السر</label><input id="newAdminPassword" required /></div>
         <div class="form-field"><label>الاسم الكامل</label><input id="newAdminName" /></div>
-        <div class="form-field"><label>رقم الهاتف</label><input id="newAdminPhone" type="tel" /></div>
+        <div class="form-field">
+          <label>رقم الهاتف (اختياري — لإرسال بيانات الدخول له عبر واتساب)</label>
+          <input id="newAdminPhone" type="tel" placeholder="مثال: 0991234567" autocomplete="off" />
+        </div>
         <div class="form-field">
           <label>الصلاحية</label>
           <select id="newAdminRole">
-            <option value="Admin">مدير (Admin)</option>
-            <option value="Owner">مالك (Owner) — يقدر يضيف مدراء آخرين</option>
+            <option value="Admin">مدير — بنفس صلاحيات المدير</option>
+            ${isOwner() ? `<option value="Owner">مالك (Owner) — يعدّل ويعطّل حسابات المدراء أيضاً</option>` : ""}
           </select>
         </div>
         <button type="submit" class="btn-save" id="addAdminBtn">إضافة</button>
         ${addAdminMsg}
       </form>
       <div style="font-size:11.5px;color:var(--muted);margin-top:10px;">
-        هذا القسم لا يظهر إلا لحسابك أنت (المالك). حسابات "مدير" العادية لا تقدر تشوفه ولا تضيف مدراء جدد.
+        ${isOwner()
+          ? "المدير الجديد يحصل على نفس صلاحيات المدير. تعديل حسابات الإدارة وتعطيلها وإرسال بياناتها بواتساب متاح لك أنت فقط."
+          : "المدير الجديد يحصل على نفس صلاحياتك بالكامل. لتعديل حسابات الإدارة الأخرى أو تعطيلها، تواصل مع مبرمج الصفحة. ويمكنك تعديل حسابك أنت."}
       </div>
     </div>
   `;
@@ -4333,9 +4362,12 @@ function renderAdminAccountsTab() {
   admins.forEach(t => {
     const isActive = String(t.Status || "Active").trim() !== "Inactive";
     const isSelf = t.Username === staffSession.username;
-    const roleLabel = String(t.Role).trim() === "Owner" ? "مالك" : "مدير";
+    const ownerView = isOwner();
+    // لغير المالك: كل حسابات الإدارة تظهر "مدير" (لا يُكشف وجود دور أعلى)
+    const roleLabel = (ownerView && String(t.Role).trim() === "Owner") ? "مالك" : "مدير";
+    const canEdit = ownerView || isSelf;
 
-    if (editingAdminUser === t.Username) {
+    if (editingAdminUser === t.Username && canEdit) {
       listHtml += `
         <div class="form-card">
           <div class="section-title">تعديل: ${t.Name || t.Username}</div>
@@ -4354,12 +4386,13 @@ function renderAdminAccountsTab() {
         <div class="student-row">
           <div class="student-info">
             <div class="name">${t.Name || t.Username} ${isSelf ? "(أنت)" : ""}</div>
-            <div class="meta">${t.Username} · ${roleLabel}</div>
+            <div class="meta">${t.Username} · ${roleLabel}${!ownerView && !isSelf ? " · للتعديل: تواصل مع مبرمج الصفحة" : ""}</div>
           </div>
           <div style="display:flex;gap:6px;flex-wrap:wrap;">
-            <button class="status-pill" style="background:#25D366;color:#fff;" onclick="sendTeacherCredentials('${t.Phone || ""}','${String(t.Name||t.Username).replace(/'/g,"")}','${t.Username}','${t.Password || ""}')">📤 واتساب</button>
-            <button class="status-pill" style="background:var(--edit-bg);color:var(--edit-text);" onclick="editingAdminUser='${t.Username}';renderDashboard();">تعديل</button>
-            ${!isSelf ? `<button class="status-pill ${isActive ? "status-active" : "status-inactive"}" onclick="toggleTeacherStatus('${t.Username}','${isActive ? "Inactive" : "Active"}')">${isActive ? "نشط" : "معطّل"}</button>` : ""}
+            ${ownerView ? `<button class="status-pill" style="background:#25D366;color:#fff;" onclick="sendTeacherCredentials('${t.Phone || ""}','${String(t.Name||t.Username).replace(/'/g,"")}','${t.Username}','${t.Password || ""}')">📤 واتساب</button>` : ""}
+            ${canEdit ? `<button class="status-pill" style="background:var(--edit-bg);color:var(--edit-text);" onclick="editingAdminUser='${t.Username}';renderDashboard();">تعديل</button>` : ""}
+            ${ownerView && !isSelf ? `<button class="status-pill ${isActive ? "status-active" : "status-inactive"}" onclick="toggleTeacherStatus('${t.Username}','${isActive ? "Inactive" : "Active"}')">${isActive ? "نشط" : "معطّل"}</button>` : ""}
+            ${!ownerView && !isActive ? `<span class="status-pill status-inactive">معطّل</span>` : ""}
           </div>
         </div>
       `;
@@ -4385,12 +4418,18 @@ async function submitAddAdmin(e) {
     Phone: document.getElementById("newAdminPhone").value.trim(),
     Role: document.getElementById("newAdminRole").value
   };
+  if (payload.Phone && payload.Phone.replace(/\D/g, "").length < 7) {
+    addAdminMsg = `<div class="form-msg err">رقم الهاتف غير صالح. اتركه فارغاً أو اكتب الرقم كاملاً.</div>`;
+    renderDashboard();
+    return;
+  }
 
   try {
     const res = await fetch(API_URL, { method: "POST", body: JSON.stringify(payload) });
     const data = await res.json();
     if (data.ok) {
-      addAdminMsg = `<div class="form-msg ok">تمت الإضافة ✓</div>`;
+      lastAddedCreds.admin = { phone: payload.Phone, name: payload.Name || payload.Username, username: payload.Username, password: payload.Password };
+      addAdminMsg = `<div class="form-msg ok">تمت الإضافة ✓${payload.Phone ? credentialsWhatsappButtonHtml("admin") : ""}</div>`;
       staffSession.teachers.push({
         Username: payload.Username, Name: payload.Name, Phone: payload.Phone,
         Role: payload.Role, Status: "Active", Password: payload.Password
@@ -4463,7 +4502,7 @@ function renderAdminLoginLogTab() {
     );
   }
 
-  const roleLabel = (r) => r === "Owner" ? "مالك" : (r === "Admin" ? "مدير" : (r === "Teacher" ? "معلم" : "ولي أمر"));
+  const roleLabel = (r) => (r === "Owner" && isOwner()) ? "مالك" : ((r === "Owner" || r === "Admin") ? "مدير" : (r === "Teacher" ? "معلم" : "ولي أمر"));
 
   let listHtml = `<div class="section-title">🕓 آخر ${rows.length} عملية دخول</div>`;
   if (rows.length === 0) {
