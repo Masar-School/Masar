@@ -4,7 +4,7 @@
   "description": "بوابة المعلمين والإدارة لتسجيل الحضور والعلامات والسلوك والواجبات",
   "id": "/Masar-staff.html",
   "start_url": "./Masar-staff.html",
-  "scope": "./",
+  "scope": "./Masar-staff.html",
   "display": "standalone",
   "orientation": "portrait",
   "background_color": "#FCF4F2",
