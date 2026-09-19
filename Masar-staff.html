@@ -166,7 +166,7 @@
 <div id="app"></div>
 
 <script>
-const API_URL = "https://script.google.com/macros/s/AKfycbzvkc_KpGWbAzUnBJx1EGGzX83gyjy-SGp-Cvgf3W-GEInkTbLGyRiAl42OYqFdomBtXg/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbyJtt9Kn7tnMnR1NYlSoRlBD2kUPvfk8S-S6luqU72KrpyrM1ZXgTQ5pXWp2xxfgY8Srw/exec";
 
 const SUBJECTS = ["لغة عربية", "لغة إنجليزية", "رياضيات", "علوم", "تربية إسلامية", "دراسات اجتماعية", "حاسب آلي", "تربية فنية", "تربية بدنية", "عام"];
 const EXAM_TYPES = ["المذاكرة الأولى", "المذاكرة الثانية", "الامتحان النهائي للفصل"];
@@ -2986,10 +2986,15 @@ const ADMIN_GROUPS = [
       { id: "exams",            label: "جداول الامتحانات" },
       { id: "holidays",         label: "تقويم العطل" },
       { id: "settings",         label: "⚙️ الإعدادات" } ] },
+  { id: "logs",     label: "🕓 السجلات", tabs: [
+      { id: "loginLog",         label: "سجل الدخول" },
+      { id: "changeLog",        label: "سجل التغييرات" } ] },
 ];
 
 const ADMIN_TAB_RENDERERS = {
   dashboard:        () => renderAdminDashboardTab(),
+  loginLog:         () => renderAdminLoginLogTab(),
+  changeLog:        () => renderAdminChangeLogTab(),
   students:         () => renderAdminStudentsTab(),
   parents:          () => renderAdminParentsTab(),
   roster:           () => renderTeacherRosterTab(),
@@ -3856,6 +3861,8 @@ function getSettingValue(key) {
 
 function renderAdminSettingsTab() {
   const whatsapp = getSettingValue("Admin_WhatsApp");
+  const osAppId = getSettingValue("OneSignal_AppId");
+  const osApiKey = getSettingValue("OneSignal_RestApiKey");
   return `
     <div class="form-card">
       <div class="section-title">⚙️ إعدادات التواصل</div>
@@ -3866,6 +3873,17 @@ function renderAdminSettingsTab() {
         </div>
         <div style="font-size:11.5px;color:var(--muted);margin-bottom:10px;">
           هذا الرقم يظهر لكل الأهالي والمعلمين بشاشة الدخول عند الضغط على "نسيت كلمة السر". اكتبه بصيغة دولية بدون + أو أصفار زائدة (مثال لسوريا: 9639xxxxxxxx).
+        </div>
+        <div class="form-field">
+          <label>🔔 إشعارات الويب — OneSignal App ID</label>
+          <input id="settingOneSignalAppId" placeholder="من لوحة OneSignal → Keys & IDs" value="${osAppId}" />
+        </div>
+        <div class="form-field">
+          <label>🔑 OneSignal REST API Key</label>
+          <input id="settingOneSignalApiKey" placeholder="سرّي — لا تشاركه مع أحد" value="${osApiKey}" />
+        </div>
+        <div style="font-size:11.5px;color:var(--muted);margin-bottom:10px;">
+          هذان الحقلان يفعّلان إشعارات الويب لأولياء الأمور (دفعة جديدة، علامة، غياب، إعلان...). اتركهما فارغين إذا لم تكن الميزة مفعّلة بعد.
         </div>
         <button type="submit" class="btn-save" id="saveSettingsBtn">حفظ</button>
         ${settingsMsg}
@@ -3880,25 +3898,30 @@ async function submitSettings(e) {
   btn.disabled = true;
   btn.textContent = "جارِ الحفظ...";
 
-  const payload = {
-    action: "updateSetting",
-    adminUsername: staffSession.username,
-    adminPassword: staffSession._password,
-    Key: "Admin_WhatsApp",
-    Value: document.getElementById("settingWhatsapp").value.trim()
-  };
+  const entries = [
+    { Key: "Admin_WhatsApp", Value: document.getElementById("settingWhatsapp").value.trim() },
+    { Key: "OneSignal_AppId", Value: document.getElementById("settingOneSignalAppId").value.trim() },
+    { Key: "OneSignal_RestApiKey", Value: document.getElementById("settingOneSignalApiKey").value.trim() },
+  ];
 
   try {
-    const res = await fetch(API_URL, { method: "POST", body: JSON.stringify(payload) });
-    const data = await res.json();
-    if (data.ok) {
+    for (const entry of entries) {
+      const payload = {
+        action: "updateSetting",
+        adminUsername: staffSession.username,
+        adminPassword: staffSession._password,
+        Key: entry.Key,
+        Value: entry.Value
+      };
+      const res = await fetch(API_URL, { method: "POST", body: JSON.stringify(payload) });
+      const data = await res.json();
+      if (!data.ok) { settingsMsg = `<div class="form-msg err">${data.error}</div>`; renderDashboard(); return; }
+
       if (!staffSession.settings) staffSession.settings = [];
-      const row = staffSession.settings.find(r => r.Key === "Admin_WhatsApp");
-      if (row) row.Value = payload.Value; else staffSession.settings.push({ Key: "Admin_WhatsApp", Value: payload.Value });
-      settingsMsg = `<div class="form-msg ok">تم الحفظ ✓</div>`;
-    } else {
-      settingsMsg = `<div class="form-msg err">${data.error}</div>`;
+      const row = staffSession.settings.find(r => r.Key === entry.Key);
+      if (row) row.Value = entry.Value; else staffSession.settings.push({ Key: entry.Key, Value: entry.Value });
     }
+    settingsMsg = `<div class="form-msg ok">تم الحفظ ✓</div>`;
   } catch (err) {
     settingsMsg = `<div class="form-msg err">تعذر الاتصال بالخادم</div>`;
   }
@@ -4046,6 +4069,97 @@ async function submitEditAdmin(e) {
   } catch (err) {
     document.getElementById("editAdminMsg").innerHTML = `<div class="form-msg err">تعذر الاتصال بالخادم</div>`;
   }
+}
+
+
+let loginLogSearch = "";
+let changeLogSearch = "";
+
+// ---------------------------------------------------------------------------
+// سجل الدخول — من دخل ومتى، لكل الأهالي والمعلمين والمدراء
+// ---------------------------------------------------------------------------
+
+function renderAdminLoginLogTab() {
+  let rows = staffSession.loginLog || [];
+
+  const searchBox = `
+    <div class="search-field-admin">
+      <input id="loginLogSearchInput" placeholder="ابحث بالاسم أو اسم المستخدم..." value="${loginLogSearch}" oninput="loginLogSearch=this.value;renderDashboard();" />
+      <span>🔎</span>
+    </div>
+  `;
+
+  if (loginLogSearch.trim() !== "") {
+    const term = loginLogSearch.trim();
+    rows = rows.filter(r =>
+      String(r.Name || "").includes(term) || String(r.Username || "").includes(term)
+    );
+  }
+
+  const roleLabel = (r) => r === "Owner" ? "مالك" : (r === "Admin" ? "مدير" : (r === "Teacher" ? "معلم" : "ولي أمر"));
+
+  let listHtml = `<div class="section-title">🕓 آخر ${rows.length} عملية دخول</div>`;
+  if (rows.length === 0) {
+    listHtml += `<div class="empty-box">لا يوجد سجل دخول بعد</div>`;
+  } else {
+    rows.forEach(r => {
+      listHtml += `
+        <div class="student-row">
+          <div class="student-info">
+            <div class="name">${r.Name || r.Username}</div>
+            <div class="meta">${r.Username} · ${roleLabel(r.Role)}</div>
+          </div>
+          <span class="badge-role">${r.Login_Time || ""}</span>
+        </div>
+      `;
+    });
+  }
+
+  return searchBox + listHtml;
+}
+
+// ---------------------------------------------------------------------------
+// سجل التغييرات — من عدّل شو ومتى، لكل عمليات الإضافة/التعديل/التعطيل بالتطبيق
+// ---------------------------------------------------------------------------
+
+function renderAdminChangeLogTab() {
+  let rows = staffSession.changeLog || [];
+
+  const searchBox = `
+    <div class="search-field-admin">
+      <input id="changeLogSearchInput" placeholder="ابحث بالاسم أو نوع العملية..." value="${changeLogSearch}" oninput="changeLogSearch=this.value;renderDashboard();" />
+      <span>🔎</span>
+    </div>
+  `;
+
+  if (changeLogSearch.trim() !== "") {
+    const term = changeLogSearch.trim();
+    rows = rows.filter(r =>
+      String(r.Actor_Name || "").includes(term) ||
+      String(r.Actor_Username || "").includes(term) ||
+      String(r.Action || "").includes(term) ||
+      String(r.Target || "").includes(term)
+    );
+  }
+
+  let listHtml = `<div class="section-title">📝 آخر ${rows.length} تغيير</div>`;
+  if (rows.length === 0) {
+    listHtml += `<div class="empty-box">لا يوجد سجل تغييرات بعد</div>`;
+  } else {
+    rows.forEach(r => {
+      listHtml += `
+        <div class="student-row" style="flex-direction:column;align-items:stretch;">
+          <div class="student-info">
+            <div class="name">${r.Action || ""}</div>
+            <div class="meta">${r.Actor_Name || r.Actor_Username} · ${r.Change_Time || ""}</div>
+            ${r.Target ? `<div style="font-size:12px;color:var(--text);margin-top:4px;">${r.Target}</div>` : ""}
+          </div>
+        </div>
+      `;
+    });
+  }
+
+  return searchBox + listHtml;
 }
 
 

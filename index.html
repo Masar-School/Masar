@@ -160,13 +160,14 @@
     .tabbar, .header, .child-chips, .print-btn { display: none !important; }
   }
 </style>
+<script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
 </head>
 <body>
 <div id="app"></div>
 
 <script>
 // تأكد من وضع الرابط الجديد للـ Web App هنا
-const API_URL = "https://script.google.com/macros/s/AKfycbzvkc_KpGWbAzUnBJx1EGGzX83gyjy-SGp-Cvgf3W-GEInkTbLGyRiAl42OYqFdomBtXg/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbyJtt9Kn7tnMnR1NYlSoRlBD2kUPvfk8S-S6luqU72KrpyrM1ZXgTQ5pXWp2xxfgY8Srw/exec";
 
 let session = null;
 let currentChildIndex = 0;
@@ -225,7 +226,8 @@ async function doLogin(phone, pin, remember) {
   session = data;
   session._phone = phone; // حفظ بيانات الدخول من أجل زر التحديث
   session._pin = pin;
-  
+  linkOneSignalToParent(session.parent && session.parent.Parent_ID);
+
   currentChildIndex = 0;
   currentTab = "results";
   if (remember) saveCreds(phone, pin);
@@ -248,7 +250,7 @@ function renderLogin(errorMsg) {
     <form id="loginForm">
       <label>اسم المستخدم (آخر 6 أرقام من هاتفك)</label>
       <div class="field">
-        <input id="idInput" type="tel" placeholder="مثال: 222444" value="${saved ? saved.phone : ""}" />
+        <input id="idInput" type="tel" placeholder="مثال: 424717" value="${saved ? saved.phone : ""}" />
       </div>
       <label>كلمة السر (PIN)</label>
       <div class="field">
@@ -894,6 +896,7 @@ function renderApp() {
       </div>
       <div style="display:flex;align-items:center;gap:8px;">
         ${(session.announcements||[]).length ? `<button class="icon-btn" onclick="showAnnouncements=true;renderApp();">📢</button>` : ""}
+        ${oneSignalAppId ? `<button class="icon-btn" onclick="requestPushPermission()" title="تفعيل الإشعارات">🔔</button>` : ""}
         <button class="icon-btn" id="refreshBtn" title="تحديث الصفحة">🔄</button>
         <button class="icon-btn" onclick="toggleDarkMode()" title="الوضع الليلي">${document.body.classList.contains('dark') ? '☀️' : '🌙'}</button>
         <button id="logoutBtn" class="logout-btn">خروج</button>
@@ -975,12 +978,46 @@ function renderApp() {
 
 let parentAdminWhatsapp = "";
 
+let oneSignalAppId = "";
+
 async function fetchParentPublicSettings() {
   try {
     const res = await fetch(`${API_URL}?action=getPublicSettings`);
     const data = await res.json();
-    if (data.ok) parentAdminWhatsapp = data.Admin_WhatsApp || "";
+    if (data.ok) {
+      parentAdminWhatsapp = data.Admin_WhatsApp || "";
+      oneSignalAppId = data.OneSignal_AppId || "";
+      initOneSignalIfConfigured();
+    }
   } catch (err) { /* تجاهل — الزر سيظهر بدون رقم إن تعذّر الجلب */ }
+}
+
+// يهيّئ OneSignal فقط إذا كان المدير قد فعّل ميزة الإشعارات من لوحة التحكم (وضع App ID فعلي)
+function initOneSignalIfConfigured() {
+  if (!oneSignalAppId || typeof window === "undefined") return;
+  window.OneSignalDeferred = window.OneSignalDeferred || [];
+  window.OneSignalDeferred.push(function (OneSignal) {
+    OneSignal.init({ appId: oneSignalAppId }).catch(() => {});
+  });
+}
+
+// يربط جهاز ولي الأمر الحالي بمعرّفه (Parent_ID) داخل OneSignal، ليصبح بالإمكان
+// استهدافه بإشعار خاص به فقط (دفعة، علامة، غياب...) دون بث عام لكل الأهالي
+function linkOneSignalToParent(parentId) {
+  if (!oneSignalAppId || !parentId) return;
+  window.OneSignalDeferred = window.OneSignalDeferred || [];
+  window.OneSignalDeferred.push(function (OneSignal) {
+    OneSignal.login(String(parentId)).catch(() => {});
+  });
+}
+
+// يطلب إذن الإشعارات من المستخدم صراحة (زر بدل نافذة تلقائية) — مطلوب خصوصاً على آيفون
+function requestPushPermission() {
+  if (!oneSignalAppId) { alert("لم تُفعَّل ميزة الإشعارات بعد من قبل إدارة المدرسة"); return; }
+  window.OneSignalDeferred = window.OneSignalDeferred || [];
+  window.OneSignalDeferred.push(function (OneSignal) {
+    OneSignal.Notifications.requestPermission().catch(() => {});
+  });
 }
 
 function forgotPasswordUrlParent() {

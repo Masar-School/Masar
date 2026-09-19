@@ -2,6 +2,10 @@
 // إستراتيجية بسيطة: صفحات HTML = الشبكة أولاً ثم النسخة المخزّنة عند انقطاع الإنترنت.
 // باقي الملفات (أيقونات، مانفست) = المخزّن المحلي أولاً لأنها لا تتغيّر كثيراً.
 
+// دمج عامل OneSignal بنفس الملف بدل ملف منفصل — يسمح للإشعارات والتخزين المؤقت
+// بالعمل مع بعض من نفس الـ Service Worker الواحد بدون تعارض النطاق (scope).
+importScripts('https://cdn.onesignal.com/sdks/web/v16/OneSignalSDKWorker.js');
+
 const CACHE_NAME = "masar-cache-v1";
 const PRECACHE_URLS = [
   "./index.html",
