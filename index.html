@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script>if (/\/$/.test(location.pathname)) location.replace("index.html" + location.search + location.hash);</script>
 <title>مدرسة مسار للتميز</title>
 <link rel="manifest" href="manifest-parent.json">
 <meta name="theme-color" content="#16233F">
@@ -167,7 +168,7 @@
 
 <script>
 // تأكد من وضع الرابط الجديد للـ Web App هنا
-const API_URL = "https://script.google.com/macros/s/AKfycbyJtt9Kn7tnMnR1NYlSoRlBD2kUPvfk8S-S6luqU72KrpyrM1ZXgTQ5pXWp2xxfgY8Srw/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbxV3u5iQEbz1Tg7vfr2CXfrTpbiRG9TDCeIXmLXDaDb7OvHyJNAJN6nn67dAvneIxQWXw/exec";
 
 let session = null;
 let currentChildIndex = 0;
@@ -996,8 +997,19 @@ async function fetchParentPublicSettings() {
 function initOneSignalIfConfigured() {
   if (!oneSignalAppId || typeof window === "undefined") return;
   window.OneSignalDeferred = window.OneSignalDeferred || [];
-  window.OneSignalDeferred.push(function (OneSignal) {
-    OneSignal.init({ appId: oneSignalAppId }).catch(() => {});
+  window.OneSignalDeferred.push(async function (OneSignal) {
+    try {
+      // المشروع على GitHub Pages داخل مجلد فرعي /Masar/، فلازم نحدد مسار ونطاق العامل صراحةً
+      await OneSignal.init({
+        appId: oneSignalAppId,
+        serviceWorkerPath: "Masar/sw.js",
+        serviceWorkerParam: { scope: "/Masar/" },
+      });
+      // إذا سجّل ولي الأمر دخوله قبل وصول الإعدادات (دخول تلقائي)، نربطه الآن
+      if (session && session.parent && session.parent.Parent_ID) {
+        await OneSignal.login(String(session.parent.Parent_ID));
+      }
+    } catch (err) { console.error("OneSignal init failed:", err); }
   });
 }
 
@@ -1007,7 +1019,7 @@ function linkOneSignalToParent(parentId) {
   if (!oneSignalAppId || !parentId) return;
   window.OneSignalDeferred = window.OneSignalDeferred || [];
   window.OneSignalDeferred.push(function (OneSignal) {
-    OneSignal.login(String(parentId)).catch(() => {});
+    OneSignal.login(String(parentId)).catch((e) => console.error("OneSignal login failed:", e));
   });
 }
 
@@ -1016,7 +1028,7 @@ function requestPushPermission() {
   if (!oneSignalAppId) { alert("لم تُفعَّل ميزة الإشعارات بعد من قبل إدارة المدرسة"); return; }
   window.OneSignalDeferred = window.OneSignalDeferred || [];
   window.OneSignalDeferred.push(function (OneSignal) {
-    OneSignal.Notifications.requestPermission().catch(() => {});
+    OneSignal.Notifications.requestPermission().catch((e) => console.error("OneSignal permission failed:", e));
   });
 }
 
