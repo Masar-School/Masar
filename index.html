@@ -26,7 +26,8 @@
   body { margin: 0; font-family: system-ui, Tahoma, Arial, sans-serif; background: var(--bg); transition: background .2s; }
   #app { max-width: 420px; margin: 0 auto; min-height: 100vh; background: var(--bg); display: flex; flex-direction: column; }
 
-  .header { background: var(--header); padding: 20px 18px; display: flex; align-items: center; justify-content: space-between; border-bottom-left-radius: 20px; border-bottom-right-radius: 20px; }
+  .header { background: var(--header); padding: 18px 18px 14px; display: flex; flex-direction: column; gap: 12px; border-bottom-left-radius: 20px; border-bottom-right-radius: 20px; }
+  .header-top { display: flex; align-items: center; justify-content: space-between; }
   .login-header { background: var(--header); padding: 56px 24px 40px; text-align: center; border-bottom-left-radius: 28px; border-bottom-right-radius: 28px; position: relative; }
   .avatar { width: 128px; height: 128px; border-radius: 50%; background: #fff; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.15); }
   .avatar img { width: 100%; height: 100%; object-fit: contain; }
@@ -157,6 +158,98 @@
   .holiday-table td { padding: 8px 4px; border-bottom: 1px solid var(--border); font-size: 13px; color: var(--text); }
   .holiday-table td.hdate { color: var(--muted); font-size: 12px; }
 
+  /* ===== الصفحة الرئيسية ===== */
+  :root { --lv-great: #2E7D5B; --lv-good: #3B6FB6; --lv-ok: #B98A2E; --lv-low: #B4483A; }
+  body.dark { --lv-great: #5DBE95; --lv-good: #7BA7E6; --lv-ok: #D8B15C; --lv-low: #E58275; }
+
+  .fin-strip { display: flex; align-items: center; gap: 8px; width: 100%; background: rgba(255,255,255,0.09); border: none; border-radius: 12px; padding: 9px 12px; color: #DCE3F0; font-family: inherit; font-size: 12.5px; cursor: pointer; text-align: right; }
+  .fin-strip:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+  .fin-strip b { color: #fff; font-weight: 700; }
+  .fin-strip .fin-rem { color: #F5C46B; }
+  .fin-strip .fin-ok { color: #8FE0B5; }
+  .fin-text { flex: 1; }
+  .fin-go { opacity: 0.7; font-size: 16px; }
+
+  .home-greet { margin: 2px 0 6px; }
+  .home-hi { font-size: 22px; font-weight: 700; color: var(--text); }
+  .home-cheer { font-size: 13.5px; color: var(--muted2); margin-top: 6px; line-height: 1.9; }
+  .sec-head { display: flex; align-items: baseline; justify-content: space-between; margin: 20px 0 10px; }
+  .sec-head h3 { margin: 0; font-size: 14.5px; font-weight: 700; color: var(--text); }
+  .sec-head span { font-size: 11.5px; color: var(--muted); }
+
+  .kids-wrap { position: relative; }
+  .kid-card { background: var(--card); border: 1.5px solid var(--border); border-radius: 16px; padding: 14px; margin-bottom: 10px; cursor: pointer; transition: border-color .15s, box-shadow .15s; }
+  .kid-card.selected { border-color: var(--gold); box-shadow: 0 0 0 3px rgba(199,154,62,0.18); }
+  .kid-card:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+  .kid-top { display: flex; align-items: center; gap: 12px; }
+  .kid-avatar { width: 44px; height: 44px; border-radius: 14px; display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 700; font-size: 18px; flex-shrink: 0; }
+  .kid-name { font-size: 15.5px; font-weight: 700; color: var(--text); }
+  .kid-sub { font-size: 12px; color: var(--muted); margin-top: 2px; }
+  .kid-stats { display: flex; gap: 8px; margin-top: 12px; }
+  .kid-stat { flex: 1; background: var(--bg); border-radius: 10px; padding: 8px 6px; text-align: center; }
+  .kid-stat b { display: block; font-size: 16px; color: var(--text); }
+  .kid-stat span { font-size: 11px; color: var(--muted); }
+  .kid-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+  .pill { font-size: 11.5px; font-weight: 600; padding: 4px 10px; border-radius: 20px; }
+  .pill.gold { background: rgba(199,154,62,0.16); color: #8A6414; }
+  .pill.green { background: #EAF3DE; color: #3B6D11; }
+  .pill.blue { background: #E6EEFA; color: #2D5A9E; }
+  body.dark .pill.gold { color: #E6C77E; }
+  body.dark .pill.green { background: rgba(93,190,149,0.15); color: #7FD3AE; }
+  body.dark .pill.blue { background: rgba(123,167,230,0.15); color: #9DBFEF; }
+  .kid-bus { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; margin-top: 10px; padding-top: 10px; border-top: 1px dashed var(--border); font-size: 12.5px; color: var(--muted2); }
+  .kid-bus.muted { color: var(--muted); }
+  .bus-track { background: var(--header); color: #fff; text-decoration: none; font-size: 12px; font-weight: 600; padding: 6px 12px; border-radius: 9px; }
+  body.dark .bus-track { background: var(--gold); color: var(--header); }
+  .bus-note { font-size: 11.5px; color: var(--muted); }
+
+  .today-card { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 2px 16px; }
+  .today-row { display: flex; gap: 12px; padding: 13px 0; align-items: flex-start; }
+  .today-row + .today-row { border-top: 1px solid var(--border); }
+  .today-ic { font-size: 19px; width: 26px; text-align: center; }
+  .today-body { flex: 1; min-width: 0; }
+  .today-title { font-size: 12.5px; color: var(--muted2); margin-bottom: 6px; }
+  .today-task { display: flex; justify-content: space-between; gap: 8px; font-size: 14px; color: var(--text); padding: 3px 0; }
+  .today-when { font-size: 12px; color: var(--muted); white-space: nowrap; }
+  .today-none { font-size: 13px; color: var(--muted); }
+  .status-off { background: #E4D6F5; color: #532E80; }
+  .status-none { background: var(--bg); color: var(--muted); border: 1px solid var(--border); }
+  body.dark .status-off { background: rgba(142,91,168,0.22); color: #D2B4EE; }
+  .today-body .att-status { display: inline-block; }
+
+  .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
+  .stat-tile { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 14px 8px; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px; min-height: 140px; }
+  .ring-wrap { position: relative; width: 64px; height: 64px; }
+  .ring { width: 64px; height: 64px; transform: rotate(-90deg); }
+  .ring-bg { fill: none; stroke: var(--field-border); stroke-width: 7; }
+  .ring-fg { fill: none; stroke-width: 7; stroke-linecap: round; }
+  .ring-num { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 700; color: var(--text); }
+  .ring-num.sm { font-size: 12px; }
+  .stat-big { font-size: 32px; font-weight: 700; line-height: 64px; height: 64px; }
+  .stat-label { font-size: 12.5px; color: var(--muted2); }
+  .stat-sub { font-size: 12px; font-weight: 600; min-height: 16px; }
+
+  .cd-row { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+  .cd-kicker { font-size: 12.5px; color: #B9C2D4; }
+  .cd-title { font-size: 15px; font-weight: 600; margin-top: 3px; }
+  .cd-when { font-size: 18px; font-weight: 700; color: var(--gold); white-space: nowrap; }
+  .cd-sep { height: 1px; background: rgba(255,255,255,0.14); margin: 12px 0; }
+  .countdown-card { margin-top: 10px; }
+
+  .ann-card { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 14px 16px; margin-top: 10px; border-right: 4px solid var(--gold); }
+  .ann-card-title { font-size: 14.5px; font-weight: 700; color: var(--text); }
+  .ann-card-body { font-size: 13px; color: var(--muted2); margin-top: 6px; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+  .ann-card-foot { display: flex; justify-content: space-between; align-items: center; margin-top: 10px; font-size: 11.5px; color: var(--muted); }
+  .link-btn { background: none; border: none; color: var(--header); font-family: inherit; font-size: 12.5px; font-weight: 600; cursor: pointer; padding: 4px 0; }
+  body.dark .link-btn { color: var(--gold); }
+
+  .cheer { text-align: center; font-size: 13px; color: var(--muted2); background: var(--card); border: 1px dashed var(--field-border); border-radius: 14px; padding: 14px; margin-top: 14px; }
+
+  .confetti { position: absolute; top: 0; left: 0; right: 0; height: 0; pointer-events: none; z-index: 5; }
+  .cf { position: absolute; top: -4px; width: 7px; height: 11px; border-radius: 2px; opacity: 0; animation: cf-fall 2s ease-out forwards; }
+  @keyframes cf-fall { 0% { opacity: 1; transform: translateY(0) rotate(0deg); } 100% { opacity: 0; transform: translateY(190px) rotate(320deg); } }
+  @media (prefers-reduced-motion: reduce) { .confetti { display: none; } .kid-card { transition: none; } }
+
   @media print {
     .tabbar, .header, .child-chips, .print-btn { display: none !important; }
   }
@@ -172,7 +265,7 @@ const API_URL = "https://script.google.com/macros/s/AKfycbyVcIpkLd5rmNYheBKjSFLw
 
 let session = null;
 let currentChildIndex = 0;
-let currentTab = "results";
+let currentTab = "home";
 let showAnnouncements = false;
 
 // ---------- تفضيلات محفوظة على الجهاز ----------
@@ -224,13 +317,23 @@ async function doLogin(phone, pin, remember) {
   const data = await res.json();
   if (!data.ok) return { ok: false, error: data.error };
 
+  const prevSession = session;
   session = data;
   session._phone = phone; // حفظ بيانات الدخول من أجل زر التحديث
   session._pin = pin;
   linkOneSignalToParent(session.parent && session.parent.Parent_ID);
 
-  currentChildIndex = 0;
-  currentTab = "results";
+  // نُبقي الطفل المختار بعد التحديث (بمعرّفه)، وإلا نستعيد آخر طفل حفظناه على الجهاز، وإلا الأول.
+  // التبويب الحالي لا يُصفَّر: يبقى كما هو بعد التحديث، ويبدأ من "الرئيسية" عند فتح التطبيق.
+  let wantedKid = null;
+  if (prevSession && prevSession.children && prevSession.children[currentChildIndex]) {
+    wantedKid = prevSession.children[currentChildIndex].Student_ID;
+  } else {
+    try { wantedKid = localStorage.getItem("masar_kid_" + (data.parent && data.parent.Parent_ID)); } catch (e) {}
+  }
+  const kidIdx = wantedKid == null ? -1 : (data.children || []).findIndex((c) => String(c.Student_ID) === String(wantedKid));
+  currentChildIndex = kidIdx >= 0 ? kidIdx : 0;
+  nextCheer();
   if (remember) saveCreds(phone, pin);
   return { ok: true };
 }
@@ -485,10 +588,13 @@ function calcChildAgeLabel(birthDateStr) {
   const bd = new Date(raw + (raw.length === 10 ? "T00:00:00" : ""));
   if (isNaN(bd.getTime())) return "";
   const today = new Date();
-  let years = today.getFullYear() - bd.getFullYear();
-  const m = today.getMonth() - bd.getMonth();
-  if (m < 0 || (m === 0 && today.getDate() < bd.getDate())) years--;
-  if (years < 0 || years > 100) return "";
+  // العمر بالأشهر الكاملة، ثم تقريب لأقرب سنة: 6 أشهر فأكثر تُقرَّب للأعلى، وأقل من 6 للأدنى
+  let months = (today.getFullYear() - bd.getFullYear()) * 12 + (today.getMonth() - bd.getMonth());
+  if (today.getDate() < bd.getDate()) months--;
+  if (months < 0) return "";
+  let years = Math.floor(months / 12);
+  if (months % 12 >= 6) years++;
+  if (years > 100) return "";
   return years + " سنة";
 }
 function childNameWithAge(name, birthDateStr) {
@@ -653,26 +759,6 @@ function parseMoney(val) {
   s = s.replace(/٫/g, ".");       // تحويل الفاصلة العشرية العربية إلى نقطة
   s = s.replace(/[^0-9.\-]/g, ""); // إزالة أي رمز آخر ($ وغيره)
   return Number(s) || 0;
-}
-
-function renderBus(child) {
-  if (!child.bus) return `<div class="empty-box">لا يوجد خط باص مسجل لـ ${child.Student_Name} حالياً</div>`;
-
-  let statusNote = "";
-  if (!child.bus.hasUrlConfigured) {
-    statusNote = `<div style="font-size:12.5px;color:#F0D9A0;margin-top:12px;">لا يوجد رابط تتبع للباص حالياً</div>`;
-  } else if (!child.bus.trackingActive) {
-    statusNote = `<div style="font-size:12.5px;color:#F0D9A0;margin-top:12px;">التتبع المباشر متاح فقط خلال أوقات الدوام (الأحد–الخميس، 7ص–5م)</div>`;
-  }
-
-  return `
-    <div class="bus-card">
-      <div class="bus-route">${child.bus.Route_Area || "المنطقة غير محددة"}</div>
-      <div class="bus-driver">المشرف: ${child.Supervisor_Name || "-"}</div>
-      ${child.bus.Phone ? `<div style="font-size:13px;color:#B9C2D4;margin-top:6px;">هاتف: ${child.bus.Phone}</div>` : ""}
-      ${child.bus.Live_Location_URL ? `<a class="bus-link" href="${child.bus.Live_Location_URL}" target="_blank">تتبع الموقع الآن</a>` : statusNote}
-    </div>
-  `;
 }
 
 function daysUntil(dateStr) {
@@ -856,20 +942,560 @@ function printSection(type, childIdx) {
   setTimeout(() => w.print(), 300);
 }
 
+// =====================================================================
+// الصفحة الرئيسية للأهالي
+// =====================================================================
+const KID_COLORS = ["#3B6FB6", "#2E7D5B", "#8E5BA8", "#C0623B", "#3A8A9E"];
+const HONOR_RANKS = ["الأول", "الثاني", "الثالث", "الرابع"];
+const CHEER_LINES = [
+  // ---- للآباء والأمهات ----
+  "متابعتكم اليومية سرّ نجاح أولادكم 🤝",
+  "دقائق قليلة من الحوار مع أولادكم كل يوم تبني الثقة وتفتح القلوب 💬",
+  "اسألوهم اليوم: ما أجمل شيء تعلّمتموه؟ 💬",
+  "شجّعوا الجهد قبل النتيجة، فالتشجيع أقوى أثراً من اللوم 🌟",
+  "الاستمرار على القليل أفضل من الانقطاع عن الكثير، فاصبروا على الخطوات الصغيرة 🌱",
+  "نجاح الأبناء ثمرة تعاون البيت والمدرسة 🤝",
+  "اجعلوا للقراءة وقتاً ثابتاً في البيت، فالقدوة أبلغ من النصيحة 📚",
+  "النوم المبكر يمنح أبناءكم يوماً دراسياً نشيطاً 🌙",
+  "كل تقدّم مهما كان صغيراً يستحق كلمة طيبة 🎈",
+  "الأخطاء جزء من التعلّم، والمحاولة هي الأهم 🌱",
+  "حين تثقون بأبنائكم يثقون بأنفسهم 💪",
+  "الصبر والحلم مع الأطفال استثمار لا يضيع 🌸",
+  "الإصغاء لأولادكم يفتح باباً لحلول كثيرة 👂",
+  "وجبة صحية وماء كافٍ يعينان الطفل على التركيز في مدرسته 🍎",
+  "تعاونكم مع المعلّمين يختصر على أبنائكم الطريق ✨",
+  "شكراً لجهودكم التي لا يراها أحد، فأثرها كبير بإذن الله 💙",
+  "خذوا بالأسباب ثم توكّلوا على الله، وأبناؤكم بخير بإذنه 🌿",
+
+  // ---- للأطفال (يمكن قراءتها معهم) ----
+  "أنت قادر على أكثر مما تظن، فاجتهد وابدأ من اليوم ⭐",
+  "كل يوم دراسة خطوة جديدة نحو التميّز ✨",
+  "الصدق والأدب يجعلانك محبوباً عند الله وعند الناس 💛",
+  "احترم معلّمك وزملاءك، فالخُلُق الحسن يرفع صاحبه 🌟",
+  "اسأل ولا تخجل، فالسؤال أول طريق العلم 🔎",
+  "رتّب حقيبتك من المساء، ويبدأ الغد أسهل 🎒",
+  "اقرأ اليوم ولو صفحة واحدة، وستفخر بنفسك غداً 📖",
+  "النظافة والترتيب من علامات التميّز 🌿",
+  "بِرُّ الوالدين طريق للبركة في حياتك 🤲",
+  "أنت مهم، وجهدك مقدَّر، وأهلك فخورون بك 💙",
+  "ابدأ بالأصعب أولاً، فالباقي يصير أسهل 💪",
+  "لا تقارن نفسك بغيرك، قارن نفسك بما كنتَ عليه أمس 🌱",
+  "لا تقل «لا أستطيع» بل قل «سأحاول» 🚀",
+  "شارك أدواتك مع زملائك، فالعطاء يزيدك محبة الناس 🎁",
+  "الانتظام في الحضور من أسرار النجاح ⏰",
+  "احفظ آية جديدة أو دعاءً جديداً هذا الأسبوع 📖",
+  "ابتسامة الصباح تغيّر مزاج يومك كله 😊",
+
+  // ---- من القرآن الكريم ----
+  "﴿وَقُل رَّبِّ زِدْنِي عِلْمًا﴾ 📖",
+  "﴿رَبِّ اشْرَحْ لِي صَدْرِي وَيَسِّرْ لِي أَمْرِي﴾ — دعاء جميل قبل المذاكرة 🤲",
+  "﴿إِنَّ مَعَ الْعُسْرِ يُسْرًا﴾ — بعد كل صعوبة فرج بإذن الله 📖",
+  "﴿هَلْ يَسْتَوِي الَّذِينَ يَعْلَمُونَ وَالَّذِينَ لَا يَعْلَمُونَ﴾ 📖",
+  "﴿يَرْفَعِ اللَّهُ الَّذِينَ آمَنُوا مِنكُمْ وَالَّذِينَ أُوتُوا الْعِلْمَ دَرَجَاتٍ﴾ 📖",
+  "﴿وَأَن لَّيْسَ لِلْإِنسَانِ إِلَّا مَا سَعَىٰ﴾ — بالاجتهاد تُنال الأهداف 📖",
+  "﴿وَقُلِ اعْمَلُوا فَسَيَرَى اللَّهُ عَمَلَكُمْ وَرَسُولُهُ وَالْمُؤْمِنُونَ﴾ 📖",
+  "﴿رَبَّنَا هَبْ لَنَا مِنْ أَزْوَاجِنَا وَذُرِّيَّاتِنَا قُرَّةَ أَعْيُنٍ﴾ 🤲",
+  "﴿وَمَن يَتَوَكَّلْ عَلَى اللَّهِ فَهُوَ حَسْبُهُ﴾ 📖",
+  "﴿اقْرَأْ بِاسْمِ رَبِّكَ الَّذِي خَلَقَ﴾ — أول ما نزل من القرآن الكريم 📖",
+
+  // ---- من السنة النبوية ----
+  "قال رسول الله صلى الله عليه وسلم: «مَنْ سَلَكَ طَرِيقًا يَلْتَمِسُ فِيهِ عِلْمًا سَهَّلَ اللَّهُ لَهُ بِهِ طَرِيقًا إِلَى الْجَنَّةِ» رواه مسلم",
+  "قال رسول الله صلى الله عليه وسلم: «خَيْرُكُمْ مَنْ تَعَلَّمَ الْقُرْآنَ وَعَلَّمَهُ» رواه البخاري",
+  "قال رسول الله صلى الله عليه وسلم: «الْكَلِمَةُ الطَّيِّبَةُ صَدَقَةٌ» متفق عليه",
+  "قال رسول الله صلى الله عليه وسلم: «أَحَبُّ الْأَعْمَالِ إِلَى اللَّهِ أَدْوَمُهَا وَإِنْ قَلَّ» متفق عليه",
+  "قال رسول الله صلى الله عليه وسلم: «احْرِصْ عَلَى مَا يَنْفَعُكَ وَاسْتَعِنْ بِاللَّهِ وَلَا تَعْجِزْ» رواه مسلم",
+  "قال رسول الله صلى الله عليه وسلم: «مَنْ لَا يَرْحَمْ لَا يُرْحَمْ» متفق عليه",
+  "قال رسول الله صلى الله عليه وسلم: «تَبَسُّمُكَ فِي وَجْهِ أَخِيكَ صَدَقَةٌ» رواه الترمذي",
+  "قال رسول الله صلى الله عليه وسلم: «إِنَّمَا الْأَعْمَالُ بِالنِّيَّاتِ» — انوِ بدراستك خيراً 🌿",
+
+  // ---- أدعية وعبارات إيمانية ----
+  "بسم الله نبدأ يومنا، وعلى الله نتوكّل 🌅",
+  "اللهم انفعهم بما علّمتهم، وعلّمهم ما ينفعهم، وزدهم علماً 🤲",
+  "اللهم بارك لأبنائنا في أوقاتهم وعقولهم وأخلاقهم 🤲",
+  "جزاكم الله خيراً على اهتمامكم بأبنائكم، وبارك لكم فيهم 🤲",
+  "ما شاء الله لا قوة إلا بالله — نسأل الله أن يحفظ أبناءكم ويبارك فيهم 🤲",
+  "نسأل الله أن يجعل أبناءكم قرّة عين لكم وأن ينفع بهم 🤲",
+  "الحمد لله على نعمة العلم والصحة والأمان 🌿",
+];
+const celebratedKids = new Set(); // لمنع تكرار الاحتفال أكثر من مرة بنفس الجلسة
+let lastRenderedTab = null;
+let showPayments = false;
+
+function esc(s) {
+  return String(s == null ? "" : s).replace(/[&<>"']/g, (ch) => (
+    { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[ch]
+  ));
+}
+function firstName(full) { return String(full || "").trim().split(/\s+/)[0] || ""; }
+function roundOne(n) { return Math.round(n * 10) / 10; }
+
+// صيغة العدد بالعربية: 1 مفرد، 2 مثنى، 3-10 جمع قلة، 11+ تمييز مفرد
+function arCount(n, one, two, few, many) {
+  if (n === 1) return one;
+  if (n === 2) return two;
+  return n >= 3 && n <= 10 ? `${n} ${few}` : `${n} ${many}`;
+}
+function daysLabel(n) {
+  if (n === 0) return "اليوم";
+  if (n === 1) return "غداً";
+  if (n === 2) return "بعد يومين";
+  if (n >= 3 && n <= 10) return `بعد ${n} أيام`;
+  if (n > 10) return `بعد ${n} يوماً`;
+  if (n === -1) return "أمس";
+  if (n === -2) return "قبل يومين";
+  return `قبل ${Math.abs(n)} أيام`;
+}
+
+function greetingText() {
+  const h = new Date().getHours();
+  if (h >= 5 && h < 12) return { t: "صباح الخير", e: "☀️" };
+  if (h >= 12 && h < 18) return { t: "نهارك سعيد", e: "🌤️" };
+  return { t: "مساء الخير", e: "🌙" };
+}
+
+// ---------- حفظ الطفل المختار (بمعرّفه وليس برقم ترتيبه) ----------
+function selectChild(idx) {
+  currentChildIndex = idx;
+  nextCheer();
+  const c = session.children[idx];
+  if (c && session.parent) {
+    try { localStorage.setItem("masar_kid_" + session.parent.Parent_ID, String(c.Student_ID)); } catch (e) {}
+  }
+  renderApp();
+}
+
+// ---------- حسابات لكل طفل ----------
+function childGradeRows(child) {
+  return (session.grades || []).filter((g) => String(g.Student_ID).trim() === String(child.Student_ID).trim());
+}
+
+function assignmentsForChild(child) {
+  return (session.assignments || []).filter((a) => {
+    const sameClass = String(a.Class_Level || "").trim() === String(child.Class_Level || "").trim();
+    const aSection = String(a.Section || "").trim();
+    return sameClass && (aSection === "" || aSection === String(child.Section || "").trim());
+  });
+}
+
+// معدل آخر فصل توجد فيه نتائج (نفس منطق صفحة النتائج)
+function childAverageInfo(child) {
+  const rows = childGradeRows(child);
+  if (!rows.length) return { avg: null, label: "" };
+  const hasSem = rows.some((r) => r.Semester !== undefined && String(r.Semester).trim() !== "");
+  const s1 = hasSem ? rows.filter((r) => normalizeSemester(r.Semester) === "1") : rows;
+  const s2 = hasSem ? rows.filter((r) => normalizeSemester(r.Semester) === "2") : [];
+  const overall = (rs) => {
+    const graded = computeSubjectAverages(rs).filter((s) => s.avg !== null);
+    return graded.length ? graded.reduce((a, s) => a + s.avg, 0) / graded.length : null;
+  };
+  const a2 = overall(s2);
+  if (a2 !== null) return { avg: a2, label: "الفصل الثاني" };
+  return { avg: overall(s1), label: hasSem ? "الفصل الأول" : "المعدل العام" };
+}
+
+function scoreLevel(score) {
+  if (score >= 90) return { c: "var(--lv-great)", t: "ممتاز" };
+  if (score >= 75) return { c: "var(--lv-good)", t: "جيد جداً" };
+  if (score >= 60) return { c: "var(--lv-ok)", t: "جيد" };
+  return { c: "var(--lv-low)", t: "يحتاج متابعة" };
+}
+
+function lastGradeInfo(child) {
+  const rows = childGradeRows(child).filter(
+    (g) => g.Score !== "" && g.Score !== null && g.Score !== undefined && !isNaN(Number(g.Score))
+  );
+  return rows.length ? rows[rows.length - 1] : null;
+}
+
+function attendanceInfo(child) {
+  const rows = (session.attendance || []).filter((a) => String(a.Student_ID).trim() === String(child.Student_ID).trim());
+  const isAbs = (s) => /غائب|غياب/.test(String(s || ""));
+  const isLate = (s) => /متأخر|تأخير/.test(String(s || ""));
+  const now = new Date();
+  const todayKey = ymd(now.getFullYear(), now.getMonth(), now.getDate());
+  let total = 0, absent = 0, mTotal = 0, mAbsent = 0, mLate = 0, todayStatus = null;
+  rows.forEach((a) => {
+    const d = new Date(a.Date);
+    if (isNaN(d)) return;
+    const ab = isAbs(a.Status), lt = isLate(a.Status);
+    total++;
+    if (ab) absent++;
+    if (ymd(d.getFullYear(), d.getMonth(), d.getDate()) === todayKey) todayStatus = ab ? "absent" : (lt ? "late" : "present");
+    if (d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth()) {
+      mTotal++;
+      if (ab) mAbsent++;
+      if (lt) mLate++;
+    }
+  });
+  return {
+    total, absent,
+    pct: total ? Math.round(((total - absent) / total) * 100) : null,
+    mTotal, mAbsent, mLate,
+    fullMonth: mTotal >= 3 && mAbsent === 0,
+    todayStatus,
+  };
+}
+
+// ترتيب الطفل بلوحة الأوائل (-1 = ليس من الأوائل)
+function honorRankFor(child) {
+  const cl = String(child.Class_Level || "").trim();
+  const sec = String(child.Section || "").trim();
+  const entry = (session.honorRoll || []).find(
+    (e) => String(e.Class_Level || "").trim() === cl && String(e.Section || "").trim() === sec
+  );
+  if (!entry) return -1;
+  return (entry.TopStudents || []).findIndex((s) => String(s.Student_Name || "").trim() === String(child.Student_Name || "").trim());
+}
+
+function newCountsFor(child) {
+  const seen = getSeenCounts();
+  const g = childGradeRows(child).length;
+  const a = assignmentsForChild(child).length;
+  return {
+    grades: Math.max(0, g - (seen["results_" + child.Student_ID] || 0)),
+    assigns: Math.max(0, a - (seen["assign_" + child.Student_ID] || 0)),
+  };
+}
+
+// ---------- الترويسة: ملخص الدفعات ----------
+function financeSummary() {
+  const pays = session.payments || [];
+  if (!pays.length) return null;
+  const last = pays[pays.length - 1];
+  const totalRequired = parseMoney(last.Total_Required);
+  const remaining = parseMoney(last.Remaining_Balance);
+  return { paid: Math.max(0, totalRequired - remaining), remaining: Math.max(0, remaining) };
+}
+
+function financeStripHtml() {
+  const f = financeSummary();
+  if (!f) return "";
+  const n = session.children.length;
+  const kids = n === 0 ? "" : ` · ${n === 1 ? "عن طفل" : n === 2 ? "عن طفلين" : n <= 10 ? `عن ${n} أطفال` : `عن ${n} طفلاً`}`;
+  const remPart = f.remaining > 0
+    ? `باقي <b class="fin-rem"><bdi>$${f.remaining.toLocaleString()}</bdi></b>`
+    : `<b class="fin-ok">مسدّد بالكامل ✓</b>`;
+  return `
+    <button class="fin-strip" onclick="showPayments=true;renderApp();" aria-label="عرض تفاصيل الدفعات">
+      <span>💳</span>
+      <span class="fin-text">دفعتم <b><bdi>$${f.paid.toLocaleString()}</bdi></b> · ${remPart}${kids}</span>
+      <span class="fin-go">‹</span>
+    </button>`;
+}
+
+function renderPaymentsModal() {
+  if (!showPayments) return "";
+  return `
+    <div class="modal-overlay" onclick="closePayments()">
+      <div class="modal-box" onclick="event.stopPropagation()">
+        <div class="modal-title">💳 الحساب المالي <button class="close-btn" onclick="closePayments()">✕</button></div>
+        ${renderPayments()}
+      </div>
+    </div>`;
+}
+function closePayments() { showPayments = false; renderApp(); }
+
+// ---------- بطاقة الطفل ----------
+function busRowHtml(c) {
+  if (!c.bus) return `<div class="kid-bus muted">🚌 لا يوجد خط باص مسجّل</div>`;
+  const name = c.Supervisor_Name ? esc(c.Supervisor_Name) : "غير محدد";
+  let action = "";
+  const url = String(c.bus.Live_Location_URL || "").trim();
+  if (url && /^https?:\/\//i.test(url)) {
+    action = `<a class="bus-track" href="${esc(url)}" target="_blank" rel="noopener" onclick="event.stopPropagation()">تتبع الآن</a>`;
+  } else if (c.bus.hasUrlConfigured && !c.bus.trackingActive) {
+    action = `<span class="bus-note">التتبع خلال الدوام فقط</span>`;
+  }
+  return `<div class="kid-bus"><span>🚌 مشرف الباص: <b>${name}</b></span>${action}</div>`;
+}
+
+function renderKidCard(c, i) {
+  const selected = i === currentChildIndex;
+  const avg = childAverageInfo(c);
+  const att = attendanceInfo(c);
+  const rank = honorRankFor(c);
+  const nw = newCountsFor(c);
+  const lv = avg.avg !== null ? scoreLevel(avg.avg) : null;
+  const age = calcChildAgeLabel(c.Birth_Date);
+  const sub = [c.Class_Level, c.Section ? "شعبة " + c.Section : "", age].filter(Boolean).map(esc).join(" · ");
+
+  const newBits = [];
+  if (nw.grades) newBits.push(arCount(nw.grades, "علامة جديدة", "علامتان جديدتان", "علامات جديدة", "علامة جديدة"));
+  if (nw.assigns) newBits.push(arCount(nw.assigns, "وظيفة جديدة", "وظيفتان جديدتان", "وظائف جديدة", "وظيفة جديدة"));
+
+  const tags = [];
+  if (rank >= 0) tags.push(`<span class="pill gold">🏅 من الأوائل · المركز ${HONOR_RANKS[rank]}</span>`);
+  if (att.fullMonth) tags.push(`<span class="pill green">✨ حضور كامل هذا الشهر</span>`);
+  if (newBits.length) tags.push(`<span class="pill blue">🔔 ${newBits.join(" · ")}</span>`);
+
+  return `
+    <div class="kid-card ${selected ? "selected" : ""}" role="button" tabindex="0" aria-pressed="${selected}" data-kid="${i}">
+      <div class="kid-top">
+        <div class="kid-avatar" style="background:${KID_COLORS[i % KID_COLORS.length]}">${esc((c.Student_Name || "؟")[0])}</div>
+        <div style="flex:1;min-width:0;">
+          <div class="kid-name">${esc(c.Student_Name)}</div>
+          <div class="kid-sub">${sub}</div>
+        </div>
+      </div>
+      <div class="kid-stats">
+        <div class="kid-stat"><b ${lv ? `style="color:${lv.c}"` : ""}>${avg.avg !== null ? roundOne(avg.avg) : "—"}</b><span>المعدل</span></div>
+        <div class="kid-stat"><b>${att.pct !== null ? att.pct + "%" : "—"}</b><span>الحضور</span></div>
+        <div class="kid-stat"><b>${nw.grades + nw.assigns || "—"}</b><span>جديد</span></div>
+      </div>
+      ${tags.length ? `<div class="kid-tags">${tags.join("")}</div>` : ""}
+      ${busRowHtml(c)}
+    </div>`;
+}
+
+// ---------- "اليوم" ----------
+function renderTodayCard(child) {
+  const att = attendanceInfo(child);
+  const now = new Date();
+  const dow = now.getDay();
+  const todayKey = ymd(now.getFullYear(), now.getMonth(), now.getDate());
+  const hol = (session.holidays || []).find((h) => {
+    const d = new Date(h.Date);
+    return !isNaN(d) && ymd(d.getFullYear(), d.getMonth(), d.getDate()) === todayKey;
+  });
+
+  let attHtml;
+  if (dow === 5 || dow === 6) attHtml = `<span class="att-status status-off">عطلة نهاية الأسبوع</span>`;
+  else if (hol) attHtml = `<span class="att-status status-off">عطلة: ${esc(hol.Holiday_Name || "رسمية")}</span>`;
+  else if (att.todayStatus === "absent") attHtml = `<span class="att-status status-absent">غائب اليوم</span>`;
+  else if (att.todayStatus === "late") attHtml = `<span class="att-status status-late">متأخر اليوم</span>`;
+  else if (att.todayStatus === "present") attHtml = `<span class="att-status status-present">حاضر اليوم ✓</span>`;
+  else attHtml = `<span class="att-status status-none">لم يُسجَّل بعد</span>`;
+
+  // وظائف قريبة: من قبل يومين حتى أسبوع قادم (يغطي كون التاريخ تاريخ إعطاء أو تسليم)
+  const tasks = assignmentsForChild(child)
+    .map((t) => ({ t, d: daysUntil(t.Date) }))
+    .filter((x) => x.d !== null && x.d >= -2 && x.d <= 7)
+    .sort((a, b) => Math.abs(a.d) - Math.abs(b.d))
+    .slice(0, 3);
+
+  const taskHtml = tasks.length
+    ? tasks.map((x) => `<div class="today-task"><span>${esc(String(x.t.Subject || "وظيفة").replace(/[^\u0600-\u06FF\sa-zA-Z0-9]/g, "").trim() || "وظيفة")}</span><span class="today-when">${daysLabel(x.d)}</span></div>`).join("")
+    : `<div class="today-none">لا وظائف جديدة خلال الأيام القريبة</div>`;
+
+  return `
+    <div class="today-card">
+      <div class="today-row">
+        <div class="today-ic">📍</div>
+        <div class="today-body"><div class="today-title">الحضور</div>${attHtml}</div>
+      </div>
+      <div class="today-row">
+        <div class="today-ic">📚</div>
+        <div class="today-body"><div class="today-title">الوظائف</div>${taskHtml}</div>
+      </div>
+    </div>`;
+}
+
+// ---------- مربعات الإحصاء ----------
+function ringSvg(pct, color) {
+  const r = 26, c = 2 * Math.PI * r;
+  const p = pct == null ? 0 : Math.max(0, Math.min(100, pct));
+  return `<svg class="ring" viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="${r}" class="ring-bg"/><circle cx="32" cy="32" r="${r}" class="ring-fg" style="stroke:${color};stroke-dasharray:${((c * p) / 100).toFixed(1)} ${c.toFixed(1)}"/></svg>`;
+}
+
+function renderStatTiles(child) {
+  const avg = childAverageInfo(child);
+  const att = attendanceInfo(child);
+  const last = lastGradeInfo(child);
+  const lvAvg = avg.avg !== null ? scoreLevel(avg.avg) : null;
+
+  const tileAvg = `
+    <div class="stat-tile">
+      <div class="ring-wrap">${ringSvg(avg.avg, lvAvg ? lvAvg.c : "var(--field-border)")}<span class="ring-num">${avg.avg !== null ? roundOne(avg.avg) : "—"}</span></div>
+      <div class="stat-label">${avg.label ? "معدل " + avg.label : "المعدل"}</div>
+      <div class="stat-sub" style="color:${lvAvg ? lvAvg.c : "var(--muted)"}">${lvAvg ? lvAvg.t : "لا نتائج بعد"}</div>
+    </div>`;
+
+  const attColor = att.pct === null ? "var(--field-border)" : att.pct >= 90 ? "var(--lv-great)" : att.pct >= 75 ? "var(--lv-ok)" : "var(--lv-low)";
+  const tileAtt = `
+    <div class="stat-tile">
+      <div class="ring-wrap">${ringSvg(att.pct, attColor)}<span class="ring-num sm">${att.pct !== null ? att.pct + "%" : "—"}</span></div>
+      <div class="stat-label">نسبة الحضور</div>
+      <div class="stat-sub" style="color:var(--muted)">${att.total ? (att.absent ? `غاب ${arCount(att.absent, "يوماً", "يومين", "أيام", "يوماً")}` : "بدون غياب") : "لا سجلات بعد"}</div>
+    </div>`;
+
+  let tileLast;
+  if (last) {
+    const sc = Number(last.Score);
+    const lv = scoreLevel(sc);
+    const subj = String(last.Subject || "").replace(/[^\u0600-\u06FF\sa-zA-Z0-9]/g, "").trim() || "مادة";
+    tileLast = `
+      <div class="stat-tile">
+        <div class="stat-big" style="color:${lv.c}">${roundOne(sc)}</div>
+        <div class="stat-label">آخر علامة · ${esc(subj)}</div>
+        <div class="stat-sub" style="color:${lv.c}">${esc(last.Exam_Type || lv.t)}</div>
+      </div>`;
+  } else {
+    tileLast = `
+      <div class="stat-tile">
+        <div class="stat-big" style="color:var(--muted)">—</div>
+        <div class="stat-label">آخر علامة</div>
+        <div class="stat-sub" style="color:var(--muted)">لا نتائج بعد</div>
+      </div>`;
+  }
+
+  const tileMonth = `
+    <div class="stat-tile">
+      <div class="stat-big" style="color:${att.mTotal === 0 ? "var(--muted)" : att.mAbsent === 0 ? "var(--lv-great)" : "var(--lv-low)"}">${att.mTotal === 0 ? "—" : att.mAbsent}</div>
+      <div class="stat-label">أيام الغياب هذا الشهر</div>
+      <div class="stat-sub" style="color:var(--muted)">${att.mTotal === 0 ? "لا سجلات بعد" : att.fullMonth ? "✨ حضور كامل" : att.mLate ? `تأخير: ${att.mLate}` : ""}</div>
+    </div>`;
+
+  return `<div class="stat-grid">${tileAvg}${tileAtt}${tileLast}${tileMonth}</div>`;
+}
+
+// ---------- العدّاد التنازلي ----------
+function renderCountdownCard(child) {
+  const exam = (session.exams || [])
+    .filter((ex) => String(ex.Class_Level).trim() === String(child.Class_Level).trim())
+    .map((ex) => ({ ...ex, _days: daysUntil(ex.Exam_Date) }))
+    .filter((ex) => ex._days !== null && ex._days >= 0)
+    .sort((a, b) => a._days - b._days)[0];
+  const hol = (session.holidays || [])
+    .map((h) => ({ ...h, _days: daysUntil(h.Date) }))
+    .filter((h) => h._days !== null && h._days >= 0)
+    .sort((a, b) => a._days - b._days)[0];
+  if (!exam && !hol) return "";
+
+  const row = (icon, kicker, title, days) => `
+    <div class="cd-row">
+      <div><div class="cd-kicker">${icon} ${kicker}</div><div class="cd-title">${title}</div></div>
+      <div class="cd-when">${daysLabel(days)}</div>
+    </div>`;
+
+  let html = `<div class="countdown-card">`;
+  if (exam) html += row("📝", "أقرب امتحان", esc(`${exam.Subject || ""}${exam.Exam_Type ? " · " + exam.Exam_Type : ""}`), exam._days);
+  if (exam && hol) html += `<div class="cd-sep"></div>`;
+  if (hol) html += row("🎉", "أقرب عطلة", esc(hol.Holiday_Name || "عطلة رسمية"), hol._days);
+  return html + `</div>`;
+}
+
+// ---------- آخر إعلان ----------
+function renderLatestAnnouncement() {
+  const items = session.announcements || [];
+  if (!items.length) return "";
+  const a = items[items.length - 1];
+  return `
+    <div class="ann-card">
+      <div class="ann-card-title">📢 ${esc(a.Title || "إعلان من المدرسة")}</div>
+      ${a.Body ? `<div class="ann-card-body">${esc(a.Body)}</div>` : ""}
+      <div class="ann-card-foot">
+        <span>${esc(a.Date || "")}</span>
+        <button class="link-btn" onclick="showAnnouncements=true;renderApp();">${items.length > 1 ? `كل الإعلانات (${items.length})` : "عرض"}</button>
+      </div>
+    </div>`;
+}
+
+// ---------- العبارة المتبدلة أسفل الترحيب ----------
+// تتبدّل مع: كل دخول، اختيار أي طفل، الرجوع للرئيسية، والتحديث. وما تُعاد أي عبارة قبل أن تظهر كل العبارات،
+// ولا تتكرر العبارة نفسها مرتين متتاليتين حتى عند إعادة الخلط. (الحالة محفوظة على الجهاز لتكمل من حيث توقفت)
+let cheerIdxNow = null;
+function nextCheer() {
+  const n = CHEER_LINES.length;
+  let last = -1, bag = [];
+  try {
+    const p = JSON.parse(localStorage.getItem("masar_cheer_state") || "null");
+    if (p && Array.isArray(p.bag)) { bag = p.bag; if (Number.isInteger(p.last)) last = p.last; }
+  } catch (e) {}
+  if (cheerIdxNow !== null) last = cheerIdxNow;
+  bag = bag.filter((i) => Number.isInteger(i) && i >= 0 && i < n && i !== last);
+  if (!bag.length) {
+    bag = CHEER_LINES.map((_, i) => i);
+    for (let i = bag.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [bag[i], bag[j]] = [bag[j], bag[i]];
+    }
+    // العنصر الذي سيُسحب أولاً هو الأخير؛ نتأكد أنه ليس آخر عبارة ظهرت
+    if (bag[bag.length - 1] === last) { const tmp = bag[0]; bag[0] = bag[bag.length - 1]; bag[bag.length - 1] = tmp; }
+  }
+  cheerIdxNow = bag.pop();
+  try { localStorage.setItem("masar_cheer_state", JSON.stringify({ bag: bag, last: cheerIdxNow })); } catch (e) {}
+}
+function dailyCheerLine() {
+  if (cheerIdxNow === null) nextCheer();
+  return CHEER_LINES[cheerIdxNow];
+}
+
+// ---------- تنويه خاص بالطفل المختار (يظهر فقط عند وجود إنجاز فعلي) ----------
+function childPraiseLine(child) {
+  const fn = esc(firstName(child.Student_Name));
+  if (honorRankFor(child) >= 0) return `🏅 ما شاء الله! ${fn} من أوائل صفّه — بارك الله فيكم وفي جهودكم`;
+  const last = lastGradeInfo(child);
+  if (last && Number(last.Score) >= 90) return `👏 علامة ممتازة في آخر نتيجة — شجّعوا ${fn} على الاستمرار`;
+  if (attendanceInfo(child).fullMonth) return `✨ التزام رائع بالحضور هذا الشهر — أحسنتم!`;
+  return "";
+}
+
+// ---------- احتفال خفيف (يُعرض مرة واحدة لكل طفل بالجلسة) ----------
+function confettiHtml() {
+  const cols = ["#C79A3E", "#2E7D5B", "#3B6FB6", "#B4483A", "#8E5BA8"];
+  let h = "";
+  for (let i = 0; i < 18; i++) {
+    const left = 5 + ((i * 53) % 90);
+    h += `<i class="cf" style="left:${left}%;background:${cols[i % cols.length]};animation-delay:${(i % 6) * 0.1}s;animation-duration:${1.7 + (i % 4) * 0.25}s"></i>`;
+  }
+  return `<div class="confetti" aria-hidden="true">${h}</div>`;
+}
+
+// ---------- الصفحة الرئيسية ----------
+function renderHome() {
+  const g = greetingText();
+  const pf = firstName(session.parent.Parent_Name);
+  let html = `
+    <div class="home-greet">
+      <div class="home-hi">${g.t}${pf ? "، " + esc(pf) : ""} ${g.e}</div>
+      <div class="home-cheer">${esc(dailyCheerLine())}</div>
+    </div>`;
+
+  if (!session.children.length) return html + `<div class="empty-box">لا يوجد طلاب مسجلين تحت هذا الحساب</div>`;
+
+  // الاحتفال لا يبدأ وراء نافذة الإعلانات المفتوحة؛ ننتظر إغلاقها
+  let celebrate = false;
+  if (!showAnnouncements && !showPayments) {
+    session.children.forEach((c) => {
+      const id = String(c.Student_ID);
+      if (honorRankFor(c) >= 0 && !celebratedKids.has(id)) { celebrate = true; celebratedKids.add(id); }
+    });
+  }
+
+  const many = session.children.length > 1;
+  html += `
+    <div class="sec-head"><h3>${many ? "أبناؤك" : "الطالب"}</h3>${many ? `<span>اضغط على بطاقة لعرض تفاصيله</span>` : ""}</div>
+    <div class="kids-wrap">${celebrate ? confettiHtml() : ""}${session.children.map(renderKidCard).join("")}</div>`;
+
+  const child = session.children[currentChildIndex];
+  html += `<div class="sec-head"><h3>تفاصيل ${esc(firstName(child.Student_Name))}</h3></div>`;
+  html += renderTodayCard(child);
+  html += renderStatTiles(child);
+  html += renderCountdownCard(child);
+  html += renderLatestAnnouncement();
+  const praise = childPraiseLine(child);
+  if (praise) html += `<div class="cheer">${praise}</div>`;
+  return html;
+}
+
 function renderApp() {
   const activeId = document.activeElement ? document.activeElement.id : null;
+  const prevScroll = window.scrollY || 0;
   const app = document.getElementById("app");
-  const child = session.children[currentChildIndex];
+  const TABS = ["home", "results", "assignments", "attendance", "more"];
+  if (TABS.indexOf(currentTab) === -1) currentTab = "home";
+  if (currentChildIndex >= session.children.length) currentChildIndex = 0;
+  const child = session.children[currentChildIndex] || null;
 
   let contentHtml = "";
-  if (session.children.length === 0) {
+  if (currentTab === "home") {
+    contentHtml = renderHome();
+  } else if (!child) {
     contentHtml = `<div class="empty-box">لا يوجد طلاب مسجلين تحت هذا الحساب</div>`;
   } else {
     if (currentTab === "results") contentHtml = renderResults(child);
     if (currentTab === "assignments") contentHtml = renderAssignments(child);
     if (currentTab === "attendance") contentHtml = renderAttendance(child);
-    if (currentTab === "payments") contentHtml = renderPayments();
-    if (currentTab === "bus") contentHtml = renderBus(child);
     if (currentTab === "more") contentHtml = renderMore(child);
   }
 
@@ -877,48 +1503,56 @@ function renderApp() {
     .map((c, i) => `<button class="chip ${i === currentChildIndex ? "active" : ""}" data-idx="${i}">${childNameWithAge(c.Student_Name, c.Birth_Date)}</button>`)
     .join("");
 
-  const gradesCount = (session.grades || []).filter(g => String(g.Student_ID).trim() === String(child.Student_ID).trim()).length;
-  const assignCount = (session.assignments || []).filter(a => String(a.Student_ID).trim() === String(child.Student_ID).trim()).length;
-  const moreCount = (session.exams || []).length + (session.behaviorNotes || []).filter(n => String(n.Student_ID).trim() === String(child.Student_ID).trim()).length;
+  const gradesCount = child ? childGradeRows(child).length : 0;
+  const assignCount = child ? assignmentsForChild(child).length : 0;
+  const moreCount = child
+    ? (session.exams || []).length + (session.behaviorNotes || []).filter(n => String(n.Student_ID).trim() === String(child.Student_ID).trim()).length
+    : 0;
 
-  const showBadgeResults = hasNew("results_" + child.Student_ID, gradesCount);
-  const showBadgeAssign = hasNew("assign_" + child.Student_ID, assignCount);
-  const showBadgeMore = hasNew("more_" + child.Student_ID, moreCount);
+  const showBadgeResults = child ? hasNew("results_" + child.Student_ID, gradesCount) : false;
+  const showBadgeAssign = child ? hasNew("assign_" + child.Student_ID, assignCount) : false;
+  const showBadgeMore = child ? hasNew("more_" + child.Student_ID, moreCount) : false;
+
+  const tabBtn = (id, label, badge) =>
+    `<button class="tab-btn ${currentTab === id ? "active" : ""}" data-tab="${id}">${badge ? '<span class="badge-dot"></span>' : ""}<span>${label}</span></button>`;
 
   app.innerHTML = `
     <div class="header">
-      <div style="display:flex;align-items:center;gap:10px;">
-        <div class="avatar-small">${(session.parent.Parent_Name || "؟")[0]}</div>
-        <div>
-          <div style="color:#fff;font-size:15px;font-weight:600;">${session.parent.Parent_Name}</div>
-          <div style="color:#B9C2D4;font-size:12.5px;">${session.children.length} طالب</div>
-          <div id="liveClock" style="color:#8DA0C4;font-size:10.5px;margin-top:2px;">${getCurrentDateTimeText()}</div>
+      <div class="header-top">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <div class="avatar-small">${(session.parent.Parent_Name || "؟")[0]}</div>
+          <div>
+            <div style="color:#fff;font-size:15px;font-weight:600;">${session.parent.Parent_Name}</div>
+            <div style="color:#B9C2D4;font-size:12.5px;">${session.children.length} طالب</div>
+            <div id="liveClock" style="color:#8DA0C4;font-size:10.5px;margin-top:2px;">${getCurrentDateTimeText()}</div>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;">
+          ${(session.announcements||[]).length ? `<button class="icon-btn" onclick="showAnnouncements=true;renderApp();">📢</button>` : ""}
+          ${oneSignalAppId ? `<button class="icon-btn" onclick="requestPushPermission()" title="تفعيل الإشعارات">🔔</button>` : ""}
+          <button class="icon-btn" id="refreshBtn" title="تحديث الصفحة">🔄</button>
+          <button class="icon-btn" onclick="toggleDarkMode()" title="الوضع الليلي">${document.body.classList.contains('dark') ? '☀️' : '🌙'}</button>
+          <button id="logoutBtn" class="logout-btn">خروج</button>
         </div>
       </div>
-      <div style="display:flex;align-items:center;gap:8px;">
-        ${(session.announcements||[]).length ? `<button class="icon-btn" onclick="showAnnouncements=true;renderApp();">📢</button>` : ""}
-        ${oneSignalAppId ? `<button class="icon-btn" onclick="requestPushPermission()" title="تفعيل الإشعارات">🔔</button>` : ""}
-        <button class="icon-btn" id="refreshBtn" title="تحديث الصفحة">🔄</button>
-        <button class="icon-btn" onclick="toggleDarkMode()" title="الوضع الليلي">${document.body.classList.contains('dark') ? '☀️' : '🌙'}</button>
-        <button id="logoutBtn" class="logout-btn">خروج</button>
-      </div>
+      ${financeStripHtml()}
     </div>
     ${session.lastUpdated ? `<div class="last-updated">🕓 آخر تحديث للبيانات: ${session.lastUpdated}</div>` : ""}
 
     <div class="content">
-      ${currentTab !== "payments" && session.children.length > 0 ? `<div class="child-chips">${chips}</div>` : ""}
+      ${currentTab !== "home" && session.children.length > 0 ? `<div class="child-chips">${chips}</div>` : ""}
       ${contentHtml}
     </div>
 
     <div class="tabbar">
-      <button class="tab-btn ${currentTab === "results" ? "active" : ""}" data-tab="results">${showBadgeResults ? '<span class="badge-dot"></span>' : ''}<span>النتائج</span></button>
-      <button class="tab-btn ${currentTab === "assignments" ? "active" : ""}" data-tab="assignments">${showBadgeAssign ? '<span class="badge-dot"></span>' : ''}<span>الوظائف</span></button>
-      <button class="tab-btn ${currentTab === "attendance" ? "active" : ""}" data-tab="attendance"><span>الحضور</span></button>
-      <button class="tab-btn ${currentTab === "payments" ? "active" : ""}" data-tab="payments"><span>الدفعات</span></button>
-      <button class="tab-btn ${currentTab === "bus" ? "active" : ""}" data-tab="bus"><span>الباص</span></button>
-      <button class="tab-btn ${currentTab === "more" ? "active" : ""}" data-tab="more">${showBadgeMore ? '<span class="badge-dot"></span>' : ''}<span>المزيد</span></button>
+      ${tabBtn("home", "الرئيسية", false)}
+      ${tabBtn("results", "النتائج", showBadgeResults)}
+      ${tabBtn("assignments", "الوظائف", showBadgeAssign)}
+      ${tabBtn("attendance", "الحضور", false)}
+      ${tabBtn("more", "المزيد", showBadgeMore)}
     </div>
     ${renderAnnouncementsModal()}
+    ${renderPaymentsModal()}
   `;
 
   // برمجة زر التحديث
@@ -942,6 +1576,9 @@ function renderApp() {
 
   document.getElementById("logoutBtn").addEventListener("click", function () {
     session = null;
+    currentTab = "home";
+    currentChildIndex = 0;
+    showPayments = false;
     clearCreds();
     renderLogin();
   });
@@ -949,19 +1586,38 @@ function renderApp() {
   document.querySelectorAll(".tab-btn").forEach((btn) => {
     btn.addEventListener("click", function () {
       currentTab = btn.getAttribute("data-tab");
-      if (currentTab === "results") setSeenCount("results_" + child.Student_ID, gradesCount);
-      if (currentTab === "assignments") setSeenCount("assign_" + child.Student_ID, assignCount);
-      if (currentTab === "more") setSeenCount("more_" + child.Student_ID, moreCount);
+      if (currentTab === "home") nextCheer();
+      if (child) {
+        if (currentTab === "results") setSeenCount("results_" + child.Student_ID, gradesCount);
+        if (currentTab === "assignments") setSeenCount("assign_" + child.Student_ID, assignCount);
+        if (currentTab === "more") setSeenCount("more_" + child.Student_ID, moreCount);
+      }
       renderApp();
     });
   });
 
-  document.querySelectorAll(".chip").forEach((btn) => {
+  document.querySelectorAll(".chip[data-idx]").forEach((btn) => {
     btn.addEventListener("click", function () {
-      currentChildIndex = Number(btn.getAttribute("data-idx"));
-      renderApp();
+      selectChild(Number(btn.getAttribute("data-idx")));
     });
   });
+
+  document.querySelectorAll(".kid-card").forEach((el) => {
+    const pick = () => selectChild(Number(el.getAttribute("data-kid")));
+    el.addEventListener("click", pick);
+    el.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" || e.key === " ") { e.preventDefault(); pick(); }
+    });
+  });
+
+  // نُبقي اسم الطفل المختار ظاهراً في صف الأسماء (يُمرَّر أفقياً لمنتصفه بعد كل إعادة رسم)
+  const activeChip = document.querySelector(".child-chips .chip.active[data-idx]");
+  if (activeChip) {
+    const box = activeChip.parentElement;
+    const b = box.getBoundingClientRect();
+    const r = activeChip.getBoundingClientRect();
+    box.scrollLeft += (r.left + r.width / 2) - (b.left + b.width / 2);
+  }
 
   startLiveClock();
 
@@ -975,6 +1631,10 @@ function renderApp() {
       el.value = val;
     }
   }
+
+  // نبقى بنفس مكان التمرير عند إعادة الرسم داخل نفس التبويب، ونبدأ من الأعلى عند تغيير التبويب
+  window.scrollTo(0, lastRenderedTab === currentTab ? prevScroll : 0);
+  lastRenderedTab = currentTab;
 }
 
 let parentAdminWhatsapp = "";
