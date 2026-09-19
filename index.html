@@ -1002,6 +1002,10 @@ function initOneSignalIfConfigured() {
       // المشروع على GitHub Pages داخل مجلد فرعي /Masar/، فلازم نحدد مسار ونطاق العامل صراحةً
       await OneSignal.init({
         appId: oneSignalAppId,
+        // بدون هذا السطر، إذا كان التطبيق مُعدّاً بلوحة OneSignal كـ "Typical Site" يتجاهل الـ SDK
+        // المسار المكتوب هنا ويطلب /OneSignalSDKWorker.js من جذر الموقع (404 على GitHub Pages)
+        serviceWorkerOverrideForTypical: true,
+        path: "/",
         serviceWorkerPath: "Masar/sw.js",
         serviceWorkerParam: { scope: "/Masar/" },
       });
