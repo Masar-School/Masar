@@ -160,13 +160,32 @@
   .sec-bar-track { flex: 1; background: var(--pill-bg); border-radius: 5px; height: 12px; overflow: hidden; }
   .sec-bar-fill { height: 100%; background: #7A9CA6; border-radius: 5px; transition: width .4s; }
   .sec-bar-count { font-size: 11px; font-weight: 700; color: var(--text); width: 18px; }
+
+  /* ===== تحية المعلمين والإدارة ===== */
+  .staff-greet { margin: 2px 0 14px; }
+  .staff-hi { font-size: 21px; font-weight: 700; color: var(--text); }
+  .staff-cheer { font-size: 13.5px; color: var(--muted2); margin-top: 6px; line-height: 1.9; }
+
+  /* ===== بحث أولياء الأمور ===== */
+  .pr-id { font-size: 11px; color: var(--muted); font-weight: 400; margin-right: 6px; }
+  .pr-hit { color: var(--edit-text); font-weight: 700; }
+  .pr-head { font-size: 12.5px; color: var(--muted2); margin: 2px 2px 8px; }
+  .pr-more { font-size: 12px; color: var(--muted); text-align: center; padding: 8px; }
+  .pp { position: relative; }
+  .pp-box { position: relative; }
+  .form-field .pp-input { padding-left: 34px; }
+  .pp-clear { position: absolute; left: 8px; top: 50%; transform: translateY(-50%); background: none; border: none; color: var(--muted); font-size: 15px; cursor: pointer; padding: 4px 6px; }
+  .pp-list { position: absolute; right: 0; left: 0; top: calc(100% + 4px); z-index: 30; max-height: 300px; overflow-y: auto; background: var(--card); border: 1px solid var(--border2); border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.16); padding: 4px; }
+  .pp-list[hidden] { display: none; }
+  .pp-item { padding: 9px 10px; border-radius: 9px; cursor: pointer; }
+  .pp-item:hover, .pp-item.pp-active { background: var(--tint-card); }
 </style>
 </head>
 <body>
 <div id="app"></div>
 
 <script>
-const API_URL = "https://script.google.com/macros/s/AKfycbyJtt9Kn7tnMnR1NYlSoRlBD2kUPvfk8S-S6luqU72KrpyrM1ZXgTQ5pXWp2xxfgY8Srw/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbyVcIpkLd5rmNYheBKjSFLwGTyF_593I06QRWD7K7x6l4wZ7SqBhfuGMWtltwKKyGnW/exec";
 
 const SUBJECTS = ["لغة عربية", "لغة إنجليزية", "رياضيات", "علوم", "تربية إسلامية", "دراسات اجتماعية", "حاسب آلي", "تربية فنية", "تربية بدنية", "عام"];
 const EXAM_TYPES = ["المذاكرة الأولى", "المذاكرة الثانية", "الامتحان النهائي للفصل"];
@@ -273,10 +292,13 @@ function calcAgeLabel(birthDateStr) {
   const bd = new Date(raw + (raw.length === 10 ? "T00:00:00" : ""));
   if (isNaN(bd.getTime())) return "";
   const today = new Date(staffSession && staffSession.todayDate ? staffSession.todayDate + "T00:00:00" : Date.now());
-  let years = today.getFullYear() - bd.getFullYear();
-  const m = today.getMonth() - bd.getMonth();
-  if (m < 0 || (m === 0 && today.getDate() < bd.getDate())) years--;
-  if (years < 0 || years > 100) return "";
+  // العمر بالأشهر الكاملة، ثم تقريب لأقرب سنة: 6 أشهر فأكثر تُقرَّب للأعلى، وأقل من 6 للأدنى
+  let months = (today.getFullYear() - bd.getFullYear()) * 12 + (today.getMonth() - bd.getMonth());
+  if (today.getDate() < bd.getDate()) months--;
+  if (months < 0) return "";
+  let years = Math.floor(months / 12);
+  if (months % 12 >= 6) years++;
+  if (years > 100) return "";
   return years + " سنة";
 }
 
@@ -593,6 +615,7 @@ async function tryStaffAutoLogin() {
     if (!data.ok) { clearStaffCreds(); renderLogin(); return; }
     data._password = saved.password;
     staffSession = data;
+    nextStaffCheer();
     teacherTab = "dashboard";
     adminGroup = (data.role === "Admin" || data.role === "Owner") ? "dashboard" : "roster";
     adminTab = (data.role === "Admin" || data.role === "Owner") ? "dashboard" : "students";
@@ -645,6 +668,7 @@ function renderLogin(errorMsg) {
       if (remember) saveStaffCreds(username, password); else clearStaffCreds();
       data._password = password;
       staffSession = data;
+      nextStaffCheer();
       teacherTab = "dashboard";
       adminGroup = (data.role === "Admin" || data.role === "Owner") ? "dashboard" : "roster";
       adminTab = (data.role === "Admin" || data.role === "Owner") ? "dashboard" : "students";
@@ -906,10 +930,6 @@ function renderAdminStudentsTab() {
     students = students.filter(s => String(s.Student_Name || "").includes(term));
   }
 
-  const parentOptions = (staffSession.parents || [])
-    .map(p => `<option value="${p.Parent_ID}">${p.Parent_ID} - ${p.Parent_Name}</option>`)
-    .join("");
-
   const formCard = `
     <div class="form-card">
       <div class="section-title">➕ إضافة طالب جديد</div>
@@ -933,10 +953,7 @@ function renderAdminStudentsTab() {
         </div>
         <div class="form-field">
           <label>ولي الأمر</label>
-          <select id="newStudentParent" required>
-            <option value="">اختر ولي الأمر</option>
-            ${parentOptions}
-          </select>
+          ${parentPickerHtml("newStudentParent", "")}
         </div>
         <div class="form-field">
           <label>الرسوم السنوية (اختياري)</label>
@@ -1144,9 +1161,6 @@ function renderEditStudentForm(s) {
   const supOptions = (staffSession.supervisors || [])
     .map(sup => `<option value="${sup.Supervisor_ID}|${sup.Supervisor_Name}" ${String(s.Supervisor_ID) === sup.Supervisor_ID ? "selected" : ""}>${sup.Supervisor_Name}</option>`)
     .join("");
-  const parentOptionsEdit = (staffSession.parents || [])
-    .map(p => `<option value="${p.Parent_ID}" ${String(s.Parent_ID) === p.Parent_ID ? "selected" : ""}>${p.Parent_ID} - ${p.Parent_Name}</option>`)
-    .join("");
   const classOptionsEdit = CLASS_LEVELS_LIST
     .map(c => `<option value="${c}" ${String(s.Class_Level || "").trim() === c ? "selected" : ""}>${c}</option>`)
     .join("");
@@ -1164,7 +1178,7 @@ function renderEditStudentForm(s) {
         </div>
         <div class="form-field">
           <label>ولي الأمر</label>
-          <select id="editParent" required>${parentOptionsEdit}</select>
+          ${parentPickerHtml("editParent", s.Parent_ID)}
           <div style="font-size:11px;color:var(--muted);margin-top:5px;">غيّر هذا الحقل فقط إذا كان الوالد المسجّل خطأً</div>
         </div>
         <div class="form-field"><label>الرسوم السنوية</label><input id="editFee" type="number" value="${String(s.Tuition_Fee || "").replace(/[^0-9.]/g, "")}" /></div>
@@ -1394,34 +1408,242 @@ async function toggleStudentStatus(studentId, newStatus) {
 // لوحة المدير - الدفعات
 // ---------------------------------------------------------------------------
 
+// =====================================================================
+// بحث أولياء الأمور: باسم الوالد، أو اسم أحد أبنائه، أو رقم الهاتف، أو رقم الوالد.
+// يتجاهل الفروق العربية (أ/ا/إ، ة/ه، ى/ي، التشكيل) والأرقام الهندية، ويقبل أكثر من كلمة
+// (مثل: "فراس مجد" = والد اسمه فراس وله ابن اسمه مجد).
+// =====================================================================
+function normAr(s) {
+  return String(s == null ? "" : s)
+    .replace(/[\u064B-\u065F\u0670\u0640]/g, "")
+    .replace(/[أإآٱ]/g, "ا").replace(/ى/g, "ي").replace(/ة/g, "ه").replace(/ؤ/g, "و").replace(/ئ/g, "ي")
+    .replace(/[\u0660-\u0669]/g, (d) => String(d.charCodeAt(0) - 1632))
+    .replace(/[\u06F0-\u06F9]/g, (d) => String(d.charCodeAt(0) - 1776))
+    .toLowerCase().replace(/\s+/g, " ").trim();
+}
+
+function buildParentIndex() {
+  const byParent = {};
+  (staffSession.students || []).forEach((s) => {
+    const k = String(s.Parent_ID || "").trim();
+    (byParent[k] = byParent[k] || []).push(s);
+  });
+  return (staffSession.parents || []).map((p) => {
+    const pid = String(p.Parent_ID || "").trim();
+    const kids = byParent[pid] || [];
+    const nameN = normAr(p.Parent_Name);
+    const phoneD = String(p.Phone || "").replace(/\D/g, "");
+    const kidsN = kids.map((k) => normAr(k.Student_Name) + " " + normAr(k.Mother_Name));
+    return { p, pid, kids, nameN, kidsN, hay: [nameN, normAr(pid), phoneD].concat(kidsN).join(" | ") };
+  });
+}
+
+// كل كلمات البحث يجب أن توجد (بأي مكان: اسم الوالد/الأبناء/الهاتف/الرقم). النتائج التي يطابق فيها اسم الوالد نفسه تأتي أولاً.
+function searchParentsIndex(query, limit) {
+  const tokens = normAr(query).split(" ").filter(Boolean);
+  if (!tokens.length) return { list: [], total: 0 };
+  const res = [];
+  buildParentIndex().forEach((e) => {
+    if (!tokens.every((t) => e.hay.indexOf(t) !== -1)) return;
+    const inName = tokens.every((t) => e.nameN.indexOf(t) !== -1);
+    const startsWith = e.nameN.split(" ").some((w) => w.indexOf(tokens[0]) === 0);
+    const matchedKids = inName ? [] : e.kids.filter((k, i) => tokens.some((t) => e.kidsN[i].indexOf(t) !== -1));
+    res.push({ e, score: (inName ? 0 : 2) + (startsWith ? 0 : 1), matchedKids });
+  });
+  res.sort((a, b) => a.score - b.score || a.e.nameN.localeCompare(b.e.nameN, "ar"));
+  return { list: res.slice(0, limit), total: res.length };
+}
+
+function parentResultInner(r) {
+  const e = r.e;
+  // الابن الذي طابق البحث يظهر بلون مميّز ليُعرف سبب ظهور النتيجة
+  const kidsTxt = e.kids.length
+    ? e.kids.map((k) => {
+        const txt = staffEsc(k.Student_Name) + (k.Class_Level ? " (" + staffEsc(k.Class_Level) + ")" : "");
+        return r.matchedKids.indexOf(k) !== -1 ? `<b class="pr-hit">${txt}</b>` : txt;
+      }).join("، ")
+    : "لا أبناء مسجّلون";
+  return `
+    <div class="student-info">
+      <div class="name">${staffEsc(e.p.Parent_Name)} <span class="pr-id">${staffEsc(e.pid)}</span></div>
+      <div class="meta">🎓 ${kidsTxt}</div>
+      ${e.p.Phone ? `<div class="meta">📞 ${staffEsc(e.p.Phone)}</div>` : ""}
+    </div>`;
+}
+
+// ---------------- تبويب الدفعات: اختيار ولي الأمر بالبحث ----------------
+let paymentParentSearch = "";
+
+function getRecentPayParents() {
+  try {
+    const a = JSON.parse(localStorage.getItem("masar_recent_pay_parents") || "[]");
+    return Array.isArray(a) ? a : [];
+  } catch (e) { return []; }
+}
+function pushRecentPayParent(id) {
+  const a = [id].concat(getRecentPayParents().filter((x) => x !== id)).slice(0, 5);
+  try { localStorage.setItem("masar_recent_pay_parents", JSON.stringify(a)); } catch (e) {}
+}
+
+function payResultItem(r) {
+  return `<div class="search-result-item" data-pid="${staffEsc(r.e.pid)}" onclick="selectPaymentParent(this.dataset.pid)">${parentResultInner(r)}<span>◀</span></div>`;
+}
+
+function paySearchResultsHtml() {
+  const q = paymentParentSearch.trim();
+  if (!q) {
+    const idx = buildParentIndex();
+    const recents = getRecentPayParents().map((id) => idx.find((e) => e.pid === id)).filter(Boolean);
+    if (!recents.length) {
+      return `<div class="empty-box" style="padding:22px;">اكتب اسم ولي الأمر أو اسم أحد أبنائه أو رقم هاتفه</div>`;
+    }
+    return `<div class="pr-head">🕘 آخر من تعاملت معهم</div>` + recents.map((e) => payResultItem({ e, matchedKids: [] })).join("");
+  }
+  const { list, total } = searchParentsIndex(q, 15);
+  if (!list.length) return `<div class="empty-box" style="padding:22px;">لا نتيجة مطابقة — جرّب جزءاً آخر من الاسم أو اسم الابن</div>`;
+  return list.map(payResultItem).join("") +
+    (total > list.length ? `<div class="pr-more">يوجد ${total - list.length} نتيجة أخرى — اكتب المزيد لتضييق البحث</div>` : "");
+}
+
+// نحدّث قائمة النتائج فقط (بدون إعادة رسم الصفحة) حتى لا يفقد الحقل تركيزه ولا تنقطع الكتابة
+function paymentSearchInput(v) {
+  paymentParentSearch = v;
+  const box = document.getElementById("paySearchResults");
+  if (box) box.innerHTML = paySearchResultsHtml();
+}
+function selectPaymentParent(id) {
+  selectedPaymentParentId = id;
+  addPaymentMsg = "";
+  paymentParentSearch = "";
+  pushRecentPayParent(id);
+  renderDashboard();
+}
+function changePaymentParent() {
+  selectedPaymentParentId = "";
+  addPaymentMsg = "";
+  paymentParentSearch = "";
+  renderDashboard();
+  setTimeout(() => { const i = document.getElementById("paymentParentSearch"); if (i) i.focus(); }, 0);
+}
+
+// ---------------- مكوّن اختيار ولي الأمر داخل النماذج (إضافة/تعديل طالب) ----------------
+// حقل مخفي بنفس المعرّف القديم، فتبقى دوال الحفظ تقرأ .value كما هي. والتحقق يمنع الحفظ بدون اختيار فعلي.
+function parentPickerHtml(fieldId, selectedId) {
+  const sel = (staffSession.parents || []).find((p) => String(p.Parent_ID) === String(selectedId));
+  const label = sel ? `${sel.Parent_Name} (${sel.Parent_ID})` : "";
+  return `
+    <div class="pp">
+      <input type="hidden" id="${fieldId}" value="${sel ? staffEsc(sel.Parent_ID) : ""}" data-label="${staffEsc(label)}" />
+      <div class="pp-box">
+        <input type="text" class="pp-input" id="${fieldId}_q" value="${staffEsc(label)}" required autocomplete="off"
+               placeholder="ابحث باسم ولي الأمر أو اسم ابنه أو رقم الهاتف..."
+               oninput="ppInput('${fieldId}')" onfocus="ppInput('${fieldId}')" onkeydown="ppKey(event,'${fieldId}')" />
+        <button type="button" class="pp-clear" onclick="ppClear('${fieldId}')" title="مسح" aria-label="مسح الاختيار">✕</button>
+      </div>
+      <div class="pp-list" id="${fieldId}_list" hidden></div>
+    </div>`;
+}
+
+function ppEls(fid) {
+  return { q: document.getElementById(fid + "_q"), hid: document.getElementById(fid), list: document.getElementById(fid + "_list") };
+}
+function ppSync(fid) {
+  const { q, hid } = ppEls(fid);
+  if (q && hid) q.setCustomValidity(hid.value ? "" : "اختر ولي الأمر من نتائج البحث");
+}
+function ppInput(fid) {
+  const { q, hid, list } = ppEls(fid);
+  if (!q || !hid || !list) return;
+  // إذا عدّل المستخدم النص بعد اختيار سابق نلغي الاختيار حتى لا يبقى وليّ أمر خاطئ مخفياً
+  if (hid.value && q.value !== (hid.getAttribute("data-label") || "")) hid.value = "";
+  ppSync(fid);
+  const term = q.value.trim();
+  if (hid.value || !term) { list.hidden = true; list.innerHTML = ""; return; }
+  const { list: found, total } = searchParentsIndex(term, 8);
+  list.innerHTML = found.length
+    ? found.map((r) => `<div class="pp-item" data-pid="${staffEsc(r.e.pid)}" onmousedown="event.preventDefault();ppPick('${fid}', this.dataset.pid)">${parentResultInner(r)}</div>`).join("") +
+      (total > found.length ? `<div class="pr-more">+${total - found.length} نتيجة — اكتب المزيد لتضييق البحث</div>` : "")
+    : `<div class="pr-more">لا نتيجة مطابقة</div>`;
+  list.hidden = false;
+}
+function ppPick(fid, pid) {
+  const { q, hid, list } = ppEls(fid);
+  const p = (staffSession.parents || []).find((x) => String(x.Parent_ID) === String(pid));
+  if (!p || !q || !hid) return;
+  const label = `${p.Parent_Name} (${p.Parent_ID})`;
+  hid.value = String(p.Parent_ID);
+  hid.setAttribute("data-label", label);
+  q.value = label;
+  if (list) { list.hidden = true; list.innerHTML = ""; }
+  ppSync(fid);
+}
+function ppClear(fid) {
+  const { q, hid, list } = ppEls(fid);
+  if (!q || !hid) return;
+  hid.value = "";
+  hid.setAttribute("data-label", "");
+  q.value = "";
+  if (list) { list.hidden = true; list.innerHTML = ""; }
+  ppSync(fid);
+  q.focus();
+}
+function ppKey(e, fid) {
+  const { list } = ppEls(fid);
+  if (!list) return;
+  const items = Array.prototype.slice.call(list.querySelectorAll(".pp-item"));
+  if (e.key === "Escape") { list.hidden = true; return; }
+  if (list.hidden || !items.length) return;
+  let cur = items.findIndex((it) => it.classList.contains("pp-active"));
+  if (e.key === "ArrowDown" || e.key === "ArrowUp") {
+    e.preventDefault();
+    cur = e.key === "ArrowDown" ? Math.min(items.length - 1, cur + 1) : Math.max(0, cur - 1);
+    items.forEach((it, i) => it.classList.toggle("pp-active", i === cur));
+    const it = items[cur];
+    if (it.offsetTop < list.scrollTop) list.scrollTop = it.offsetTop;
+    else if (it.offsetTop + it.offsetHeight > list.scrollTop + list.clientHeight) list.scrollTop = it.offsetTop + it.offsetHeight - list.clientHeight;
+  } else if (e.key === "Enter") {
+    e.preventDefault(); // لا نرسل النموذج عند اختيار نتيجة
+    ppPick(fid, (items[cur >= 0 ? cur : 0]).getAttribute("data-pid"));
+  }
+}
+// إغلاق القائمة عند الضغط خارجها
+document.addEventListener("click", (e) => {
+  document.querySelectorAll(".pp-list").forEach((l) => { if (!l.parentElement.contains(e.target)) l.hidden = true; });
+});
+
 let selectedPaymentParentId = "";
 let addPaymentMsg = "";
 let editingPaymentId = null;
 
 function renderAdminPaymentsTab() {
-  const parentOptions = (staffSession.parents || [])
-    .map(p => `<option value="${p.Parent_ID}" ${p.Parent_ID === selectedPaymentParentId ? "selected" : ""}>${p.Parent_ID} - ${p.Parent_Name}</option>`)
-    .join("");
+  const parent = (staffSession.parents || []).find(p => p.Parent_ID === selectedPaymentParentId);
 
-  let html = `
-    <div class="form-card">
-      <div class="section-title">اختر ولي الأمر</div>
-      <div class="form-field">
-        <select id="paymentParentSelect" onchange="selectedPaymentParentId=this.value;addPaymentMsg='';renderDashboard();">
-          <option value="">-- اختر ولي الأمر --</option>
-          ${parentOptions}
-        </select>
+  // لم يُختر ولي أمر بعد: بحث بالاسم أو باسم الابن أو برقم الهاتف بدل القائمة المنسدلة الطويلة
+  if (!selectedPaymentParentId || !parent) {
+    return `
+      <div class="form-card">
+        <div class="section-title">🔎 اختر ولي الأمر</div>
+        <div class="search-field-admin" style="margin-bottom:10px;">
+          <input id="paymentParentSearch" placeholder="اسم ولي الأمر، أو اسم ابنه، أو رقم الهاتف..." value="${staffEsc(paymentParentSearch)}" oninput="paymentSearchInput(this.value)" autocomplete="off" />
+          <span>🔎</span>
+        </div>
+        <div id="paySearchResults">${paySearchResultsHtml()}</div>
       </div>
-    </div>
-  `;
-
-  if (!selectedPaymentParentId) {
-    return html + `<div class="empty-box">اختر ولي أمر لعرض ملخص دفعاته وإضافة دفعة جديدة</div>`;
+    `;
   }
 
-  const parent = (staffSession.parents || []).find(p => p.Parent_ID === selectedPaymentParentId);
   const parentPayments = (staffSession.payments || []).filter(p => p.Parent_ID === selectedPaymentParentId);
   const children = (staffSession.students || []).filter(s => s.Parent_ID === selectedPaymentParentId);
+
+  let html = `
+    <div class="selected-student-bar">
+      <div>
+        <div class="name">${staffEsc(parent.Parent_Name)}</div>
+        <div class="meta">${staffEsc(parent.Parent_ID)}${parent.Phone ? " · 📞 " + staffEsc(parent.Phone) : ""}</div>
+      </div>
+      <button class="change-btn" onclick="changePaymentParent()">تغيير ولي الأمر</button>
+    </div>
+  `;
 
   // الحساب يعتمد على الدفعات الفعّالة فقط (الملغاة لا تُحتسب)
   const activePayments = parentPayments.filter(p => String(p.Status || "Active").trim() !== "Void");
@@ -2326,6 +2548,150 @@ async function deleteHoliday(holidayId, date) {
 // لوحة المعلم - طلابي 
 // ---------------------------------------------------------------------------
 
+// =====================================================================
+// تحية وعبارات تشجيعية للمعلمين والإدارة — تظهر أعلى الصفحة الرئيسية
+// الآيات والأحاديث منقولة بنصّها من المصادر المعروفة (القرآن الكريم، الصحيحان، الترمذي).
+// الصياغة بصيغة الجمع لتناسب المعلمين والمعلمات معاً.
+// =====================================================================
+
+// عبارات إيمانية مشتركة بين المعلمين والإدارة
+const STAFF_CHEER_ISLAMIC = [
+  "﴿وَقُل رَّبِّ زِدْنِي عِلْمًا﴾ 📖",
+  "﴿رَبِّ اشْرَحْ لِي صَدْرِي وَيَسِّرْ لِي أَمْرِي﴾ — دعاء جميل قبل الحصة 🤲",
+  "﴿ادْعُ إِلَىٰ سَبِيلِ رَبِّكَ بِالْحِكْمَةِ وَالْمَوْعِظَةِ الْحَسَنَةِ﴾ 📖",
+  "﴿وَقُل لِّعِبَادِي يَقُولُوا الَّتِي هِيَ أَحْسَنُ﴾ 📖",
+  "﴿إِنَّ اللَّهَ لَا يُضِيعُ أَجْرَ الْمُحْسِنِينَ﴾ 📖",
+  "﴿وَتَعَاوَنُوا عَلَى الْبِرِّ وَالتَّقْوَىٰ﴾ 📖",
+  "﴿وَقُلِ اعْمَلُوا فَسَيَرَى اللَّهُ عَمَلَكُمْ وَرَسُولُهُ وَالْمُؤْمِنُونَ﴾ 📖",
+  "﴿هَلْ يَسْتَوِي الَّذِينَ يَعْلَمُونَ وَالَّذِينَ لَا يَعْلَمُونَ﴾ 📖",
+  "﴿يَرْفَعِ اللَّهُ الَّذِينَ آمَنُوا مِنكُمْ وَالَّذِينَ أُوتُوا الْعِلْمَ دَرَجَاتٍ﴾ 📖",
+  "﴿رَبَّنَا آتِنَا مِن لَّدُنكَ رَحْمَةً وَهَيِّئْ لَنَا مِنْ أَمْرِنَا رَشَدًا﴾ 🤲",
+  "﴿فَبِمَا رَحْمَةٍ مِّنَ اللَّهِ لِنتَ لَهُمْ﴾ — الرفق سرّ التأثير في القلوب 📖",
+
+  "قال رسول الله صلى الله عليه وسلم: «إِنَّ اللَّهَ وَمَلَائِكَتَهُ وَأَهْلَ السَّمَاوَاتِ وَالْأَرَضِينَ حَتَّى النَّمْلَةَ فِي جُحْرِهَا وَحَتَّى الْحُوتَ لَيُصَلُّونَ عَلَى مُعَلِّمِ النَّاسِ الْخَيْرَ» رواه الترمذي",
+  "قال رسول الله صلى الله عليه وسلم: «مَنْ دَلَّ عَلَى خَيْرٍ فَلَهُ مِثْلُ أَجْرِ فَاعِلِهِ» رواه مسلم",
+  "قال رسول الله صلى الله عليه وسلم: «مَنْ سَلَكَ طَرِيقًا يَلْتَمِسُ فِيهِ عِلْمًا سَهَّلَ اللَّهُ لَهُ بِهِ طَرِيقًا إِلَى الْجَنَّةِ» رواه مسلم",
+  "قال رسول الله صلى الله عليه وسلم: «خَيْرُكُمْ مَنْ تَعَلَّمَ الْقُرْآنَ وَعَلَّمَهُ» رواه البخاري",
+  "قال رسول الله صلى الله عليه وسلم: «إِنَّ اللَّهَ رَفِيقٌ يُحِبُّ الرِّفْقَ فِي الْأَمْرِ كُلِّهِ» متفق عليه",
+  "قال رسول الله صلى الله عليه وسلم: «إِنَّ الرِّفْقَ لَا يَكُونُ فِي شَيْءٍ إِلَّا زَانَهُ» رواه مسلم",
+  "قال رسول الله صلى الله عليه وسلم: «إِنَّ اللَّهَ كَتَبَ الْإِحْسَانَ عَلَى كُلِّ شَيْءٍ» رواه مسلم",
+  "قال رسول الله صلى الله عليه وسلم: «الْكَلِمَةُ الطَّيِّبَةُ صَدَقَةٌ» متفق عليه",
+  "قال رسول الله صلى الله عليه وسلم: «أَحَبُّ الْأَعْمَالِ إِلَى اللَّهِ أَدْوَمُهَا وَإِنْ قَلَّ» متفق عليه",
+  "قال رسول الله صلى الله عليه وسلم: «الْمُؤْمِنُ لِلْمُؤْمِنِ كَالْبُنْيَانِ يَشُدُّ بَعْضُهُ بَعْضًا» متفق عليه",
+
+  "بسم الله نبدأ يومنا، وعلى الله نتوكّل 🌅",
+  "اللهم علّمنا ما ينفعنا، وانفعنا بما علّمتنا، وزدنا علماً 🤲",
+  "اللهم بارك لنا في علمنا وعملنا وأوقاتنا 🤲",
+  "جزاكم الله خيراً على ما تبذلونه من جهد، وبارك في عملكم 🤲",
+  "نسأل الله أن يجعل عملكم خالصاً لوجهه، وأن ينفع بكم أجيالاً 🤲",
+  "الحمد لله على نعمة العلم، وعلى فرصة العطاء كل يوم 🌿",
+];
+
+// عبارات موجَّهة للمعلمين
+const STAFF_CHEER_TEACHERS = [
+  "أنتم تصنعون مستقبل الأجيال، شكراً لكل جهد تبذلونه 🌟",
+  "كلمة طيبة منكم اليوم قد ترافق طالباً طوال عمره 💛",
+  "ابتسامتكم عند دخول الصف تفتح القلوب قبل العقول 😊",
+  "لكل طالب قدراته وقصته، والتشجيع الصادق مفتاحها 🔑",
+  "الصبر مع الطالب المتعثّر من أجمل أنواع العطاء 🌱",
+  "أثركم لا يُقاس بعلامات الطلاب فقط، بل بما غرستموه فيهم من قيم 🌳",
+  "ابدؤوا الحصة بسؤال محفّز، فالفضول أفضل معلّم ❓",
+  "المعلّم القدوة يعلّم بسلوكه قبل كلامه 🌿",
+  "شجّعوا المحاولة قبل النتيجة، فالطالب الذي لا يخشى الخطأ يتعلّم أكثر 💪",
+  "تسجيل الحضور والعلامات أولاً بأول يوفّر الوقت ويطمئن الأهالي 📋",
+  "ملاحظة إيجابية لولي الأمر اليوم قد تغيّر نظرته لمدرسة أبنائه كلها 📝",
+  "اذكروا لكل طالب نقطة قوة، وسيسعى لتنميتها ⭐",
+  "التعاون بين المعلمين روح المدرسة وسرّ نجاحها 🤝",
+  "خطة واضحة للحصة تُريحكم وتُريح طلابكم 📚",
+  "الطالب الهادئ يحتاج التفاتة كما يحتاجها الطالب النشيط 👀",
+  "أنتم لا تُدرّسون منهجاً فقط، أنتم تبنون شخصيات 🧱",
+  "قدّروا التقدّم الصغير، فهو طريق الإنجاز الكبير 🎈",
+  "شربة ماء واستراحة قصيرة بين الحصص تجدّد نشاطكم 💧",
+  "شكراً لأنكم تكونون معهم حين يحتاجون إلى من يسمعهم 💙",
+  "الحزم المقرون بالرفق أقرب طريق إلى قلب الطالب 🌸",
+  "كل طالب يتذكّر معلّماً أحبّه، فكونوا ذلك المعلّم 🌟",
+  "في نهاية اليوم تأمّلوا: ما أجمل ما قدّمتموه اليوم؟ ✨",
+  "اجعلوا حصتكم اليوم أجمل من أمس ولو بتفصيل صغير 🌅",
+  "أولياء الأمور شركاء لكم، والتواصل الودّي معهم يثمر أثراً كبيراً 🤝",
+  "الاستمرار على القليل خير من الانقطاع عن الكثير، فاصبروا على الخطوات الصغيرة 🌱",
+].concat(STAFF_CHEER_ISLAMIC);
+
+// عبارات موجَّهة للمدير والإدارة
+const STAFF_CHEER_DIRECTORS = [
+  "قيادتكم الهادئة تصنع بيئة مدرسية يحبّها الجميع 🌟",
+  "شكراً لكل ما تبذلونه لتبقى المدرسة عامرة بالعلم والأخلاق 💙",
+  "كلمة شكر لمعلّم مجتهد تعيد له نشاطه وتضاعف عطاءه 🌱",
+  "أنصتوا لفريقكم، ففيهم أفكار تصنع الفرق 👂",
+  "العدل والشفافية بين الجميع أساس الثقة داخل المدرسة ⚖️",
+  "جولة قصيرة على الصفوف اليوم تُشعر الطلاب والمعلمين بحضوركم 🏫",
+  "نجاح المدرسة يبدأ بمعلّم مقدَّر وسعيد 💛",
+  "قرارات اليوم المدروسة تبني ثقة الأهالي غداً 📊",
+  "التواصل الجيد مع أولياء الأمور يحلّ المشكلات قبل أن تكبر 📞",
+  "اعتنوا بأنفسكم كما تعتنون بمدرستكم، فأنتم عمودها 🌿",
+  "أثنوا على الجهد أمام الجميع، وانصحوا على انفراد 🤝",
+  "التخطيط المبكر للامتحانات والعطل يخفّف الضغط على الجميع 📅",
+  "المتابعة الهادئة للحضور والدفعات تحمي انتظام المدرسة 📋",
+  "حين يشعر المعلّم بالأمان يبدع أكثر ✨",
+  "في كل معلّم موهبة، فاكتشفوها ووظّفوها 🔎",
+  "شكراً لأنكم تحملون هذه الأمانة بإخلاص 🤲",
+  "قال رسول الله صلى الله عليه وسلم: «كُلُّكُمْ رَاعٍ وَكُلُّكُمْ مَسْئُولٌ عَنْ رَعِيَّتِهِ» متفق عليه",
+  "قال رسول الله صلى الله عليه وسلم: «مَنْ لَا يَشْكُرِ النَّاسَ لَا يَشْكُرِ اللَّهَ» رواه الترمذي",
+  "قال رسول الله صلى الله عليه وسلم: «الدِّينُ النَّصِيحَةُ» رواه مسلم",
+  "﴿إِنَّ اللَّهَ يَأْمُرُ بِالْعَدْلِ وَالْإِحْسَانِ﴾ 📖",
+  "﴿وَشَاوِرْهُمْ فِي الْأَمْرِ﴾ — الشورى تبني الفريق وتُصلح القرار 📖",
+].concat(STAFF_CHEER_ISLAMIC);
+
+let staffCheerIdxNow = null;
+
+function staffEsc(s) {
+  return String(s == null ? "" : s).replace(/[&<>"']/g, (ch) => (
+    { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[ch]
+  ));
+}
+
+function staffCheerPool() { return isAdmin() ? STAFF_CHEER_DIRECTORS : STAFF_CHEER_TEACHERS; }
+
+// تتبدّل العبارة مع: كل دخول، التحديث، والعودة للرئيسية. وما تُعاد أي عبارة قبل أن تظهر كل العبارات،
+// ولا تتكرر العبارة نفسها مرتين متتاليتين حتى عند إعادة الخلط (الحالة محفوظة على الجهاز لكل دور).
+function nextStaffCheer() {
+  const pool = staffCheerPool();
+  const n = pool.length;
+  const key = isAdmin() ? "masar_staff_cheer_d" : "masar_staff_cheer_t";
+  let last = -1, bag = [];
+  try {
+    const p = JSON.parse(localStorage.getItem(key) || "null");
+    if (p && Array.isArray(p.bag)) { bag = p.bag; if (Number.isInteger(p.last)) last = p.last; }
+  } catch (e) {}
+  bag = bag.filter((i) => Number.isInteger(i) && i >= 0 && i < n && i !== last);
+  if (!bag.length) {
+    bag = pool.map((_, i) => i);
+    for (let i = bag.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [bag[i], bag[j]] = [bag[j], bag[i]];
+    }
+    // العنصر الذي سيُسحب أولاً هو الأخير؛ نتأكد أنه ليس آخر عبارة ظهرت
+    if (bag[bag.length - 1] === last) { const t = bag[0]; bag[0] = bag[bag.length - 1]; bag[bag.length - 1] = t; }
+  }
+  staffCheerIdxNow = bag.pop();
+  try { localStorage.setItem(key, JSON.stringify({ bag: bag, last: staffCheerIdxNow })); } catch (e) {}
+}
+
+function staffGreetingHtml() {
+  if (!staffSession) return "";
+  if (staffCheerIdxNow === null) nextStaffCheer();
+  const h = new Date().getHours();
+  const g = h >= 5 && h < 12 ? { t: "صباح الخير", e: "☀️" }
+          : h >= 12 && h < 18 ? { t: "نهارك سعيد", e: "🌤️" }
+          : { t: "مساء الخير", e: "🌙" };
+  const nm = String(staffSession.name || staffSession.username || "").trim().split(/\s+/)[0];
+  const line = staffCheerPool()[staffCheerIdxNow] || "";
+  return `
+    <div class="staff-greet">
+      <div class="staff-hi">${g.t}${nm ? "، " + staffEsc(nm) : ""} ${g.e}</div>
+      <div class="staff-cheer">${staffEsc(line)}</div>
+    </div>`;
+}
+
 function renderTeacherDashboardTab() {
   const roster = staffSession.roster || [];
   const scopes = staffSession.scopes || [];
@@ -2465,7 +2831,7 @@ function renderTeacherDashboardTab() {
     `;
   }
 
-  return statCards + attendanceAlert + donuts + attentionCard + examCard + annCard;
+  return staffGreetingHtml() + statCards + attendanceAlert + donuts + attentionCard + examCard + annCard;
 }
 
 
@@ -3023,6 +3389,7 @@ function visibleTabs(group) {
 // اختيار مجموعة يفتح أول تبويب مرئي فيها
 function selectAdminGroup(groupId) {
   adminGroup = groupId;
+  if (groupId === "dashboard") nextStaffCheer();
   const g = ADMIN_GROUPS.find(x => x.id === groupId);
   const tabs = g ? visibleTabs(g) : [];
   if (tabs.length) adminTab = tabs[0].id;
@@ -3847,7 +4214,7 @@ function renderAdminDashboardTab() {
     classCards += `<div class="empty-box">لا يوجد طلاب نشطون مسجّلون بعد</div>`;
   }
 
-  return statCards + donuts + overviewChart + classCards;
+  return staffGreetingHtml() + statCards + donuts + overviewChart + classCards;
 }
 
 
@@ -4183,7 +4550,7 @@ function renderDashboard() {
   } else {
     contentHtml = `
       <div class="admin-tabs" id="teacherTabsBar">
-        <button class="admin-tab-btn ${teacherTab === "dashboard" ? "active" : ""}" onclick="teacherTab='dashboard';renderDashboard();">🏠 الرئيسية</button>
+        <button class="admin-tab-btn ${teacherTab === "dashboard" ? "active" : ""}" onclick="teacherTab='dashboard';nextStaffCheer();renderDashboard();">🏠 الرئيسية</button>
         <button class="admin-tab-btn ${teacherTab === "roster" ? "active" : ""}" onclick="teacherTab='roster';renderDashboard();">طلابي</button>
         <button class="admin-tab-btn ${teacherTab === "attendance" ? "active" : ""}" onclick="teacherTab='attendance';renderDashboard();">تسجيل الحضور</button>
         <button class="admin-tab-btn ${teacherTab === "attendanceSearch" ? "active" : ""}" onclick="teacherTab='attendanceSearch';renderDashboard();">سجل الحضور</button>
@@ -4238,6 +4605,7 @@ function renderDashboard() {
       if (data.ok) {
         data._password = staffSession._password;
         staffSession = data;
+        nextStaffCheer();
         renderDashboard(); 
       } else {
         alert("فشل التحديث: " + data.error);
@@ -4254,6 +4622,7 @@ function renderDashboard() {
   document.getElementById("logoutBtn").addEventListener("click", function () {
     clearStaffCreds();
     staffSession = null;
+    staffCheerIdxNow = null;
     adminTab = "students";
     teacherTab = "roster";
     attendanceDraft = {};
@@ -4265,6 +4634,7 @@ function renderDashboard() {
     ctxClass = "";
     ctxSection = "";
     selectedPaymentParentId = "";
+    paymentParentSearch = "";
     attSearchTerm = "";
     attSelectedStudentId = "";
     adminGradeSearchTerm = "";
