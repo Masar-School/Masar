@@ -167,7 +167,7 @@
   .staff-cheer { font-size: 13.5px; color: var(--muted2); margin-top: 6px; line-height: 1.9; }
 
   /* ===== بحث أولياء الأمور ===== */
-  .pr-id { font-size: 11px; color: var(--muted); font-weight: 400; margin-right: 6px; }
+  .pr-id { font-size: 11px; color: var(--muted); font-weight: 400; margin-right: 6px; direction: ltr; unicode-bidi: isolate; display: inline-block; }
   .pr-hit { color: var(--edit-text); font-weight: 700; }
   .pr-head { font-size: 12.5px; color: var(--muted2); margin: 2px 2px 8px; }
   .pr-more { font-size: 12px; color: var(--muted); text-align: center; padding: 8px; }
@@ -185,13 +185,166 @@
   .log-chip { padding: 7px 13px; border-radius: 999px; background: var(--tint-card); border: 1px solid var(--border); font-family: inherit; font-size: 12.5px; color: #7A2626; cursor: pointer; white-space: nowrap; }
   .log-chip.active { background: #A63A3A; color: #fff; border-color: #A63A3A; }
   body.dark .log-chip { color: var(--edit-text); }
+
+  /* ===== الدفعة 1: قوائم قابلة للفتح + المواد + علامات الصف + الحضور ===== */
+  .acc-item { margin-bottom: 12px; }
+  .acc-head { display: flex; align-items: center; gap: 12px; width: 100%; background: var(--card); border: 1.5px solid var(--border); border-radius: 16px; padding: 12px 14px; font-family: inherit; color: var(--text); text-align: right; cursor: pointer; transition: border-color .2s, box-shadow .2s; }
+  .acc-head:focus-visible { outline: 2px solid #A63A3A; outline-offset: 2px; }
+  .acc-item.open > .acc-head { border-color: #A63A3A; box-shadow: 0 0 0 3px rgba(166,58,58,0.14); }
+  .acc-ic { width: 38px; height: 38px; border-radius: 12px; background: var(--tint-card); display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
+  .acc-title { flex: 1; min-width: 0; }
+  .acc-name { font-size: 14.5px; font-weight: 700; }
+  .acc-chev { flex-shrink: 0; width: 9px; height: 9px; border-right: 2px solid var(--muted2); border-bottom: 2px solid var(--muted2); transform: rotate(45deg); margin: 0 4px 3px; transition: transform .25s ease; }
+  .acc-item.open > .acc-head .acc-chev { transform: rotate(-135deg); margin-bottom: -3px; }
+  .acc-panel { display: grid; grid-template-rows: 0fr; transition: grid-template-rows .3s ease, margin-top .3s ease; }
+  .acc-item.open > .acc-panel { grid-template-rows: 1fr; margin-top: 10px; }
+  .acc-inner { min-height: 0; overflow: hidden; visibility: hidden; transition: visibility 0s .3s; }
+  .acc-item.open > .acc-panel > .acc-inner { visibility: visible; transition: visibility 0s; overflow: visible; }
+  .acc-body { padding: 1px 1px 2px; }
+  @media (prefers-reduced-motion: reduce) { .acc-panel, .acc-chev, .acc-inner, .acc-head { transition: none !important; } }
+
+  .empty-fr { padding: 26px 16px; }
+  .ef-ic { font-size: 30px; margin-bottom: 6px; }
+  .ef-t { font-size: 14.5px; font-weight: 700; color: var(--text); }
+  .ef-s { font-size: 12.5px; color: var(--muted); margin-top: 4px; line-height: 1.8; }
+
+  .ta-block { border: 1.5px solid var(--border); border-radius: 14px; padding: 10px; margin-bottom: 10px; background: var(--card); }
+  .ta-row { display: flex; gap: 8px; align-items: center; margin-bottom: 8px; }
+  .ta-row select { min-width: 0; width: auto; padding: 10px 10px; border: 1.5px solid var(--border); border-radius: 12px; font-family: inherit; font-size: 14px; background: var(--card); color: var(--text); }
+  .ta-row .ta-class { flex: 1.7; }
+  .ta-row .ta-sec { flex: 1; }
+  .ta-del { border: none; background: var(--tint-card); color: #7A2626; border-radius: 10px; width: 34px; height: 34px; cursor: pointer; font-size: 14px; flex-shrink: 0; }
+  .ta-subs { display: flex; flex-wrap: wrap; gap: 6px; }
+  .ta-chip input { position: absolute; opacity: 0; pointer-events: none; }
+  .ta-chip { position: relative; }
+  .ta-chip span { display: inline-block; padding: 6px 12px; border-radius: 16px; border: 1.5px solid var(--border); font-size: 12.5px; color: var(--muted2); cursor: pointer; background: var(--bg, transparent); }
+  .ta-chip input:checked + span { background: #A63A3A; border-color: #A63A3A; color: #fff; font-weight: 600; }
+  .ta-chip input:focus-visible + span { outline: 2px solid #A63A3A; outline-offset: 2px; }
+  .ta-chip input:disabled + span { opacity: 0.4; cursor: not-allowed; }
+  .ta-chip.ta-all span { border-style: dashed; }
+  .ta-add { font-family: inherit; font-size: 12.5px; padding: 8px 14px; border-radius: 12px; border: 1.5px dashed var(--border); background: transparent; color: #7A2626; cursor: pointer; }
+  .ta-scope { font-size: 11.5px; color: var(--muted2); margin-top: 3px; line-height: 1.7; }
+  .ta-scope.warn { color: #B4483A; }
+  .ta-editor { margin-top: -4px; }
+  .ta-sub-title { font-size: 13px; font-weight: 700; margin: 14px 0 8px; color: var(--text); }
+  .ta-actions { display: flex; gap: 8px; align-items: center; margin-top: 10px; flex-wrap: wrap; }
+  .ta-actions .btn-save { width: auto; flex: 1; margin: 0; }
+  .ta-none { font-size: 12.5px; color: var(--muted); }
+
+  .seg2 { display: flex; gap: 6px; margin-bottom: 12px; }
+  .seg2-b { flex: 1; font-family: inherit; font-size: 13px; padding: 10px 6px; border-radius: 12px; border: 1.5px solid var(--border); background: var(--card); color: var(--text); cursor: pointer; }
+  .seg2-b.on { background: #A63A3A; border-color: #A63A3A; color: #fff; font-weight: 700; }
+  .bg-two { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .bg-hint { font-size: 11.5px; color: var(--muted); margin: 2px 0 10px; line-height: 1.8; }
+  .bg-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 8px 2px; border-bottom: 1px solid var(--border); }
+  .bg-row.done { opacity: 0.75; }
+  .bg-name { flex: 1; min-width: 0; font-size: 14px; color: var(--text); overflow-wrap: anywhere; }
+  .bg-in { width: 88px; text-align: center; padding: 9px 6px; border: 1.5px solid var(--border); border-radius: 10px; font-size: 16px; font-family: inherit; background: var(--card); color: var(--text); }
+  .bg-in:focus { outline: none; border-color: #A63A3A; }
+  .bg-in.bad { border-color: #B4483A; background: #FBECEC; }
+  .bg-bar, .att-savebar { position: sticky; bottom: 0; z-index: 5; display: flex; align-items: center; gap: 10px; background: var(--card); border-top: 1px solid var(--border); padding: 10px 0 4px; margin-top: 12px; }
+  .bg-bar span, .att-savebar span { font-size: 12.5px; color: var(--muted2); }
+  .bg-bar .btn-save, .att-savebar .btn-save { width: auto; flex: 1; margin: 0; }
+  .att-tools { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin: 4px 0 10px; }
+  .att-hint { font-size: 11.5px; color: var(--muted); }
+
+
+  /* ===== الدفعة 2: الشريط السفلي + المزيد + التثبيت + المزامنة ===== */
+  :root { --navh: 74px; }
+  .sync-bar { text-align: center; font-size: 11.5px; color: var(--muted); padding: 6px 0 0; }
+  .sync-bar:empty { display: none; }
+  .content { padding-bottom: 16px; }
+  .snav { position: sticky; bottom: 0; z-index: 40; background: var(--card); border-top: 1px solid var(--border); display: flex; gap: 4px; padding: 6px 6px calc(6px + env(safe-area-inset-bottom, 0px)); }
+  .nav-btn { flex: 1; position: relative; background: none; border: none; padding: 8px 2px 9px; border-radius: 14px; display: flex; flex-direction: column; align-items: center; gap: 3px; color: var(--muted2); font-family: inherit; cursor: pointer; transition: background .15s, color .15s; }
+  .nav-btn span { font-size: 11.5px; }
+  .nav-btn.active { color: #fff; background: #A63A3A; font-weight: 700; }
+  .nav-btn:focus-visible { outline: 2px solid #A63A3A; outline-offset: 2px; }
+  .nav-btn svg { width: 23px; height: 23px; fill: none; stroke: currentColor; stroke-width: 1.9; stroke-linecap: round; stroke-linejoin: round; }
+  .nav-btn svg circle { fill: none; }
+  .nav-btn.more svg circle { fill: currentColor; stroke: none; }
+  .bg-bar, .att-savebar { bottom: calc(var(--navh) + env(safe-area-inset-bottom, 0px)); }
+
+  body.sheet-open { overflow: hidden; }
+  .sheet { position: fixed; inset: 0; z-index: 80; display: none; }
+  .sheet.open { display: block; }
+  .sheet-back { position: absolute; inset: 0; background: rgba(0,0,0,0.45); }
+  .sheet-panel { position: absolute; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: 420px; max-height: 88vh; overflow-y: auto; background: var(--card); border-radius: 22px 22px 0 0; padding: 10px 18px calc(18px + env(safe-area-inset-bottom, 0px)); animation: sheetUp .25s ease; box-shadow: 0 -8px 30px rgba(0,0,0,0.25); }
+  @keyframes sheetUp { from { transform: translate(-50%, 34px); opacity: 0; } to { transform: translate(-50%, 0); opacity: 1; } }
+  @media (prefers-reduced-motion: reduce) { .sheet-panel { animation: none; } }
+  .sheet-grip { width: 42px; height: 4px; border-radius: 4px; background: var(--border); margin: 2px auto 12px; }
+  .sheet-title { font-size: 16px; font-weight: 700; color: var(--text); margin-bottom: 12px; }
+  .sheet-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 8px; }
+  .sheet-item { display: flex; flex-direction: column; align-items: flex-start; gap: 4px; text-align: right; background: var(--tint-card); border: 1.5px solid var(--border); border-radius: 16px; padding: 12px; font-family: inherit; color: var(--text); cursor: pointer; }
+  .sheet-item.on { border-color: #A63A3A; box-shadow: 0 0 0 3px rgba(166,58,58,0.14); }
+  .si-ic { font-size: 22px; } .si-t { font-size: 14px; font-weight: 700; } .si-s { font-size: 11px; color: var(--muted); line-height: 1.6; }
+  .sheet-sec { font-size: 13px; font-weight: 700; color: var(--text); margin: 16px 0 10px; padding-top: 14px; border-top: 1px solid var(--border); }
+  .set-row { margin-bottom: 14px; } .set-lab { font-size: 12.5px; color: var(--muted2); margin-bottom: 6px; font-weight: 600; } .set-hint { font-size: 11.5px; color: var(--muted); }
+  .seg { display: flex; gap: 6px; }
+  .seg-b { flex: 1; font-family: inherit; font-size: 13px; padding: 9px 4px; border-radius: 12px; border: 1.5px solid var(--border); background: var(--card); color: var(--text); cursor: pointer; }
+  .seg-b.on { border-color: #A63A3A; background: rgba(166,58,58,0.12); font-weight: 700; }
+  .sheet-close { width: 100%; margin-top: 14px; padding: 11px; border-radius: 12px; border: none; background: var(--tint-card); color: #7A2626; font-family: inherit; font-size: 14px; font-weight: 600; cursor: pointer; }
+  body.dark .sheet-close { color: var(--edit-text); }
+
+  .install-card { background: var(--card); border: 1px solid var(--border); border-right: 4px solid #A63A3A; border-radius: 16px; padding: 14px 16px; margin: 6px 0 14px; }
+  .install-t { font-size: 14.5px; font-weight: 700; color: var(--text); }
+  .install-s { font-size: 12.5px; color: var(--muted2); margin-top: 4px; line-height: 1.8; }
+  .install-how { font-size: 12.5px; color: var(--text); background: var(--tint-card); border-radius: 10px; padding: 8px 10px; margin-top: 8px; line-height: 1.9; }
+  .install-btns { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+  .ib { font-family: inherit; font-size: 12.5px; padding: 7px 14px; border-radius: 10px; border: 1px solid var(--border); background: transparent; color: var(--muted2); cursor: pointer; }
+  .ib.main { background: #A63A3A; color: #fff; border-color: #A63A3A; font-weight: 700; }
+
+
+  /* ===== الدفعة 3: ملخصات الرئيسية + البحث الشامل + التقارير ===== */
+  .acc-count { background: #A63A3A; color: #fff; min-width: 24px; padding: 2px 8px; border-radius: 12px; font-size: 12px; font-weight: 700; text-align: center; }
+  .attn-row { display: flex; align-items: center; gap: 8px; background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 10px 12px; margin-bottom: 8px; }
+  .attn-row.warn { border-color: #E9C9C4; background: #FBF1EF; } .attn-row.ok { border-color: #CFE5D6; background: #F0F8F2; }
+  body.dark .attn-row.warn { background: rgba(229,130,117,0.12); border-color: rgba(229,130,117,0.35); } body.dark .attn-row.ok { background: rgba(93,190,149,0.12); border-color: rgba(93,190,149,0.3); }
+  .attn-main { flex: 1; min-width: 0; font-size: 13px; color: var(--text); line-height: 1.7; }
+  .attn-main b { display: block; font-size: 13.5px; }
+  .attn-sub { display: block; font-size: 11.5px; color: var(--muted); overflow-wrap: anywhere; }
+  .attn-amt { font-weight: 700; color: #B4483A; white-space: nowrap; font-size: 13.5px; }
+  .attn-chips { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 5px; }
+  .pill-mini { font-size: 11.5px; padding: 2px 9px; border-radius: 10px; background: var(--tint-card); color: #7A2626; } .pill-mini.bad { background: #FBDEDC; color: #8E2F2A; }
+  body.dark .pill-mini { color: var(--edit-text); } body.dark .pill-mini.bad { background: rgba(229,130,117,0.2); color: #F0A69B; }
+  .attn-foot { font-size: 12.5px; color: var(--muted2); padding: 4px 2px; }
+  .attn-link { background: none; border: none; color: #A63A3A; font-family: inherit; font-size: 12.5px; font-weight: 700; cursor: pointer; margin-right: 6px; }
+  .pay-due { color: #B4483A; font-weight: 600; }
+  .gs-entry { cursor: pointer; margin-bottom: 12px; } .gs-entry input { cursor: pointer; }
+
+  .gs-panel { min-height: 62vh; max-height: 92vh; }
+  .gs-head { display: flex; align-items: center; justify-content: space-between; }
+  .gs-x { border: none; background: var(--tint-card); color: #7A2626; border-radius: 10px; width: 34px; height: 34px; font-size: 14px; cursor: pointer; }
+  .gs-back { background: none; border: none; color: #A63A3A; font-family: inherit; font-size: 13px; font-weight: 700; cursor: pointer; padding: 4px 0 10px; }
+  .pc-head { background: var(--tint-card); border-radius: 16px; padding: 14px; margin-bottom: 4px; }
+  .pc-name { font-size: 16px; font-weight: 700; color: var(--text); } .pc-phone { font-size: 13px; color: var(--muted2); margin: 4px 0 10px; }
+  .pc-btns { display: flex; flex-wrap: wrap; gap: 8px; }
+  .pc-sec { font-size: 13.5px; font-weight: 700; color: var(--text); margin: 16px 0 8px; }
+  .pc-tiles { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 8px; }
+  .pc-tiles div { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 9px 4px; text-align: center; }
+  .pc-tiles span { display: block; font-size: 11px; color: var(--muted); } .pc-tiles b { font-size: 14.5px; color: var(--text); }
+  .pc-tiles b.ok, .pc-kid-att .ok { color: #2E7D5B; } .pc-tiles b.bad, .pc-kid-att .bad { color: #B4483A; }
+  .pc-pay { display: flex; justify-content: space-between; font-size: 12.5px; padding: 6px 4px; border-bottom: 1px solid var(--border); color: var(--muted2); } .pc-pay b { color: var(--text); }
+  .pc-kid { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 10px 12px; margin-bottom: 8px; }
+  .pc-kid-main b { display: block; font-size: 14px; } .pc-kid-main span { font-size: 12px; color: var(--muted); }
+  .pc-kid-att { font-size: 12.5px; color: var(--muted2); margin: 6px 0 8px; }
+
+  .rep-sum { display: flex; gap: 8px; margin: 4px 0 12px; }
+  .rep-sum div { flex: 1; background: var(--tint-card); border-radius: 12px; padding: 9px 6px; text-align: center; }
+  .rep-sum span { display: block; font-size: 11px; color: var(--muted); } .rep-sum b { font-size: 15px; color: var(--text); }
+  .rep-scroll { overflow-x: auto; margin-bottom: 8px; }
+  .rep-table { width: 100%; border-collapse: collapse; font-size: 12.5px; background: var(--card); }
+  .rep-table th { background: #A63A3A; color: #fff; padding: 8px 6px; text-align: right; font-size: 12px; white-space: nowrap; }
+  .rep-table td { padding: 8px 6px; border-bottom: 1px solid var(--border); color: var(--text); }
+  .rep-table td.n { white-space: nowrap; font-weight: 600; }
+  .header .logout-btn { padding-inline: 10px; }
+
 </style>
 </head>
 <body>
 <div id="app"></div>
 
 <script>
-const API_URL = "https://script.google.com/macros/s/AKfycbxix7sIw8wEXli_WvOPZ1cxAfkxiThbkgISzCNW0-UeFcJ1APY5ynchEJM7cBYQvyrtiA/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbx-36zpcxd2A-8zsLkQdeTtZ837W7_9_q3wogdRsAPCC1pYlKo3UtOqtPGUuWPv8FhWtA/exec";
 
 const SUBJECTS = ["لغة عربية", "لغة إنجليزية", "رياضيات", "علوم", "تربية إسلامية", "دراسات اجتماعية", "حاسب آلي", "تربية فنية", "تربية بدنية", "عام"];
 const EXAM_TYPES = ["المذاكرة الأولى", "المذاكرة الثانية", "الامتحان النهائي للفصل"];
@@ -259,6 +412,7 @@ function toWhatsappNumber(phone) {
 }
 
 function sendParentCredentials(phone, name, pin) {
+  if (!pin) { alert("جارٍ تحديث البيانات… حاول بعد لحظات."); return; }
   const num = toWhatsappNumber(phone);
   if (!num) { alert("لا يوجد رقم هاتف مسجّل لهذا الشخص"); return; }
   const loginUsername = String(phone || "").replace(/\D/g, "").slice(-6);
@@ -287,6 +441,7 @@ function sendLastAddedCredentials(kind) {
 }
 
 function sendTeacherCredentials(phone, name, username, password) {
+  if (!password) { alert("جارٍ تحديث البيانات… حاول بعد لحظات."); return; }
   const num = toWhatsappNumber(phone);
   if (!num) { alert("لا يوجد رقم هاتف مسجّل لهذا المعلم"); return; }
   const msg =
@@ -344,13 +499,6 @@ function nameWithAgeById(name, sid) {
 // ---------------------------------------------------------------------------
 // الوضع الليلي/النهاري (مفتاح تخزين مستقل عن تطبيق الأهالي)
 // ---------------------------------------------------------------------------
-function applyStaffDarkModePref() {
-  if (localStorage.getItem("masar_staff_dark") === "1") document.body.classList.add("dark");
-}
-function toggleStaffDarkMode() {
-  document.body.classList.toggle("dark");
-  localStorage.setItem("masar_staff_dark", document.body.classList.contains("dark") ? "1" : "0");
-}
 
 // ---------------------------------------------------------------------------
 // سياق المدير: الصف والشعبة المختارين لتبويبات الحضور/السلوك/العلامات/الواجبات
@@ -639,6 +787,7 @@ function saveStaffCreds(username, password) {
 function clearStaffCreds() {
   localStorage.removeItem("masar_staff_user");
   localStorage.removeItem("masar_staff_pass");
+  localStorage.removeItem(STAFF_CACHE_KEY); // لا نُبقي بيانات المدرسة على الجهاز بعد الخروج
 }
 function getSavedStaffCreds() {
   const username = localStorage.getItem("masar_staff_user");
@@ -649,8 +798,38 @@ function getSavedStaffCreds() {
 async function tryStaffAutoLogin() {
   const saved = getSavedStaffCreds();
   if (!saved) { renderLogin(); return; }
+  const isAdm = (r) => r === "Admin" || r === "Owner";
+
+  // فتح فوري: نعرض آخر نسخة محفوظة على الجهاز ثم نحدّثها بالخلفية
+  const cached = readStaffCache(saved.username);
+  if (cached) {
+    staffSession = cached.data;
+    staffSession._password = saved.password;
+    staffSession._fromCache = true;
+    staffSession._refreshing = true;
+    nextStaffCheer();
+    teacherTab = "dashboard";
+    adminGroup = isAdm(staffSession.role) ? "dashboard" : "roster";
+    adminTab = isAdm(staffSession.role) ? "dashboard" : "students";
+    renderDashboard();
+    try {
+      const url = `${API_URL}?action=staffLogin&username=${encodeURIComponent(saved.username)}&password=${encodeURIComponent(saved.password)}`;
+      const res = await fetch(url);
+      const data = await res.json();
+      if (!data.ok) { clearStaffCreds(); staffSession = null; renderLogin(); return; }
+      data._password = saved.password;
+      staffSession = data;
+      staffLastFetch = Date.now();
+      writeStaffCache(saved.username, data);
+    } catch (err) {
+      if (staffSession) { staffSession._refreshing = false; staffSession._refreshFailed = true; }
+    }
+    if (staffSession) renderDashboard();
+    return;
+  }
+
   const app = document.getElementById("app");
-  if (app) app.innerHTML = `<div class="empty-box" style="padding-top:80px;">جارِ تسجيل الدخول...</div>`;
+  if (app) app.innerHTML = `${emptyState("🌿", "جارِ تسجيل الدخول...", "")}`;
   try {
     const url = `${API_URL}?action=staffLogin&username=${encodeURIComponent(saved.username)}&password=${encodeURIComponent(saved.password)}`;
     const res = await fetch(url);
@@ -658,10 +837,12 @@ async function tryStaffAutoLogin() {
     if (!data.ok) { clearStaffCreds(); renderLogin(); return; }
     data._password = saved.password;
     staffSession = data;
+    staffLastFetch = Date.now();
+    writeStaffCache(saved.username, data);
     nextStaffCheer();
     teacherTab = "dashboard";
-    adminGroup = (data.role === "Admin" || data.role === "Owner") ? "dashboard" : "roster";
-    adminTab = (data.role === "Admin" || data.role === "Owner") ? "dashboard" : "students";
+    adminGroup = isAdm(data.role) ? "dashboard" : "roster";
+    adminTab = isAdm(data.role) ? "dashboard" : "students";
     renderDashboard();
   } catch (err) {
     renderLogin(); // تعذّر الاتصال؟ اعرض شاشة الدخول العادية بدل ما تعلق الصفحة
@@ -711,6 +892,8 @@ function renderLogin(errorMsg) {
       if (remember) saveStaffCreds(username, password); else clearStaffCreds();
       data._password = password;
       staffSession = data;
+      staffLastFetch = Date.now();
+      if (remember) writeStaffCache(username, data);
       nextStaffCheer();
       teacherTab = "dashboard";
       adminGroup = (data.role === "Admin" || data.role === "Owner") ? "dashboard" : "roster";
@@ -837,9 +1020,9 @@ function renderAdminGradesTab() {
     `;
     
     if (adminGradeSearchTerm.trim() === "") {
-      html += `<div class="empty-box">اكتب اسم الطالب لعرض ومراقبة علاماته</div>`;
+      html += `${emptyState("📝", "اكتب اسم الطالب لعرض ومراقبة علاماته", "")}`;
     } else if (results.length === 0) {
-      html += `<div class="empty-box">لا يوجد طالب مطابق</div>`;
+      html += `${emptyState("🔎", "لا يوجد طالب مطابق", "")}`;
     } else {
       results.slice(0, 20).forEach(s => {
         html += `
@@ -872,7 +1055,7 @@ function renderAdminGradesTab() {
   `;
 
   if (studentGrades.length === 0) {
-    detailsHtml += `<div class="empty-box">لا توجد علامات مسجلة لهذا الطالب حتى الآن</div>`;
+    detailsHtml += `${emptyState("📝", "لا توجد علامات مسجلة لهذا الطالب حتى الآن", "")}`;
   } else {
     studentGrades.forEach(g => {
       const addedBy = String(g.Teacher_User || "").trim();
@@ -957,7 +1140,7 @@ function renderAdminParentsTab() {
     </div>
   `;
 
-  return addParentCard + renderParentsListSection();
+  return collapseAddCard("parent", addParentCard) + renderParentsListSection();
 }
 
 function renderAdminStudentsTab() {
@@ -1029,7 +1212,7 @@ function renderAdminStudentsTab() {
 
   let listHtml = `<div class="section-title">قائمة الطلاب (${students.length})</div>`;
   if (students.length === 0) {
-    listHtml += `<div class="empty-box">لا يوجد طلاب مطابقين</div>`;
+    listHtml += `${emptyState("🎓", "لا يوجد طلاب مطابقين", "")}`;
   } else {
     students.forEach(s => {
       const status = String(s.Status || "Active").trim();
@@ -1056,7 +1239,7 @@ function renderAdminStudentsTab() {
     });
   }
 
-  return formCard + searchBox + listHtml;
+  return collapseAddCard("student", formCard) + searchBox + listHtml;
 }
 
 // ---------------------------------------------------------------------------
@@ -1083,7 +1266,7 @@ function renderParentsListSection() {
 
   let listHtml = `<div class="section-title">👪 أولياء الأمور (${parents.length})</div>`;
   if (parents.length === 0) {
-    listHtml += `<div class="empty-box">لا يوجد أولياء أمور مطابقين</div>`;
+    listHtml += `${emptyState("👪", "لا يوجد أولياء أمور مطابقين", "")}`;
   } else {
     parents.forEach(p => {
       const isParentActive = String(p.Status || "Active").trim() !== "Inactive";
@@ -1095,9 +1278,11 @@ function renderParentsListSection() {
             <div class="student-info">
               <div class="name">${p.Parent_Name}</div>
               <div class="meta">👤 ${String(p.Phone||"").replace(/\D/g,"").slice(-6) || "—"} &nbsp;·&nbsp; 🔑 ${p.PIN_Code || "—"} &nbsp;·&nbsp; 📞 ${p.Phone || "بدون هاتف"}</div>
+              ${financeMetaHtml(p.Parent_ID)}
             </div>
             <div style="display:flex;gap:6px;flex-wrap:wrap;">
               <button class="status-pill" style="background:#25D366;color:#fff;" onclick="sendParentCredentials('${p.Phone || ""}','${String(p.Parent_Name||"").replace(/'/g,"")}','${p.PIN_Code || ""}')">📤 واتساب</button>
+              ${reminderBtnHtml(p.Parent_ID, p.Phone)}
               <button class="status-pill" style="background:var(--edit-bg);color:var(--edit-text);" onclick="editingParentId='${p.Parent_ID}';renderDashboard();">تعديل</button>
               <button class="status-pill ${isParentActive ? "status-active" : "status-inactive"}" onclick="toggleParentStatus('${p.Parent_ID}','${isParentActive ? "Inactive" : "Active"}')">
                 ${isParentActive ? "نشط" : "متوقف"}
@@ -1538,12 +1723,12 @@ function paySearchResultsHtml() {
     const idx = buildParentIndex();
     const recents = getRecentPayParents().map((id) => idx.find((e) => e.pid === id)).filter(Boolean);
     if (!recents.length) {
-      return `<div class="empty-box" style="padding:22px;">اكتب اسم ولي الأمر أو اسم أحد أبنائه أو رقم هاتفه</div>`;
+      return `${emptyState("🌿", "اكتب اسم ولي الأمر أو اسم أحد أبنائه أو رقم هاتفه", "")}`;
     }
     return `<div class="pr-head">🕘 آخر من تعاملت معهم</div>` + recents.map((e) => payResultItem({ e, matchedKids: [] })).join("");
   }
   const { list, total } = searchParentsIndex(q, 15);
-  if (!list.length) return `<div class="empty-box" style="padding:22px;">لا نتيجة مطابقة — جرّب جزءاً آخر من الاسم أو اسم الابن</div>`;
+  if (!list.length) return `${emptyState("🔎", "لا نتيجة مطابقة — جرّب جزءاً آخر من الاسم أو اسم الابن", "")}`;
   return list.map(payResultItem).join("") +
     (total > list.length ? `<div class="pr-more">يوجد ${total - list.length} نتيجة أخرى — اكتب المزيد لتضييق البحث</div>` : "");
 }
@@ -1707,6 +1892,7 @@ function renderAdminPaymentsTab() {
         عدد الأطفال المسجلين: ${children.length}
         ${children.map(c => `<div>• ${nameWithAge(c.Student_Name, c.Birth_Date)} — ${c.Class_Level || ""}</div>`).join("")}
       </div>
+      ${remaining > 0 && parent && parent.Phone ? `<button type="button" class="status-pill" style="margin-top:10px;background:#FFF2D6;color:#7A5A12;" onclick="sendPaymentReminder('${String(parent.Parent_ID).replace(/'/g, "")}')">💰 تذكير بالدفعة (${moneyStr(remaining)})</button>` : ""}
     </div>
   `;
 
@@ -1737,7 +1923,7 @@ function renderAdminPaymentsTab() {
   const recent = parentPayments.slice().reverse().slice(0, 10);
   html += `<div class="section-title">آخر الدفعات</div>`;
   if (recent.length === 0) {
-    html += `<div class="empty-box">لا توجد دفعات سابقة</div>`;
+    html += `${emptyState("💳", "لا توجد دفعات سابقة", "")}`;
   } else {
     recent.forEach(p => {
       const isVoid = String(p.Status || "Active").trim() === "Void";
@@ -1880,6 +2066,8 @@ async function refreshSession() {
     if (data.ok) {
       data._password = staffSession._password;
       staffSession = data;
+      staffLastFetch = Date.now();
+      if (getSavedStaffCreds()) writeStaffCache(data.username, data);
     }
   } catch (err) { /* تجاهل — تبقى البيانات المحلية */ }
 }
@@ -1939,6 +2127,307 @@ let addTeacherMsg = "";
 let editingTeacherUser = null;
 const CLASS_LEVELS_LIST = ["الروضة", "الصف الاول", "الصف الثاني", "الصف الثالث", "الصف الرابع", "الصف الخامس", "الصف السادس", "الصف السابع", "الصف الثامن", "الصف التاسع"];
 
+// =====================================================================
+// الدفعة 1: المواد داخل نموذج المعلم، علامات صف كامل، حضور أسرع، نماذج إضافة قابلة للفتح، حالات فارغة
+// =====================================================================
+
+// ---------- حالات فارغة ودودة ----------
+function emptyState(icon, title, sub) {
+  return `<div class="empty-box empty-fr"><div class="ef-ic">${icon}</div><div class="ef-t">${title}</div>${sub ? `<div class="ef-s">${sub}</div>` : ""}</div>`;
+}
+
+// ---------- نماذج الإضافة القابلة للفتح (مسكّرة افتراضياً) ----------
+const addOpen = {};
+function collapseAddCard(key, cardHtml) {
+  const m = String(cardHtml).match(/^\s*<div class="form-card"[^>]*>\s*<div class="section-title">([^<]+)<\/div>([\s\S]*)<\/div>\s*$/);
+  if (!m) return cardHtml;
+  const title = m[1].trim();
+  const parts = title.match(/^(\S+)\s+(.*)$/);
+  const icon = parts ? parts[1] : "➕";
+  const label = parts ? parts[2] : title;
+  const open = !!addOpen[key];
+  return `
+    <div class="acc-item add-acc ${open ? "open" : ""}">
+      <button type="button" class="acc-head" aria-expanded="${open}" onclick="toggleAddAcc('${key}', this)">
+        <span class="acc-ic">${icon}</span>
+        <span class="acc-title"><span class="acc-name">${label}</span></span>
+        <span class="acc-chev" aria-hidden="true"></span>
+      </button>
+      <div class="acc-panel"><div class="acc-inner"><div class="acc-body">
+        <div class="form-card" style="margin-bottom:0;">${m[2]}</div>
+      </div></div></div>
+    </div>`;
+}
+function toggleAddAcc(key, btn) {
+  addOpen[key] = !addOpen[key];
+  const item = btn.closest(".acc-item");
+  if (item) item.classList.toggle("open", !!addOpen[key]);
+  btn.setAttribute("aria-expanded", String(!!addOpen[key]));
+}
+
+// ---------- المواد التي يدرّسها المعلم (داخل نموذج الإضافة والتعديل) ----------
+function teachBlockHtml(canRemove) {
+  const classOpts = `<option value="">— اختر الصف —</option>` + CLASS_LEVELS_LIST.map(c => `<option value="${c}">${c}</option>`).join("");
+  const secOpts = `<option value="">كل الشعب</option>` + [1, 2, 3, 4, 5, 6, 7, 8].map(n => `<option value="${n}">شعبة ${n}</option>`).join("");
+  const chips = SUBJECTS.filter(x => x !== "عام").map(x =>
+    `<label class="ta-chip"><input type="checkbox" class="ta-sub" value="${x}"><span>${x}</span></label>`).join("");
+  return `
+    <div class="ta-block">
+      <div class="ta-row">
+        <select class="ta-class" aria-label="الصف">${classOpts}</select>
+        <select class="ta-sec" aria-label="الشعبة">${secOpts}</select>
+        ${canRemove ? `<button type="button" class="ta-del" onclick="this.closest('.ta-block').remove()" title="حذف هذا الصف" aria-label="حذف هذا الصف">✕</button>` : ""}
+      </div>
+      <div class="ta-subs">
+        ${chips}
+        <label class="ta-chip ta-all"><input type="checkbox" class="ta-allcb" onchange="taToggleAll(this)"><span>كل المواد (معلم صف)</span></label>
+      </div>
+    </div>`;
+}
+function addTeachBlock(containerId) {
+  const box = document.getElementById(containerId);
+  if (box) box.insertAdjacentHTML("beforeend", teachBlockHtml(true));
+}
+function taToggleAll(cb) {
+  const block = cb.closest(".ta-block");
+  block.querySelectorAll(".ta-sub").forEach(x => { x.disabled = cb.checked; if (cb.checked) x.checked = false; });
+  block.classList.toggle("all-on", cb.checked);
+}
+// يقرأ كل مجموعات الصف/المواد من النموذج: يرجع { list, error }
+function collectTeachAssignments(containerId) {
+  const list = [], seen = {};
+  const box = document.getElementById(containerId);
+  if (!box) return { list, error: "" };
+  let error = "";
+  box.querySelectorAll(".ta-block").forEach(b => {
+    if (error) return;
+    const cls = b.querySelector(".ta-class").value;
+    const sec = b.querySelector(".ta-sec").value;
+    const all = b.querySelector(".ta-allcb").checked;
+    const subs = Array.from(b.querySelectorAll(".ta-sub:checked")).map(x => x.value);
+    if (!cls && !all && subs.length === 0) return; // مجموعة فاضية تُتجاهل
+    if (!cls) { error = "اختر الصف لكل مجموعة مواد."; return; }
+    if (!all && subs.length === 0) { error = `اختر مادة واحدة على الأقل للصف «${cls}» أو فعّل «كل المواد».`; return; }
+    (all ? ["*"] : subs).forEach(sub => {
+      const k = cls + "|" + sec + "|" + sub;
+      if (seen[k]) return;
+      seen[k] = true;
+      list.push({ Class_Level: cls, Section: sec, Subject: sub });
+    });
+  });
+  return { list, error };
+}
+
+// ملخص إسنادات المعلم تحت اسمه بالقائمة (مجمّعة حسب الصف)
+function teacherScopeHtml(username) {
+  const rows = (staffSession.teacherAssignments || []).filter(r =>
+    String(r.Username).trim().toLowerCase() === String(username).trim().toLowerCase() &&
+    String(r.Status || "Active").trim() !== "Inactive");
+  if (rows.length === 0) return `<div class="ta-scope warn">⚠️ لم تُحدَّد مواد بعد — اضغط «المواد»</div>`;
+  const groups = {}, order = [];
+  rows.forEach(r => {
+    const sec = String(r.Section || "").trim() === "" ? "كل الشعب" : "شعبة " + r.Section;
+    const key = r.Class_Level + "|" + sec;
+    if (!groups[key]) { groups[key] = { cls: r.Class_Level, sec, subs: [] }; order.push(key); }
+    groups[key].subs.push((r.Subject === "*" || r.Subject === "عام") ? "كل المواد" : r.Subject);
+  });
+  return order.map(k => `<div class="ta-scope"><b>${staffEsc(groups[k].cls)}</b> (${groups[k].sec}): ${groups[k].subs.map(staffEsc).join("، ")}</div>`).join("");
+}
+
+let editingSubjectsUser = null;
+let inlineTAMsg = "";
+function toggleSubjectsEditor(username) {
+  editingSubjectsUser = editingSubjectsUser === username ? null : username;
+  inlineTAMsg = "";
+  renderDashboard();
+}
+// لوحة "المواد" المفتوحة تحت المعلم: التوزيع الحالي (تفعيل/تعطيل) + إضافة صفوف/مواد جديدة
+function renderSubjectsEditor(t) {
+  const rows = (staffSession.teacherAssignments || []).filter(r => String(r.Username).trim().toLowerCase() === String(t.Username).trim().toLowerCase());
+  let cur = rows.length === 0
+    ? `<div class="ta-none">لا توجد مواد مسندة بعد.</div>`
+    : rows.map(r => {
+        const isActive = String(r.Status || "Active").trim() !== "Inactive";
+        const secLabel = String(r.Section || "").trim() === "" ? "كل الشعب" : "شعبة " + r.Section;
+        const subj = (r.Subject === "*" || r.Subject === "عام") ? "كل المواد" : r.Subject;
+        return `
+          <div class="student-row ${isActive ? "" : "void-row"}" style="margin-top:6px;">
+            <div class="student-info"><div class="name">${staffEsc(subj)}</div><div class="meta">${staffEsc(r.Class_Level)} · ${secLabel}</div></div>
+            <button class="status-pill ${isActive ? "status-active" : "status-inactive"}" onclick="toggleTeacherAssignment('${r.Assignment_ID}','${isActive ? "Inactive" : "Active"}')">${isActive ? "فعّال" : "معطّل"}</button>
+          </div>`;
+      }).join("");
+  return `
+    <div class="form-card ta-editor">
+      <div class="section-title">🧩 مواد ${staffEsc(t.Name || t.Username)}</div>
+      ${cur}
+      <div class="ta-sub-title">➕ إضافة صفوف أو مواد</div>
+      <div id="inlineTA">${teachBlockHtml(false)}</div>
+      <div class="ta-actions">
+        <button type="button" class="ta-add" onclick="addTeachBlock('inlineTA')">➕ إضافة صف آخر</button>
+        <button type="button" class="btn-save" id="inlineTABtn" onclick="submitInlineAssignments('${String(t.Username).replace(/'/g, "")}')">حفظ المواد</button>
+      </div>
+      ${inlineTAMsg}
+      <button type="button" class="status-pill" style="width:100%;margin-top:8px;background:var(--pill-bg);color:var(--muted2);" onclick="toggleSubjectsEditor('${String(t.Username).replace(/'/g, "")}')">إغلاق</button>
+    </div>`;
+}
+async function submitInlineAssignments(username) {
+  const col = collectTeachAssignments("inlineTA");
+  if (col.error) { inlineTAMsg = `<div class="form-msg err">${col.error}</div>`; renderDashboard(); return; }
+  if (col.list.length === 0) { inlineTAMsg = `<div class="form-msg err">اختر صفاً ومادة واحدة على الأقل.</div>`; renderDashboard(); return; }
+  const btn = document.getElementById("inlineTABtn");
+  if (btn) { btn.disabled = true; btn.textContent = "جارِ الحفظ..."; }
+  try {
+    const res = await fetch(API_URL, { method: "POST", body: JSON.stringify({
+      action: "addTeacherAssignmentsBulk", adminUsername: staffSession.username, adminPassword: staffSession._password,
+      Username: username, Assignments: col.list }) });
+    const data = await res.json();
+    if (data.ok) {
+      await refreshSession();
+      inlineTAMsg = `<div class="form-msg ok">تمت إضافة ${data.created} ${data.created === 1 ? "إسناد" : "إسنادات"} ✓${data.skipped && data.skipped.length ? `<br><small>تم تخطّي المكرر: ${data.skipped.map(staffEsc).join("، ")}</small>` : ""}${data.warnings && data.warnings.length ? `<br><small>⚠️ ${data.warnings.map(staffEsc).join(" — ")}</small>` : ""}</div>`;
+    } else { inlineTAMsg = `<div class="form-msg err">${staffEsc(data.error || "حدث خطأ")}</div>`; }
+  } catch (err) { inlineTAMsg = `<div class="form-msg err">تعذر الاتصال بالخادم</div>`; }
+  renderDashboard();
+}
+
+// ---------- علامات الصف كاملاً بطلب واحد ----------
+let gradeMode = "bulk";           // bulk = صف كامل، single = علامة واحدة
+const bulkCfg = { subject: "", exam: "", semester: "" };
+let bulkGradeMsg = "";
+
+function gradeModeSwitch() {
+  return `
+    <div class="seg2">
+      <button type="button" class="seg2-b ${gradeMode === "bulk" ? "on" : ""}" onclick="gradeMode='bulk';renderDashboard();">📋 صف كامل دفعة واحدة</button>
+      <button type="button" class="seg2-b ${gradeMode === "single" ? "on" : ""}" onclick="gradeMode='single';renderDashboard();">علامة واحدة</button>
+    </div>`;
+}
+function bulkHasTyped() {
+  return Array.from(document.querySelectorAll(".bg-in")).some(i => i.value.trim() !== "");
+}
+function bulkCfgChange(key, el) {
+  if (bulkHasTyped() && !confirm("سيتم مسح العلامات التي كتبتها ولم تُحفظ بعد. هل تريد المتابعة؟")) {
+    el.value = bulkCfg[key]; // نُرجع القائمة لقيمتها السابقة بدون إعادة رسم حتى لا تضيع العلامات المكتوبة
+    return;
+  }
+  bulkCfg[key] = el.value;
+  bulkGradeMsg = "";
+  renderDashboard();
+}
+function renderBulkGradesCard(roster, allowedRaw) {
+  const allowed = allowedRaw.filter(x => x !== "عام");
+  if (allowed.length === 0) return `<div class="form-card">${emptyState("🧩", "لا توجد مواد مسندة لك بهذا الصف", "تواصل مع الإدارة لإسناد المواد.")}</div>`;
+  if (!allowed.includes(bulkCfg.subject)) bulkCfg.subject = allowed[0];
+  if (!EXAM_TYPES.includes(bulkCfg.exam)) bulkCfg.exam = EXAM_TYPES[0];
+  if (!SEMESTERS.includes(bulkCfg.semester)) bulkCfg.semester = SEMESTERS[0];
+
+  const opt = (arr, cur) => arr.map(x => `<option value="${x}" ${x === cur ? "selected" : ""}>${x}</option>`).join("");
+  const existing = {};
+  (staffSession.grades || []).forEach(g => {
+    if (String(g.Subject).trim() === bulkCfg.subject && String(g.Exam_Type).trim() === bulkCfg.exam &&
+        String(g.Semester).trim() === bulkCfg.semester && String(g.Status || "Active").trim() !== "Void") {
+      existing[String(g.Student_ID).trim()] = g.Score;
+    }
+  });
+
+  let rows = "", todo = 0;
+  roster.forEach((s, i) => {
+    const sid = String(s.Student_ID).trim();
+    const nm = staffEsc(nameWithAge(s.Student_Name, s.Birth_Date));
+    if (existing[sid] !== undefined) {
+      rows += `<div class="bg-row done"><span class="bg-name">${nm}</span><span class="badge-role">✓ ${staffEsc(existing[sid])}</span></div>`;
+    } else {
+      todo++;
+      rows += `<div class="bg-row"><label class="bg-name" for="bg_${i}">${nm}</label>
+        <input id="bg_${i}" class="bg-in" type="number" inputmode="decimal" min="0" max="100" step="any" enterkeyhint="next" data-sid="${staffEsc(sid)}" placeholder="—" oninput="bulkGradeInput()" onkeydown="bulkGradeKey(event)" /></div>`;
+    }
+  });
+  if (roster.length === 0) rows = emptyState("🎓", "لا يوجد طلاب", "");
+
+  return `
+    <div class="form-card">
+      <div class="section-title">📋 إدخال علامات الصف دفعة واحدة</div>
+      <div class="form-field"><label>المادة</label><select onchange="bulkCfgChange('subject', this)">${opt(allowed, bulkCfg.subject)}</select></div>
+      <div class="bg-two">
+        <div class="form-field"><label>نوع الفحص</label><select onchange="bulkCfgChange('exam', this)">${opt(EXAM_TYPES, bulkCfg.exam)}</select></div>
+        <div class="form-field"><label>الفصل</label><select onchange="bulkCfgChange('semester', this)">${opt(SEMESTERS, bulkCfg.semester)}</select></div>
+      </div>
+      <div class="bg-hint">اكتب علامة كل طالب (0–100) واضغط Enter للانتقال للتالي. اترك الخانة فارغة لمن لم يُفحص. من لديه علامة مسجّلة يظهر ✓ ولا يتغيّر.</div>
+      <div class="bg-list">${rows}</div>
+      <div class="bg-bar">
+        <span id="bgCount">تم إدخال <b>0</b> من <b>${todo}</b></span>
+        <button type="button" class="btn-save" id="bgSaveBtn" onclick="submitBulkGrades()" disabled>حفظ العلامات</button>
+      </div>
+      ${bulkGradeMsg}
+    </div>`;
+}
+function bulkGradeInput() {
+  const inputs = Array.from(document.querySelectorAll(".bg-in"));
+  let filled = 0, bad = 0;
+  inputs.forEach(i => {
+    const v = i.value.trim();
+    const isBad = v !== "" && (isNaN(Number(v)) || Number(v) < 0 || Number(v) > 100);
+    i.classList.toggle("bad", isBad);
+    if (v !== "") filled++;
+    if (isBad) bad++;
+  });
+  const cnt = document.getElementById("bgCount");
+  if (cnt) cnt.innerHTML = `تم إدخال <b>${filled}</b> من <b>${inputs.length}</b>${bad ? ` · <span style="color:#B4483A">${bad} غير صالحة</span>` : ""}`;
+  const btn = document.getElementById("bgSaveBtn");
+  if (btn) btn.disabled = filled === 0 || bad > 0;
+}
+function bulkGradeKey(e) {
+  if (e.key !== "Enter") return;
+  e.preventDefault();
+  const inputs = Array.from(document.querySelectorAll(".bg-in"));
+  const i = inputs.indexOf(e.target);
+  if (i >= 0 && i < inputs.length - 1) inputs[i + 1].focus(); else e.target.blur();
+}
+async function submitBulkGrades() {
+  const grades = Array.from(document.querySelectorAll(".bg-in"))
+    .filter(i => i.value.trim() !== "").map(i => ({ Student_ID: i.getAttribute("data-sid"), Score: Number(i.value) }));
+  if (grades.length === 0) return;
+  const btn = document.getElementById("bgSaveBtn");
+  if (btn) { btn.disabled = true; btn.textContent = "جارِ الحفظ..."; }
+  try {
+    const res = await fetch(API_URL, { method: "POST", body: JSON.stringify({
+      action: "addGradesBulk", username: staffSession.username, password: staffSession._password,
+      Subject: bulkCfg.subject, Exam_Type: bulkCfg.exam, Semester: bulkCfg.semester, Grades: grades }) });
+    const data = await res.json();
+    if (data.ok) {
+      await refreshSession();
+      const sk = data.skipped || [];
+      bulkGradeMsg = data.saved > 0
+        ? `<div class="form-msg ok">تم حفظ ${data.saved} ${data.saved === 1 ? "علامة" : "علامات"} ✓${sk.length ? `<br><small>لم تُحفظ: ${sk.map(x => staffEsc(x.name) + " (" + staffEsc(x.reason) + ")").join("، ")}</small>` : ""}</div>`
+        : `<div class="form-msg err">لم تُحفظ أي علامة.${sk.length ? `<br><small>${sk.map(x => staffEsc(x.name) + " (" + staffEsc(x.reason) + ")").join("، ")}</small>` : ""}</div>`;
+    } else { bulkGradeMsg = `<div class="form-msg err">${staffEsc(data.error || "حدث خطأ")}</div>`; }
+  } catch (err) { bulkGradeMsg = `<div class="form-msg err">تعذر الاتصال بالخادم</div>`; }
+  renderDashboard();
+}
+
+// ---------- الحضور: عدّاد حي + "الكل حاضر" بدون إعادة رسم ----------
+function updateAttCount() {
+  let p = 0, a = 0;
+  document.querySelectorAll(".attendance-row[data-sid]").forEach(r => {
+    if (attendanceDraft[r.getAttribute("data-sid")] === "غائب") a++; else p++;
+  });
+  const el = document.getElementById("attCount");
+  if (el) el.innerHTML = `✅ حاضر <b>${p}</b> · ❌ غائب <b>${a}</b>`;
+}
+function paintAttRow(row, status) {
+  row.querySelectorAll(".att-btn").forEach(b => {
+    const st = b.getAttribute("data-st");
+    b.classList.toggle("att-present", st === "حاضر" && status === "حاضر");
+    b.classList.toggle("att-absent", st === "غائب" && status === "غائب");
+  });
+}
+function markAllPresent() {
+  document.querySelectorAll(".attendance-row[data-sid]").forEach(r => {
+    attendanceDraft[r.getAttribute("data-sid")] = "حاضر";
+    paintAttRow(r, "حاضر");
+  });
+  updateAttCount();
+}
+
 function renderAdminTeachersTab() {
   const classOptions = CLASS_LEVELS_LIST.map(c => `<option value="${c}">${c}</option>`).join("");
 
@@ -1953,12 +2442,15 @@ function renderAdminTeachersTab() {
           <label>رقم الهاتف (اختياري — لإرسال بيانات الدخول للمعلم عبر واتساب)</label>
           <input id="newTeacherPhone" type="tel" placeholder="مثال: 0991234567" autocomplete="off" />
         </div>
-        <div class="form-field"><label>الصف الأساسي (اختياري — يمكن إضافة صفوف/مواد أخرى لاحقاً من "توزيع المواد")</label><select id="newTeacherClass"><option value="">بدون — أضيفه لاحقاً من توزيع المواد</option>${classOptions}</select></div>
-        <div class="form-field"><label>الشعبة</label><select id="newTeacherSection"><option value="">بدون (يدرّس كل الشعب)</option>${Array.from({length:8},(_,i)=>i+1).map(n => `<option value="${n}">شعبة ${n}</option>`).join("")}</select></div>
+        <div class="form-field">
+          <label>ماذا يدرّس؟ (اختياري — تحدّده الآن أو لاحقاً من زر «المواد» بقائمة المعلمين)</label>
+          <div id="newTeacherBlocks">${teachBlockHtml(false)}</div>
+          <button type="button" class="ta-add" onclick="addTeachBlock('newTeacherBlocks')">➕ إضافة صف آخر</button>
+        </div>
         <button type="submit" class="btn-save" id="addTeacherBtn">إضافة المعلم</button>
         ${addTeacherMsg}
       </form>
-      <div style="font-size:11.5px;color:var(--muted);margin-top:10px;">ملاحظة: حالة المعلم اللي بيدرّس نفس المادة لعدة صفوف (سادس، سابع، ثامن...) رح نحلها بخطوة لاحقة منفصلة.</div>
+      <div style="font-size:11.5px;color:var(--muted);margin-top:10px;">اختر الصف ثم انقر المواد التي يدرّسها. «كل المواد» للمعلم الذي يدرّس كل مواد الصف.</div>
     </div>
   `;
 
@@ -1988,21 +2480,24 @@ function renderAdminTeachersTab() {
         <div class="student-row">
           <div class="student-info">
             <div class="name">${t.Name || t.Username}</div>
-            <div class="meta">${t.Username} · ${describeTeacherScope(t.Username)}</div>
+            <div class="meta">${t.Username}</div>
+            ${teacherScopeHtml(t.Username)}
           </div>
           <div style="display:flex;gap:6px;flex-wrap:wrap;">
             <button class="status-pill" style="background:#25D366;color:#fff;" onclick="sendTeacherCredentials('${t.Phone || ""}','${String(t.Name||t.Username).replace(/'/g,"")}','${t.Username}','${t.Password || ""}')">📤 واتساب</button>
+            <button class="status-pill" style="background:var(--tint-card);color:#7A2626;" onclick="toggleSubjectsEditor('${t.Username}')">🧩 المواد</button>
             <button class="status-pill" style="background:var(--edit-bg);color:var(--edit-text);" onclick="editingTeacherUser='${t.Username}';renderDashboard();">تعديل</button>
             <button class="status-pill ${isActive ? "status-active" : "status-inactive"}" onclick="toggleTeacherStatus('${t.Username}','${isActive ? "Inactive" : "Active"}')">
               ${isActive ? "نشط" : "معطّل"}
             </button>
           </div>
         </div>
+        ${editingSubjectsUser === t.Username ? renderSubjectsEditor(t) : ""}
       `;
     }
   });
 
-  return formCard + listHtml;
+  return collapseAddCard("teacher", formCard) + listHtml;
 }
 
 async function submitAddTeacher(e) {
@@ -2038,6 +2533,13 @@ async function submitAddTeacher(e) {
     return;
   }
 
+  const col = collectTeachAssignments("newTeacherBlocks");
+  if (col.error) {
+    addTeacherMsg = `<div class="form-msg err">${col.error}</div>`;
+    renderDashboard();
+    return;
+  }
+
   const btn = document.getElementById("addTeacherBtn");
   btn.disabled = true;
   btn.textContent = "جارِ الحفظ...";
@@ -2050,8 +2552,9 @@ async function submitAddTeacher(e) {
     Username: tUser,
     Password: document.getElementById("newTeacherPassword").value.trim(),
     Phone: tPhone,
-    Class_Level: document.getElementById("newTeacherClass").value,
-    Section: document.getElementById("newTeacherSection").value.trim()
+    Class_Level: "",
+    Section: "",
+    Assignments: col.list
   };
 
   try {
@@ -2059,8 +2562,17 @@ async function submitAddTeacher(e) {
     const data = await res.json();
     if (data.ok) {
       lastAddedCreds.teacher = { phone: tPhone, name: tName || tUser, username: tUser, password: payload.Password };
-      addTeacherMsg = `<div class="form-msg ok">تمت إضافة المعلم ✓${tPhone ? credentialsWhatsappButtonHtml("teacher") : ""}</div>`;
-      staffSession.teachers.push({ ...payload, Role: "Teacher" });
+      const asg = data.assignments;
+      let extra = "";
+      if (asg && asg.created > 0) {
+        extra = `<br><small>وأُسنِد له ${asg.created} ${asg.created === 1 ? "إسناد (صف/مادة)" : "إسنادات (صف/مادة)"} ✓</small>`;
+        if (asg.warnings && asg.warnings.length) extra += `<br><small>⚠️ ${asg.warnings.map(staffEsc).join(" — ")}</small>`;
+        await refreshSession(); // يجلب الإسنادات الجديدة وقائمة المعلمين
+      } else {
+        if (asg && asg.error) extra = `<br><small>⚠️ تعذّر إسناد المواد: ${staffEsc(asg.error)}</small>`;
+        staffSession.teachers.push({ ...payload, Role: "Teacher" });
+      }
+      addTeacherMsg = `<div class="form-msg ok">تمت إضافة المعلم ✓${extra}${tPhone ? credentialsWhatsappButtonHtml("teacher") : ""}</div>`;
     } else {
       addTeacherMsg = `<div class="form-msg err">${data.error}</div>`;
     }
@@ -2204,7 +2716,7 @@ function renderAdminBusTab() {
     `;
   });
 
-  return addCard + listHtml;
+  return collapseAddCard("bus", addCard) + listHtml;
 }
 
 async function submitAddSupervisor(e) {
@@ -2389,9 +2901,9 @@ function renderAttendanceSearchTab() {
       </div>
     `;
     if (attSearchTerm.trim() === "") {
-      html += `<div class="empty-box">اكتب اسم الطالب لعرض كاليندار حضوره الشهري</div>`;
+      html += `${emptyState("📅", "اكتب اسم الطالب لعرض كاليندار حضوره الشهري", "")}`;
     } else if (results.length === 0) {
-      html += `<div class="empty-box">لا يوجد طالب مطابق</div>`;
+      html += `${emptyState("🔎", "لا يوجد طالب مطابق", "")}`;
     } else {
       results.slice(0, 30).forEach(s => {
         html += `
@@ -2432,7 +2944,7 @@ function renderAttendanceSearchTab() {
 
   let detailsHtml = `<div class="section-title">📋 تفاصيل الدوام — ${ARABIC_MONTHS[attCalMonth]} ${attCalYear}</div>`;
   if (monthRecords.length === 0) {
-    detailsHtml += `<div class="empty-box">لا توجد سجلات حضور مسجلة لهذا الشهر</div>`;
+    detailsHtml += `${emptyState("📅", "لا توجد سجلات حضور مسجلة لهذا الشهر", "")}`;
   } else {
     detailsHtml += `<table class="holiday-table">`;
     monthRecords.forEach(a => {
@@ -2497,7 +3009,7 @@ function renderAdminHolidaysTab() {
 
   let detailsHtml = `<div class="section-title">🔵 العطل الرسمية — ${ARABIC_MONTHS[holCalMonth]} ${holCalYear}</div>`;
   if (monthHolidays.length === 0) {
-    detailsHtml += `<div class="empty-box">لا توجد عطل رسمية مسجلة هذا الشهر</div>`;
+    detailsHtml += `${emptyState("🎉", "لا توجد عطل رسمية مسجلة هذا الشهر", "")}`;
   } else {
     detailsHtml += `<table class="holiday-table">`;
     monthHolidays.forEach(h => {
@@ -2515,7 +3027,7 @@ function renderAdminHolidaysTab() {
 
   const atMax = holCalYear >= CAL_MAX_YEAR && holCalMonth === 11;
 
-  return `
+  const holidayCard = `
     <div class="form-card">
       <div class="section-title">➕ إضافة عطلة رسمية</div>
       <form id="addHolidayForm">
@@ -2525,6 +3037,9 @@ function renderAdminHolidaysTab() {
         ${addHolidayMsg}
       </form>
     </div>
+  `;
+  return `
+    ${collapseAddCard("holiday", holidayCard)}
     <div class="cal-header">
       <button class="cal-nav-btn" onclick="changeHolCalMonth(-1)">›</button>
       <div class="cal-title">${ARABIC_MONTHS[holCalMonth]} ${holCalYear}</div>
@@ -2888,7 +3403,7 @@ function renderTeacherDashboardTab() {
     `;
   }
 
-  return staffGreetingHtml() + statCards + attendanceAlert + donuts + attentionCard + examCard + annCard;
+  return staffGreetingHtml() + installBannerHtml() + statCards + attendanceAlert + donuts + attentionCard + examCard + annCard;
 }
 
 
@@ -2896,9 +3411,9 @@ function renderTeacherRosterTab() {
   const roster = getActiveRoster();
   let html = renderAdminContextPicker();
   html += `<div class="section-title">${isAdmin() ? "طلاب الصف المختار" : "طلابي"} (${roster.length})</div>`;
-  if (needsContextPick()) return html + `<div class="empty-box">اختر الصف أولاً من الأعلى</div>`;
+  if (needsContextPick()) return html + `${emptyState("🎯", "اختر الصف أولاً من الأعلى", "")}`;
   if (roster.length === 0) {
-    html += `<div class="empty-box">لا يوجد طلاب مسجلين بهذا الصف والشعبة بعد</div>`;
+    html += `${emptyState("🎓", "لا يوجد طلاب مسجلين بهذا الصف والشعبة بعد", "")}`;
   } else {
     roster.forEach(s => {
       html += `
@@ -2921,7 +3436,7 @@ function renderTeacherAttendanceTab() {
   if (!attendanceDate) attendanceDate = staffSession.todayDate;
   // حماية إضافية: أي تاريخ مستقبلي يُرجع لليوم الحالي
   if (attendanceDate > staffSession.todayDate) attendanceDate = staffSession.todayDate;
-  if (needsContextPick()) return renderAdminContextPicker() + `<div class="empty-box">اختر الصف أولاً لتسجيل الحضور</div>`;
+  if (needsContextPick()) return renderAdminContextPicker() + `${emptyState("📅", "اختر الصف أولاً لتسجيل الحضور", "")}`;
 
   const existingForDate = {};
   (staffSession.attendance || []).forEach(a => {
@@ -2939,11 +3454,11 @@ function renderTeacherAttendanceTab() {
   roster.forEach(s => {
     const current = attendanceDraft[s.Student_ID] || "حاضر";
     rows += `
-      <div class="attendance-row">
+      <div class="attendance-row" data-sid="${s.Student_ID}">
         <span class="roster-name">${nameWithAge(s.Student_Name, s.Birth_Date)}</span>
         <div class="attendance-toggle">
-          <button type="button" class="att-btn ${current === "حاضر" ? "att-present" : ""}" onclick="setAttendanceDraft('${s.Student_ID}','حاضر')">حاضر</button>
-          <button type="button" class="att-btn ${current === "غائب" ? "att-absent" : ""}" onclick="setAttendanceDraft('${s.Student_ID}','غائب')">غائب</button>
+          <button type="button" class="att-btn ${current === "حاضر" ? "att-present" : ""}" data-st="حاضر" onclick="setAttendanceDraft('${s.Student_ID}','حاضر')">حاضر</button>
+          <button type="button" class="att-btn ${current === "غائب" ? "att-absent" : ""}" data-st="غائب" onclick="setAttendanceDraft('${s.Student_ID}','غائب')">غائب</button>
         </div>
       </div>
     `;
@@ -2983,8 +3498,12 @@ function renderTeacherAttendanceTab() {
         </select>
         <div style="font-size:11px;color:var(--muted);margin-top:5px;">لا يمكن تسجيل حضور ليوم لم يأتِ بعد</div>
       </div>
-      ${rows || '<div class="empty-box">لا يوجد طلاب</div>'}
-      <button class="btn-save" id="saveAttendanceBtn" onclick="submitAttendance()">حفظ الحضور</button>
+      ${rows ? `<div class="att-tools"><button type="button" class="status-pill" style="background:var(--tint-card);color:#7A2626;" onclick="markAllPresent()">✓ الكل حاضر</button><span class="att-hint">اضغط «غائب» لمن غاب فقط</span></div>` : ""}
+      ${rows || '${emptyState("🎓", "لا يوجد طلاب", "")}'}
+      <div class="att-savebar">
+        <span id="attCount">✅ حاضر <b>${roster.filter(r => attendanceDraft[r.Student_ID] !== "غائب").length}</b> · ❌ غائب <b>${roster.filter(r => attendanceDraft[r.Student_ID] === "غائب").length}</b></span>
+        <button class="btn-save" id="saveAttendanceBtn" onclick="submitAttendance()">حفظ الحضور</button>
+      </div>
       <div id="attendanceMsg">${attendanceMsg}</div>
     </div>
   `;
@@ -3020,7 +3539,9 @@ function buildAttendanceDateOptions() {
 
 function setAttendanceDraft(studentId, status) {
   attendanceDraft[studentId] = status;
-  renderDashboard();
+  const row = document.querySelector('.attendance-row[data-sid="' + String(studentId).replace(/"/g, "") + '"]');
+  if (row) paintAttRow(row, status);
+  updateAttCount();
 }
 
 async function submitAttendance() {
@@ -3065,7 +3586,7 @@ async function submitAttendance() {
 
 function renderTeacherBehaviorTab() {
   const roster = getActiveRoster();
-  if (needsContextPick()) return renderAdminContextPicker() + `<div class="empty-box">اختر الصف أولاً لإضافة ملاحظة سلوك</div>`;
+  if (needsContextPick()) return renderAdminContextPicker() + `${emptyState("✍️", "اختر الصف أولاً لإضافة ملاحظة سلوك", "")}`;
   const studentOptions = roster.map(s => `<option value="${s.Student_ID}">${nameWithAge(s.Student_Name, s.Birth_Date)}</option>`).join("");
 
   const recentNotes = (staffSession.behaviorNotes || [])
@@ -3075,7 +3596,7 @@ function renderTeacherBehaviorTab() {
 
   let listHtml = `<div class="section-title">آخر الملاحظات</div>`;
   if (recentNotes.length === 0) {
-    listHtml += `<div class="empty-box">لا يوجد ملاحظات بعد</div>`;
+    listHtml += `${emptyState("✍️", "لا يوجد ملاحظات بعد", "")}`;
   } else {
     recentNotes.forEach(n => {
       listHtml += `
@@ -3160,7 +3681,7 @@ async function submitBehaviorNote(e) {
 
 function renderTeacherGradesTab() {
   const roster = getActiveRoster();
-  if (needsContextPick()) return renderAdminContextPicker() + `<div class="empty-box">اختر الصف أولاً لإضافة علامة</div>`;
+  if (needsContextPick()) return renderAdminContextPicker() + `${emptyState("🎯", "اختر الصف أولاً لإضافة علامة", "")}`;
   const studentOptions = roster.map(s => `<option value="${s.Student_ID}">${nameWithAge(s.Student_Name, s.Birth_Date)}</option>`).join("");
   const allowed = getAllowedSubjects();
   const subjectOptions = allowed.map(s => `<option value="${s}">${s}</option>`).join("");
@@ -3170,7 +3691,7 @@ function renderTeacherGradesTab() {
   const recentGrades = (staffSession.grades || []).slice().reverse().slice(0, 20);
   let listHtml = `<div class="section-title">آخر العلامات المضافة</div>`;
   if (recentGrades.length === 0) {
-    listHtml += `<div class="empty-box">لا يوجد علامات بعد</div>`;
+    listHtml += `${emptyState("📝", "لا يوجد علامات بعد", "")}`;
   } else {
     recentGrades.forEach(g => {
       listHtml += `
@@ -3185,7 +3706,7 @@ function renderTeacherGradesTab() {
     });
   }
 
-  return renderAdminContextPicker() + `
+  const singleCard = `
     <div class="form-card">
       <div class="section-title">📝 إضافة علامة</div>
       <form id="gradeForm">
@@ -3216,8 +3737,8 @@ function renderTeacherGradesTab() {
         ${gradeMsg}
       </form>
     </div>
-    ${listHtml}
   `;
+  return renderAdminContextPicker() + gradeModeSwitch() + (gradeMode === "bulk" ? renderBulkGradesCard(roster, allowed) : singleCard) + listHtml;
 }
 
 async function submitGrade(e) {
@@ -3270,7 +3791,7 @@ function renderTeacherAssignmentsTab() {
   const recent = (staffSession.assignments || []).slice().reverse().slice(0, 20);
   let listHtml = `<div class="section-title">الواجبات المضافة</div>`;
   if (recent.length === 0) {
-    listHtml += `<div class="empty-box">لا يوجد واجبات بعد</div>`;
+    listHtml += `${emptyState("📚", "لا يوجد واجبات بعد", "")}`;
   } else {
     recent.forEach(h => {
       listHtml += `
@@ -3284,7 +3805,7 @@ function renderTeacherAssignmentsTab() {
     });
   }
 
-  if (needsContextPick()) return renderAdminContextPicker() + `<div class="empty-box">اختر الصف أولاً لإضافة واجب</div>`;
+  if (needsContextPick()) return renderAdminContextPicker() + `${emptyState("📚", "اختر الصف أولاً لإضافة واجب", "")}`;
 
   return renderAdminContextPicker() + `
     <div class="form-card">
@@ -3314,7 +3835,7 @@ function renderTeacherAnnouncementsTab() {
   const anns = (staffSession.announcements || []).slice().reverse();
   let html = `<div class="section-title">📢 إعلانات المدرسة (${anns.length})</div>`;
   if (anns.length === 0) {
-    html += `<div class="empty-box">لا توجد إعلانات حالياً</div>`;
+    html += `${emptyState("📢", "لا توجد إعلانات حالياً", "")}`;
   } else {
     anns.forEach(a => {
       html += `
@@ -3390,7 +3911,8 @@ const ADMIN_GROUPS = [
       { id: "students",         label: "الطلاب" },
       { id: "roster",           label: "قوائم الصفوف" } ] },
   { id: "money",    label: "المالية",  tabs: [
-      { id: "payments",         label: "الدفعات" } ] },
+      { id: "payments",         label: "الدفعات" },
+      { id: "financeReport",    label: "📄 التقارير" } ] },
   { id: "academic", label: "الأكاديمي", tabs: [
       { id: "grades",           label: "العلامات" },
       { id: "ranking",          label: "🏆 الترتيب" },
@@ -3398,7 +3920,8 @@ const ADMIN_GROUPS = [
       { id: "assignments",      label: "الواجبات" } ] },
   { id: "attend",   label: "الحضور",   tabs: [
       { id: "attendance",       label: "تسجيل الحضور" },
-      { id: "attendanceSearch", label: "سجل الحضور" } ] },
+      { id: "attendanceSearch", label: "سجل الحضور" },
+      { id: "absenceReport",    label: "📄 تقرير الغياب" } ] },
   { id: "staff",    label: "الطاقم",   tabs: [
       { id: "teachers",         label: "المعلمون" },
       { id: "teacherAssign",    label: "توزيع المواد" },
@@ -3436,6 +3959,8 @@ const ADMIN_TAB_RENDERERS = {
   holidays:         () => renderAdminHolidaysTab(),
   settings:         () => renderAdminSettingsTab(),
   adminAccounts:    () => renderAdminAccountsTab(),
+  financeReport:    () => renderFinanceReportTab(),
+  absenceReport:    () => renderAbsenceReportTab(),
 };
 
 // تبويبات المجموعة المرئية فعلياً — تُخفي أي تبويب "ownerOnly" عن غير المالك
@@ -3454,20 +3979,14 @@ function selectAdminGroup(groupId) {
 }
 
 function renderAdminTabBars() {
-  const groupBar = ADMIN_GROUPS.map(g =>
-    `<button class="group-tab-btn ${g.id === adminGroup ? "active" : ""}" onclick="selectAdminGroup('${g.id}')">${g.label}</button>`
-  ).join("");
-
+  // الأزرار الرئيسية انتقلت للشريط السفلي؛ هنا يبقى الشريط الفرعي (تبويبات المجموعة الحالية) فقط
   const current = ADMIN_GROUPS.find(g => g.id === adminGroup) || ADMIN_GROUPS[0];
   const currentTabs = visibleTabs(current);
-  // الشريط الفرعي يظهر فقط إذا كانت المجموعة تحوي أكثر من تبويب مرئي
-  const subBar = currentTabs.length > 1
+  return currentTabs.length > 1
     ? `<div class="sub-tabs" id="subTabsBar">` + currentTabs.map(t =>
         `<button class="sub-tab-btn ${t.id === adminTab ? "active" : ""}" onclick="adminTab='${t.id}';renderDashboard();">${t.label}</button>`
       ).join("") + `</div>`
     : "";
-
-  return `<div class="group-tabs" id="groupTabsBar">${groupBar}</div>` + subBar;
 }
 
 // ---------------------------------------------------------------------------
@@ -3503,7 +4022,7 @@ function renderAdminAnnouncementsTab() {
 
   let listHtml = `<div class="section-title">الإعلانات المنشورة (${anns.length})</div>`;
   if (anns.length === 0) {
-    listHtml += `<div class="empty-box">لا توجد إعلانات بعد</div>`;
+    listHtml += `${emptyState("📢", "لا توجد إعلانات بعد", "")}`;
   } else {
     anns.slice().reverse().forEach(a => {
       const isActive = String(a.Status || "Active").trim() !== "Inactive";
@@ -3541,7 +4060,7 @@ function renderAdminAnnouncementsTab() {
     });
   }
 
-  return addCard + listHtml;
+  return collapseAddCard("ann", addCard) + listHtml;
 }
 
 async function submitAddAnnouncement(e) {
@@ -3671,7 +4190,7 @@ function renderAdminExamsTab() {
 
   let listHtml = filterBar + `<div class="section-title">جدول الامتحانات (${exams.length})</div>`;
   if (exams.length === 0) {
-    listHtml += `<div class="empty-box">لا توجد امتحانات مسجلة</div>`;
+    listHtml += `${emptyState("📅", "لا توجد امتحانات مسجلة", "")}`;
   } else {
     exams.forEach(ex => {
       const isActive = String(ex.Status || "Active").trim() !== "Inactive";
@@ -3710,7 +4229,7 @@ function renderAdminExamsTab() {
     });
   }
 
-  return addCard + listHtml;
+  return collapseAddCard("exam", addCard) + listHtml;
 }
 
 async function submitAddExam(e) {
@@ -3862,7 +4381,7 @@ function renderAdminTeacherAssignmentsTab() {
 
   let listHtml = filterBar + `<div class="section-title">التوزيع الحالي (${rows.length} إسناد)</div>`;
   if (rows.length === 0) {
-    listHtml += `<div class="empty-box">لا يوجد توزيع مسجّل بعد</div>`;
+    listHtml += `${emptyState("🧩", "لا يوجد توزيع مسجّل بعد", "")}`;
   } else {
     Object.keys(byTeacher).forEach(u => {
       const list = byTeacher[u];
@@ -3888,7 +4407,7 @@ function renderAdminTeacherAssignmentsTab() {
     });
   }
 
-  return addCard + listHtml;
+  return collapseAddCard("ta", addCard) + listHtml;
 }
 
 async function submitAddTeacherAssignment(e) {
@@ -3994,8 +4513,8 @@ function computeStudentSubjectAverage(studentGrades, subject) {
 
 function renderAdminRankingTab() {
   const picker = renderAdminContextPicker();
-  if (!ctxClass) return picker + `<div class="empty-box">اختر الصف والشعبة أولاً لعرض الترتيب</div>`;
-  if (!ctxSection) return picker + `<div class="empty-box">اختر شعبة محددة (وليس "كل الشعب") لعرض ترتيب دقيق وعادل</div>`;
+  if (!ctxClass) return picker + `${emptyState("🎯", "اختر الصف والشعبة أولاً لعرض الترتيب", "")}`;
+  if (!ctxSection) return picker + `${emptyState("🎯", "اختر شعبة محددة (وليس \"كل الشعب\") لعرض ترتيب دقيق وعادل", "")}`;
 
   const roster = getActiveRoster();
   const allGrades = staffSession.grades || [];
@@ -4010,7 +4529,7 @@ function renderAdminRankingTab() {
 
   let rankingHtml = `<div class="form-card"><div class="section-title">🏆 الترتيب الدقيق — ${ctxClass}${ctxSection ? " شعبة " + ctxSection : ""}</div>`;
   if (ranked.length === 0) {
-    rankingHtml += `<div class="empty-box">لا يوجد طلاب بهذه الشعبة</div>`;
+    rankingHtml += `${emptyState("🎓", "لا يوجد طلاب بهذه الشعبة", "")}`;
   } else {
     ranked.forEach((r, i) => {
       rankingHtml += `
@@ -4044,7 +4563,7 @@ function renderAdminRankingTab() {
 
   let compareHtml = `<div class="form-card"><div class="section-title">📊 مقارنة أداء الشعب — ${ctxClass}</div>`;
   if (sectionNames.length === 0) {
-    compareHtml += `<div class="empty-box">لا توجد بيانات كافية</div>`;
+    compareHtml += `${emptyState("🌿", "لا توجد بيانات كافية", "")}`;
   } else {
     sectionNames.forEach((sec, i) => {
       const avg = sectionAverages[i];
@@ -4068,7 +4587,7 @@ function renderAdminRankingTab() {
 // ---------------------------------------------------------------------------
 
 function renderTeacherRankingTab() {
-  if (needsContextPick()) return renderAdminContextPicker() + `<div class="empty-box">اختر الصف أولاً لعرض الترتيب</div>`;
+  if (needsContextPick()) return renderAdminContextPicker() + `${emptyState("🎯", "اختر الصف أولاً لعرض الترتيب", "")}`;
 
   const roster = getActiveRoster();
   const allGrades = staffSession.grades || [];
@@ -4094,7 +4613,7 @@ function renderTeacherRankingTab() {
   let html = renderAdminContextPicker();
   html += `<div class="form-card"><div class="section-title">🏆 ترتيب طلابي${subject ? " — مادة " + subject : " (المعدل العام)"}</div>`;
   if (ranked.length === 0) {
-    html += `<div class="empty-box">لا يوجد طلاب بهذه الشعبة</div>`;
+    html += `${emptyState("🎓", "لا يوجد طلاب بهذه الشعبة", "")}`;
   } else {
     ranked.forEach((r, i) => {
       html += `
@@ -4268,10 +4787,10 @@ function renderAdminDashboardTab() {
   });
 
   if (allClassKeys.length === 0) {
-    classCards += `<div class="empty-box">لا يوجد طلاب نشطون مسجّلون بعد</div>`;
+    classCards += `${emptyState("🎓", "لا يوجد طلاب نشطون مسجّلون بعد", "")}`;
   }
 
-  return staffGreetingHtml() + statCards + donuts + overviewChart + classCards;
+  return staffGreetingHtml() + installBannerHtml() + renderAdminAttention() + statCards + donuts + overviewChart + classCards;
 }
 
 
@@ -4284,6 +4803,7 @@ function getSettingValue(key) {
 }
 
 function renderAdminSettingsTab() {
+  if (staffSession._fromCache) return emptyState("⏳", "جارٍ تحديث البيانات…", "ستظهر الإعدادات بعد لحظات.");
   const whatsapp = getSettingValue("Admin_WhatsApp");
   const osAppId = getSettingValue("OneSignal_AppId");
   const osApiKey = getSettingValue("OneSignal_RestApiKey");
@@ -4358,7 +4878,7 @@ let editingAdminUser = null;
 
 function renderAdminAccountsTab() {
   // المدير والمالك يقدران يضيفان حسابات مدير جديدة. أما تعديل/تعطيل حسابات الإدارة الأخرى فيبقى للمالك فقط.
-  if (!isAdmin()) return `<div class="empty-box">هذا القسم متاح للإدارة فقط</div>`;
+  if (!isAdmin()) return `${emptyState("🌿", "هذا القسم متاح للإدارة فقط", "")}`;
 
   const admins = (staffSession.teachers || []).filter(t => isAdminRoleClient(t.Role));
 
@@ -4432,7 +4952,7 @@ function renderAdminAccountsTab() {
     }
   });
 
-  return addCard + listHtml;
+  return collapseAddCard("adminacc", addCard) + listHtml;
 }
 
 async function submitAddAdmin(e) {
@@ -4547,7 +5067,7 @@ function renderAdminLoginLogTab() {
 
   let listHtml = `<div class="section-title">🕓 آخر ظهور للحسابات (${rows.length})</div>`;
   if (rows.length === 0) {
-    listHtml += `<div class="empty-box">لا يوجد سجل دخول بعد</div>`;
+    listHtml += `${emptyState("🕓", "لا يوجد سجل دخول بعد", "")}`;
   } else {
     rows.forEach(r => {
       listHtml += `
@@ -4608,7 +5128,7 @@ function renderAdminChangeLogTab() {
 
   let listHtml = `<div class="section-title">📝 آخر ${rows.length} تغيير</div>`;
   if (rows.length === 0) {
-    listHtml += `<div class="empty-box">لا يوجد سجل تغييرات بعد</div>`;
+    listHtml += `${emptyState("🕓", "لا يوجد سجل تغييرات بعد", "")}`;
   } else {
     // كل نص يلتف داخل عرض الشاشة (overflow-wrap) حتى لا تتوسّع الصفحة بسبب نص طويل بلا مسافات
     rows.forEach(r => {
@@ -4628,6 +5148,674 @@ function renderAdminChangeLogTab() {
 }
 
 
+// =====================================================================
+// الدفعة 2: الشريط السفلي، الفتح الفوري والتحديث التلقائي، تنبيه التثبيت، المظهر وحجم الخط
+// =====================================================================
+
+// ---------- المظهر (تلقائي / فاتح / ليلي) ----------
+function getStaffThemePref() {
+  let t = null;
+  try { t = localStorage.getItem("masar_staff_theme"); } catch (e) {}
+  if (t === "light" || t === "dark" || t === "auto") return t;
+  let old = null;
+  try { old = localStorage.getItem("masar_staff_dark"); } catch (e) {} // توافق مع الإعداد القديم
+  if (old === "1") return "dark";
+  if (old === "0") return "light";
+  return "auto";
+}
+function isStaffDarkNow() {
+  const t = getStaffThemePref();
+  return t === "dark" || (t === "auto" && !!(window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches));
+}
+function applyStaffDarkModePref() {
+  document.body.classList.toggle("dark", isStaffDarkNow());
+  applyStaffFontPref();
+}
+function setStaffThemePref(t) {
+  try { localStorage.setItem("masar_staff_theme", t); } catch (e) {}
+  applyStaffDarkModePref();
+  paintSheetSeg();
+}
+function toggleStaffDarkMode() { setStaffThemePref(document.body.classList.contains("dark") ? "light" : "dark"); }
+if (window.matchMedia) {
+  const _mq = window.matchMedia("(prefers-color-scheme: dark)");
+  const _onMq = () => { if (getStaffThemePref() === "auto") { applyStaffDarkModePref(); if (staffSession) renderDashboard(); } };
+  if (_mq.addEventListener) _mq.addEventListener("change", _onMq); else if (_mq.addListener) _mq.addListener(_onMq);
+}
+
+// ---------- حجم الخط ----------
+const STAFF_FONT_ZOOM = { n: 1, l: 1.12, xl: 1.25 };
+function getStaffFontPref() {
+  try { const k = localStorage.getItem("masar_staff_font"); return STAFF_FONT_ZOOM[k] ? k : "n"; } catch (e) { return "n"; }
+}
+function applyStaffFontPref() {
+  const app = document.getElementById("app");
+  const z = STAFF_FONT_ZOOM[getStaffFontPref()];
+  if (app) app.style.zoom = z === 1 ? "" : String(z);
+}
+function setStaffFontPref(k) {
+  try { localStorage.setItem("masar_staff_font", k); } catch (e) {}
+  applyStaffFontPref();
+  paintSheetSeg();
+}
+function paintSheetSeg() {
+  const cur = { theme: getStaffThemePref(), font: getStaffFontPref() };
+  document.querySelectorAll(".sheet .seg-b").forEach((b) => {
+    b.classList.toggle("on", b.getAttribute("data-val") === cur[b.getAttribute("data-kind")]);
+  });
+  const themeBtn = document.querySelector('.header button[title="الوضع الليلي"]');
+  if (themeBtn) themeBtn.textContent = document.body.classList.contains("dark") ? "☀️" : "🌙";
+}
+
+// ---------- الشريط السفلي + قائمة "المزيد" ----------
+const NAV_ICONS = {
+  home: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11.5 12 4l9 7.5"/><path d="M5.5 10v10h13V10"/><path d="M10 20v-5.5h4V20"/></svg>',
+  users: '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3.2"/><path d="M3 20c0-3.3 2.7-5.5 6-5.5s6 2.2 6 5.5"/><path d="M16 5.2a3 3 0 0 1 0 5.6M18 14.8c1.9.7 3 2.4 3 5.2"/></svg>',
+  wallet: '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="6" width="18" height="13" rx="3"/><path d="M3 10h18"/><circle cx="16.5" cy="14.5" r="1.1"/></svg>',
+  attend: '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15.5" rx="3"/><path d="M3.5 10h17M8 3v4M16 3v4"/><path d="m9 15 2 2 4-4"/></svg>',
+  grades: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 20V11"/><path d="M12 20V4"/><path d="M19 20v-7"/><path d="M3 20h18"/></svg>',
+  book: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3.5h10a2.5 2.5 0 0 1 2.5 2.5v14H8.5A2.5 2.5 0 0 1 6 17.5z"/><path d="M9.5 8.5h6M9.5 12h6"/></svg>',
+  more: '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="5.5" cy="12" r="1.7"/><circle cx="12" cy="12" r="1.7"/><circle cx="18.5" cy="12" r="1.7"/></svg>',
+};
+function navMain() {
+  if (isAdmin()) return [
+    { key: "dashboard", label: "الرئيسية", icon: "home", active: adminGroup === "dashboard" },
+    { key: "students", label: "الطلاب", icon: "users", active: adminGroup === "students" },
+    { key: "money", label: "المالية", icon: "wallet", active: adminGroup === "money" },
+    { key: "attend", label: "الحضور", icon: "attend", active: adminGroup === "attend" },
+  ];
+  return [
+    { key: "dashboard", label: "الرئيسية", icon: "home", active: teacherTab === "dashboard" },
+    { key: "attendance", label: "الحضور", icon: "attend", active: teacherTab === "attendance" },
+    { key: "grades", label: "العلامات", icon: "grades", active: teacherTab === "grades" },
+    { key: "assignments", label: "الواجبات", icon: "book", active: teacherTab === "assignments" },
+  ];
+}
+function navMore() {
+  if (isAdmin()) return [
+    { key: "academic", icon: "🎓", label: "الأكاديمي", sub: "العلامات · الترتيب · السلوك · الواجبات" },
+    { key: "staff", icon: "🧑‍🏫", label: "الطاقم", sub: "المعلمون · توزيع المواد · الباص" },
+    { key: "school", icon: "🏛️", label: "المدرسة", sub: "الإعلانات · الامتحانات · العطل" },
+    { key: "logs", icon: "🕓", label: "السجلات", sub: "سجل الدخول · سجل التغييرات" },
+  ];
+  return [
+    { key: "roster", icon: "👥", label: "طلابي", sub: "" },
+    { key: "attendanceSearch", icon: "🔎", label: "سجل الحضور", sub: "" },
+    { key: "behavior", icon: "✍️", label: "السلوك", sub: "" },
+    { key: "announcements", icon: "📢", label: "الإعلانات", sub: "" },
+    { key: "ranking", icon: "🏆", label: "الترتيب", sub: "" },
+  ];
+}
+function renderBottomNav() {
+  const main = navMain();
+  const moreActive = !main.some((x) => x.active);
+  return `
+    <nav class="snav" aria-label="التنقل الرئيسي">
+      ${main.map((x) => `<button type="button" class="nav-btn ${x.active ? "active" : ""}" data-nav="${x.key}" onclick="navSelect('${x.key}')">${NAV_ICONS[x.icon]}<span>${x.label}</span></button>`).join("")}
+      <button type="button" class="nav-btn more ${moreActive ? "active" : ""}" onclick="toggleMoreSheet(true)" aria-haspopup="dialog">${NAV_ICONS.more}<span>المزيد</span></button>
+    </nav>`;
+}
+function renderMoreSheet() {
+  const seg = (kind, items, cur, fn) => `<div class="seg">${items.map(([k, lab]) => `<button type="button" class="seg-b ${k === cur ? "on" : ""}" data-kind="${kind}" data-val="${k}" onclick="${fn}('${k}')">${lab}</button>`).join("")}</div>`;
+  const cur = navMore().find((x) => (isAdmin() ? x.key === adminGroup : x.key === teacherTab));
+  return `
+    <div class="sheet" id="moreSheet" role="dialog" aria-modal="true" aria-label="المزيد">
+      <div class="sheet-back" onclick="toggleMoreSheet(false)"></div>
+      <div class="sheet-panel">
+        <div class="sheet-grip"></div>
+        <div class="sheet-title">المزيد</div>
+        <div class="sheet-grid">
+          ${navMore().map((x) => `<button type="button" class="sheet-item ${cur && cur.key === x.key ? "on" : ""}" data-nav="${x.key}" onclick="navSelect('${x.key}')"><span class="si-ic">${x.icon}</span><span class="si-t">${x.label}</span>${x.sub ? `<span class="si-s">${x.sub}</span>` : ""}</button>`).join("")}
+        </div>
+        <div class="sheet-sec">إعدادات العرض</div>
+        <div class="set-row"><div class="set-lab">المظهر</div>${seg("theme", [["auto", "تلقائي"], ["light", "فاتح"], ["dark", "ليلي"]], getStaffThemePref(), "setStaffThemePref")}</div>
+        <div class="set-row"><div class="set-lab">حجم الخط</div>${seg("font", [["n", "عادي"], ["l", "كبير"], ["xl", "أكبر"]], getStaffFontPref(), "setStaffFontPref")}</div>
+        <div class="set-hint">«تلقائي» يتبع إعداد الوضع الليلي في جوالك.</div>
+        <button type="button" class="sheet-close" onclick="toggleMoreSheet(false)">إغلاق</button>
+      </div>
+    </div>`;
+}
+function toggleMoreSheet(open) {
+  const el = document.getElementById("moreSheet");
+  if (!el) return;
+  el.classList.toggle("open", !!open);
+  document.body.classList.toggle("sheet-open", !!open || gsOpen);
+  if (open) { const b = el.querySelector(".sheet-item, .seg-b"); if (b) setTimeout(() => b.focus({ preventScroll: true }), 50); }
+}
+function navSelect(key) {
+  toggleMoreSheet(false);
+  if (isAdmin()) selectAdminGroup(key);
+  else { teacherTab = key; if (key === "dashboard") nextStaffCheer(); renderDashboard(); }
+  window.scrollTo(0, 0);
+}
+document.addEventListener("keydown", (e) => { if (e.key === "Escape") toggleMoreSheet(false); });
+
+// ---------- تنبيه "ثبّت التطبيق" ----------
+let staffInstallPrompt = null;
+function staffIsStandalone() {
+  return !!((window.matchMedia && window.matchMedia("(display-mode: standalone)").matches) || window.navigator.standalone);
+}
+function staffInstallPlatform() {
+  const ua = navigator.userAgent || "";
+  if (/iphone|ipad|ipod/i.test(ua) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1)) return "ios";
+  if (/android/i.test(ua)) return "android";
+  return "other";
+}
+function staffInstallHiddenUntil() {
+  try { return Number(localStorage.getItem("masar_staff_install_hide") || 0); } catch (e) { return 0; }
+}
+function installBannerHtml() {
+  if (staffIsStandalone() || staffInstallPlatform() === "other" || Date.now() < staffInstallHiddenUntil()) return "";
+  const plat = staffInstallPlatform();
+  const how = plat === "ios"
+    ? "اضغط زر المشاركة <b>⬆️</b> بأسفل المتصفح، ثم اختر «إضافة إلى الشاشة الرئيسية»."
+    : (staffInstallPrompt ? "" : "افتح قائمة المتصفح <b>⋮</b> ثم اختر «تثبيت التطبيق».");
+  return `
+    <div class="install-card">
+      <div class="install-t">📲 ثبّت التطبيق على جوالك</div>
+      <div class="install-s">يفتح أسرع كتطبيق مستقل، وتبقى مسجّلاً دخولك بلا عناء.</div>
+      ${how ? `<div class="install-how">${how}</div>` : ""}
+      <div class="install-btns">
+        ${staffInstallPrompt ? `<button type="button" class="ib main" onclick="installStaffApp()">تثبيت الآن</button>` : ""}
+        <button type="button" class="ib" onclick="hideStaffInstall(7)">ليس الآن</button>
+        <button type="button" class="ib" onclick="hideStaffInstall(36500)">لا تذكّرني</button>
+      </div>
+    </div>`;
+}
+function hideStaffInstall(days) {
+  try { localStorage.setItem("masar_staff_install_hide", String(Date.now() + days * 86400000)); } catch (e) {}
+  renderDashboard();
+}
+async function installStaffApp() {
+  if (!staffInstallPrompt) return;
+  try {
+    staffInstallPrompt.prompt();
+    const r = await staffInstallPrompt.userChoice;
+    if (r && r.outcome === "accepted") { try { localStorage.setItem("masar_staff_install_hide", String(Date.now() + 36500 * 86400000)); } catch (e) {} }
+  } catch (e) {}
+  staffInstallPrompt = null;
+  if (staffSession) renderDashboard();
+}
+window.addEventListener("beforeinstallprompt", (e) => { e.preventDefault(); staffInstallPrompt = e; if (staffSession) renderDashboard(); });
+window.addEventListener("appinstalled", () => {
+  try { localStorage.setItem("masar_staff_install_hide", String(Date.now() + 36500 * 86400000)); } catch (e) {}
+  staffInstallPrompt = null;
+  if (staffSession) renderDashboard();
+});
+
+// ---------- فتح فوري بآخر نسخة محفوظة + تحديث بالخلفية ----------
+const STAFF_CACHE_KEY = "masar_staff_cache_v1";
+const STAFF_CACHE_MAX_AGE = 2 * 86400000; // يومان
+let staffLastFetch = Date.now();
+let staffBgRefreshing = false;
+
+// النسخة المحفوظة على الجهاز لا تحوي أي أسرار: كلمات سر المعلمين، رموز دخول الأهل، وقيم الإعدادات (ومنها مفاتيح الإشعارات)
+function writeStaffCache(username, data) {
+  try {
+    const copy = Object.assign({}, data);
+    delete copy._password;
+    delete copy._fromCache; delete copy._refreshing; delete copy._refreshFailed;
+    copy.teachers = (copy.teachers || []).map((t) => Object.assign({}, t, { Password: "" }));
+    copy.parents = (copy.parents || []).map((p) => { const c = Object.assign({}, p); ["PIN_Code", "PIN", "Pin"].forEach((k) => { if (k in c) c[k] = ""; }); return c; });
+    copy.settings = [];
+    localStorage.setItem(STAFF_CACHE_KEY, JSON.stringify({ ts: Date.now(), username: username, data: copy }));
+  } catch (e) { /* مساحة التخزين ممتلئة: نتجاهل */ }
+}
+function readStaffCache(username) {
+  try {
+    const c = JSON.parse(localStorage.getItem(STAFF_CACHE_KEY) || "null");
+    if (!c || c.username !== username || !c.data || !c.data.ok || !c.data.role) return null;
+    if (Date.now() - Number(c.ts || 0) > STAFF_CACHE_MAX_AGE) return null;
+    return c;
+  } catch (e) { return null; }
+}
+function staffSyncText() {
+  if (!staffSession) return "";
+  if (staffSession._refreshing) return "⏳ جارٍ تحديث البيانات…";
+  if (staffSession._refreshFailed) return "⚠️ تعذّر التحديث الآن — تُعرض آخر نسخة محفوظة";
+  return "";
+}
+function updateStaffSyncBar() {
+  const el = document.getElementById("syncBar");
+  if (el) el.textContent = staffSyncText();
+}
+function staffVolatileFree(s) {
+  const c = Object.assign({}, s);
+  ["_password", "_fromCache", "_refreshing", "_refreshFailed"].forEach((k) => { delete c[k]; });
+  return JSON.stringify(c);
+}
+// تحديث صامت عند العودة للتطبيق بعد غياب: لا يعيد الرسم إلا إذا تغيّرت البيانات، ولا يقاطع من يكتب بنموذج
+async function backgroundStaffRefresh() {
+  if (!staffSession || staffBgRefreshing || !staffSession._password) return;
+  const ae = document.activeElement;
+  const typing = ae && (ae.tagName === "INPUT" || ae.tagName === "TEXTAREA" || ae.tagName === "SELECT");
+  const sheetOpen = document.body.classList.contains("sheet-open");
+  if (typing || sheetOpen || (typeof bulkHasTyped === "function" && bulkHasTyped())) return;
+  staffBgRefreshing = true;
+  staffSession._refreshing = true;
+  updateStaffSyncBar();
+  const before = staffVolatileFree(staffSession);
+  try {
+    const url = `${API_URL}?action=staffLogin&username=${encodeURIComponent(staffSession.username)}&password=${encodeURIComponent(staffSession._password)}`;
+    const res = await fetch(url);
+    const data = await res.json();
+    if (data.ok) {
+      data._password = staffSession._password;
+      staffSession = data;
+      staffLastFetch = Date.now();
+      if (getSavedStaffCreds()) writeStaffCache(data.username, data);
+      if (before !== staffVolatileFree(staffSession)) renderDashboard(); else updateStaffSyncBar();
+    } else { staffSession._refreshing = false; updateStaffSyncBar(); }
+  } catch (err) {
+    if (staffSession) { staffSession._refreshing = false; staffSession._refreshFailed = true; updateStaffSyncBar(); }
+  } finally { staffBgRefreshing = false; }
+}
+document.addEventListener("visibilitychange", () => {
+  if (document.visibilityState === "visible" && staffSession && Date.now() - staffLastFetch > 5 * 60 * 1000) backgroundStaffRefresh();
+});
+
+// =====================================================================
+// الدفعة 3: ملخصات الرئيسية للمدير، البحث الشامل وبطاقة ولي الأمر، تذكير الدفعات، التقارير
+// =====================================================================
+
+function moneyStr(n) { return "$" + Math.round(n).toLocaleString(); }
+function padTwo(n) { return String(n).padStart(2, "0"); }
+function shiftDays(ymdStr, delta) {
+  const d = new Date(String(ymdStr).slice(0, 10) + "T12:00:00");
+  d.setDate(d.getDate() + delta);
+  return `${d.getFullYear()}-${padTwo(d.getMonth() + 1)}-${padTwo(d.getDate())}`;
+}
+
+// ---------- مالية ولي الأمر (نفس منطق تبويب الدفعات) ----------
+function kidsOf(pid) {
+  return (staffSession.students || []).filter(s =>
+    String(s.Parent_ID).trim() === String(pid).trim() && String(s.Status || "Active").trim() !== "Inactive");
+}
+function financeOf(pid) {
+  const rows = (staffSession.payments || []).filter(p =>
+    String(p.Parent_ID).trim() === String(pid).trim() && String(p.Status || "Active").trim() !== "Void");
+  if (rows.length === 0) return { has: false, required: 0, paid: 0, remaining: 0, rows: [] };
+  const required = parseMoney(rows[rows.length - 1].Total_Required);
+  const paid = rows.reduce((sum, p) => sum + parseMoney(p.Amount), 0);
+  return { has: true, required, paid, remaining: Math.max(0, required - paid), rows: rows.slice().reverse() };
+}
+function allFinance() {
+  return (staffSession.parents || []).map(p => ({ p, f: financeOf(p.Parent_ID), kids: kidsOf(p.Parent_ID) })).filter(x => x.f.has);
+}
+
+// ---------- تذكير بالدفعة عبر واتساب ----------
+function sendPaymentReminder(parentId) {
+  const p = (staffSession.parents || []).find(x => String(x.Parent_ID).trim() === String(parentId).trim());
+  if (!p) return;
+  const f = financeOf(parentId);
+  if (f.remaining <= 0) { alert("لا يوجد مبلغ متبقٍ على ولي الأمر هذا."); return; }
+  const num = toWhatsappNumber(p.Phone);
+  if (!num) { alert("لا يوجد رقم هاتف مسجّل لولي الأمر."); return; }
+  const kids = kidsOf(parentId).map(k => k.Student_Name).join("، ");
+  const msg =
+`مرحباً ${p.Parent_Name} 👋
+تذكير لطيف من إدارة مدرسة مسار للتميز بخصوص القسط المدرسي${kids ? " للطلاب: " + kids : ""}.
+
+💰 المبلغ المتبقي: ${moneyStr(f.remaining)}
+
+نشكر لكم تعاونكم، وللاستفسار أو تنسيق موعد الدفع يرجى التواصل مع إدارة المدرسة.`;
+  window.open(`https://wa.me/${num}?text=${encodeURIComponent(msg)}`, "_blank");
+}
+function financeMetaHtml(pid) {
+  const f = financeOf(pid);
+  return f.remaining > 0 ? `<div class="meta pay-due">💰 المتبقي: ${moneyStr(f.remaining)}</div>` : "";
+}
+function reminderBtnHtml(pid, phone) {
+  const f = financeOf(pid);
+  if (f.remaining <= 0 || !String(phone || "").trim()) return "";
+  return `<button class="status-pill" style="background:#FFF2D6;color:#7A5A12;" onclick="sendPaymentReminder('${String(pid).replace(/'/g, "")}')">💰 تذكير</button>`;
+}
+
+// ---------- قوائم قابلة للفتح بالرئيسية ----------
+function homeAcc(key, icon, title, count, body, defOpen) {
+  if (addOpen[key] === undefined) addOpen[key] = !!defOpen;
+  const open = !!addOpen[key];
+  return `
+    <div class="acc-item ${open ? "open" : ""}">
+      <button type="button" class="acc-head" aria-expanded="${open}" onclick="toggleAddAcc('${key}', this)">
+        <span class="acc-ic">${icon}</span>
+        <span class="acc-title"><span class="acc-name">${title}</span></span>
+        ${count ? `<span class="acc-count">${count}</span>` : ""}
+        <span class="acc-chev" aria-hidden="true"></span>
+      </button>
+      <div class="acc-panel"><div class="acc-inner"><div class="acc-body">${body}</div></div></div>
+    </div>`;
+}
+
+// حضور اليوم: صفوف لم يُسجَّل حضورها + الغائبون
+function adminTodayAttendance() {
+  const today = String(staffSession.todayDate || "").slice(0, 10);
+  const dow = new Date(today + "T12:00:00").getDay();
+  const holiday = (staffSession.holidays || []).find(h => fmtD(h.Date) === fmtD(today));
+  if (dow === 5 || dow === 6) return { off: "اليوم عطلة نهاية الأسبوع — لا حضور مطلوب." };
+  if (holiday) return { off: "اليوم عطلة رسمية: " + (holiday.Holiday_Name || "") };
+  const students = (staffSession.students || []).filter(s => String(s.Status || "Active").trim() !== "Inactive");
+  const byId = {}; students.forEach(s => { byId[String(s.Student_ID).trim()] = s; });
+  const todayRecs = (staffSession.attendance || []).filter(a => String(a.Date).slice(0, 10) === today);
+  const recorded = {}; todayRecs.forEach(a => { recorded[String(a.Student_ID).trim()] = a; });
+  const groups = {};
+  students.forEach(s => {
+    const key = String(s.Class_Level || "").trim() + "|" + String(s.Section || "").trim();
+    if (!groups[key]) groups[key] = { label: String(s.Class_Level || "").trim() + (String(s.Section || "").trim() ? "/" + String(s.Section).trim() : ""), total: 0, rec: 0 };
+    groups[key].total++;
+    if (recorded[String(s.Student_ID).trim()]) groups[key].rec++;
+  });
+  const missing = Object.keys(groups).map(k => groups[k]).filter(g => g.rec === 0).map(g => g.label);
+  const absent = todayRecs.filter(a => /غائب|غياب/.test(String(a.Status || ""))).map(a => byId[String(a.Student_ID).trim()]).filter(Boolean);
+  return { off: "", missing, absent, groupsCount: Object.keys(groups).length };
+}
+function renderAdminAttention() {
+  const att = adminTodayAttendance();
+  let attBody = "";
+  if (att.off) {
+    attBody = `<div class="attn-row"><div class="attn-main">🌴 ${staffEsc(att.off)}</div></div>`;
+  } else {
+    attBody += att.missing.length
+      ? `<div class="attn-row warn"><div class="attn-main"><b>⚠️ لم يُسجَّل حضور اليوم بعد</b><div class="attn-chips">${att.missing.slice(0, 8).map(x => `<span class="pill-mini">${staffEsc(x)}</span>`).join("")}${att.missing.length > 8 ? `<span class="pill-mini">+${att.missing.length - 8}</span>` : ""}</div></div></div>`
+      : `<div class="attn-row ok"><div class="attn-main">✅ تم تسجيل حضور كل الصفوف اليوم</div></div>`;
+    attBody += att.absent.length
+      ? `<div class="attn-row"><div class="attn-main"><b>📍 غياب اليوم: ${att.absent.length}</b><div class="attn-chips">${att.absent.slice(0, 8).map(s => `<span class="pill-mini bad">${staffEsc(firstToken(s.Student_Name))} · ${staffEsc(shortClass(s))}</span>`).join("")}${att.absent.length > 8 ? `<span class="pill-mini">+${att.absent.length - 8}</span>` : ""}</div></div></div>`
+      : `<div class="attn-row"><div class="attn-main">📍 لا غياب مسجّل اليوم حتى الآن</div></div>`;
+  }
+  const attCount = (!att.off && att.missing.length) ? String(att.missing.length) : "";
+
+  // المتبقيات المالية
+  const due = allFinance().filter(x => x.f.remaining > 0).sort((a, b) => b.f.remaining - a.f.remaining);
+  const totalDue = due.reduce((s, x) => s + x.f.remaining, 0);
+  let finBody = due.length === 0
+    ? `<div class="attn-row ok"><div class="attn-main">✅ لا متبقيات مالية مسجّلة</div></div>`
+    : due.slice(0, 6).map(x => `
+        <div class="attn-row">
+          <div class="attn-main"><b>${staffEsc(x.p.Parent_Name)}</b><span class="attn-sub">${x.kids.map(k => staffEsc(firstToken(k.Student_Name))).join("، ")}</span></div>
+          <span class="attn-amt">${moneyStr(x.f.remaining)}</span>
+          ${reminderBtnHtml(x.p.Parent_ID, x.p.Phone)}
+        </div>`).join("") +
+      `<div class="attn-foot">المجموع المتبقي: <b>${moneyStr(totalDue)}</b> على ${due.length} ${due.length === 1 ? "ولي أمر" : "أولياء أمور"}
+        <button type="button" class="attn-link" onclick="goFinanceReport('remain')">عرض التقرير الكامل ←</button></div>`;
+
+  // آخر العمليات
+  const ops = (staffSession.changeLog || []).slice(0, 5);
+  const opsBody = ops.length === 0
+    ? `<div class="attn-row"><div class="attn-main">لا عمليات مسجّلة بعد</div></div>`
+    : ops.map(r => `
+        <div class="attn-row"><div class="attn-main">
+          <b>${staffEsc(r.Action || "")}</b>
+          <span class="attn-sub">${staffEsc(r.Actor_Name || r.Actor_Username || "")} · ${fmtDT(r.Change_Time)}</span>
+          ${r.Target ? `<span class="attn-sub">${staffEsc(humanizeLogText(r.Target))}</span>` : ""}
+        </div></div>`).join("");
+
+  const searchBar = `
+    <div class="search-field-admin gs-entry" onclick="openGlobalSearch()" role="button" tabindex="0" onkeydown="if(event.key==='Enter'){openGlobalSearch();}">
+      <input readonly placeholder="ابحث عن ولي أمر أو طالب أو رقم هاتف…" aria-label="بحث شامل" />
+      <span>🔎</span>
+    </div>`;
+
+  return searchBar +
+    homeAcc("hm_today", "🔔", "تنبيهات اليوم", attCount, attBody, true) +
+    homeAcc("hm_fin", "💰", "المتبقيات المالية", due.length ? String(due.length) : "", finBody, false) +
+    homeAcc("hm_ops", "🕘", "آخر العمليات", "", opsBody, false);
+}
+function firstToken(name) { return String(name || "").trim().split(/\s+/)[0] || ""; }
+function shortClass(s) { return String(s.Class_Level || "").replace("الصف ", "") + (String(s.Section || "").trim() ? "/" + String(s.Section).trim() : ""); }
+function goFinanceReport(kind) {
+  finRepKind = kind || "remain";
+  adminGroup = "money"; adminTab = "financeReport";
+  renderDashboard();
+  window.scrollTo(0, 0);
+}
+
+// ---------- البحث الشامل + بطاقة ولي الأمر ----------
+let gsOpen = false, gsQuery = "", gsParentId = "";
+
+function renderGlobalSheet() {
+  if (!isAdmin()) return "";
+  return `
+    <div class="sheet gsheet ${gsOpen ? "open" : ""}" id="gSheet" role="dialog" aria-modal="true" aria-label="بحث شامل">
+      <div class="sheet-back" onclick="closeGlobalSearch()"></div>
+      <div class="sheet-panel gs-panel">
+        <div class="sheet-grip"></div>
+        <div class="gs-head"><div class="sheet-title" style="margin:0;">🔎 بحث شامل</div><button type="button" class="gs-x" onclick="closeGlobalSearch()" aria-label="إغلاق">✕</button></div>
+        <div class="search-field-admin" style="margin:10px 0;">
+          <input id="gsInput" placeholder="اسم ولي الأمر أو الطالب أو الهاتف..." value="${staffEsc(gsQuery)}" oninput="gsInput(this.value)" autocomplete="off" />
+          <span>🔎</span>
+        </div>
+        <div id="gsBody">${gsBodyHtml()}</div>
+      </div>
+    </div>`;
+}
+function openGlobalSearch() {
+  gsOpen = true;
+  document.body.classList.add("sheet-open");
+  const el = document.getElementById("gSheet");
+  if (el) el.classList.add("open");
+  setTimeout(() => { const i = document.getElementById("gsInput"); if (i && !gsParentId) i.focus(); }, 80);
+}
+function closeGlobalSearch() {
+  gsOpen = false;
+  const el = document.getElementById("gSheet");
+  if (el) el.classList.remove("open");
+  const more = document.getElementById("moreSheet");
+  if (!(more && more.classList.contains("open"))) document.body.classList.remove("sheet-open");
+}
+function gsRefreshBody() { const b = document.getElementById("gsBody"); if (b) b.innerHTML = gsBodyHtml(); }
+function gsInput(v) { gsQuery = v; gsParentId = ""; gsRefreshBody(); }
+function gsSelect(pid) { gsParentId = pid; pushRecentPayParent(pid); gsRefreshBody(); const p = document.querySelector("#gSheet .sheet-panel"); if (p) p.scrollTop = 0; }
+function gsBack() { gsParentId = ""; gsRefreshBody(); }
+function gsBodyHtml() {
+  if (gsParentId) return renderParentCard(gsParentId);
+  const q = gsQuery.trim();
+  const item = (r) => `<div class="search-result-item" data-pid="${staffEsc(r.e.pid)}" onclick="gsSelect(this.dataset.pid)">${parentResultInner(r)}<span>◀</span></div>`;
+  if (!q) {
+    const idx = buildParentIndex();
+    const recents = getRecentPayParents().map(id => idx.find(e => e.pid === id)).filter(Boolean);
+    return recents.length
+      ? `<div class="pr-head">🕘 آخر من تعاملت معهم</div>` + recents.map(e => item({ e, matchedKids: [] })).join("")
+      : emptyState("🔎", "ابحث بأي شيء عن ولي الأمر", "الاسم، أو اسم ابنه، أو رقم الهاتف — وتظهر لك بطاقته الكاملة.");
+  }
+  const { list, total } = searchParentsIndex(q, 12);
+  if (!list.length) return emptyState("🔎", "لا نتيجة مطابقة", "جرّب جزءاً آخر من الاسم أو رقم الهاتف.");
+  return list.map(item).join("") + (total > list.length ? `<div class="pr-more">يوجد ${total - list.length} نتيجة أخرى — اكتب المزيد لتضييق البحث</div>` : "");
+}
+function renderParentCard(pid) {
+  const p = (staffSession.parents || []).find(x => String(x.Parent_ID).trim() === String(pid).trim());
+  if (!p) return emptyState("🔎", "لم يعد ولي الأمر موجوداً", "");
+  const f = financeOf(pid), kids = kidsOf(pid);
+  const phone = String(p.Phone || "").trim(), wa = toWhatsappNumber(phone);
+  const monthPrefix = String(staffSession.todayDate || "").slice(0, 7);
+  const today = String(staffSession.todayDate || "").slice(0, 10);
+  const att = (typeof getAllAttendanceForSearch === "function") ? getAllAttendanceForSearch() : (staffSession.attendance || []);
+
+  const kidsHtml = kids.length ? kids.map(k => {
+    const sid = String(k.Student_ID).trim();
+    const recs = att.filter(a => String(a.Student_ID).trim() === sid);
+    const month = recs.filter(a => String(a.Date).slice(0, 7) === monthPrefix);
+    const absent = month.filter(a => /غائب|غياب/.test(String(a.Status || ""))).length;
+    const late = month.filter(a => /متأخر|تأخير/.test(String(a.Status || ""))).length;
+    const t = recs.find(a => String(a.Date).slice(0, 10) === today);
+    const tLab = t ? (/غائب|غياب/.test(String(t.Status || "")) ? "غائب اليوم" : "حاضر اليوم") : "";
+    return `
+      <div class="pc-kid">
+        <div class="pc-kid-main"><b>${staffEsc(nameWithAge(k.Student_Name, k.Birth_Date))}</b>
+          <span>${staffEsc(k.Class_Level || "")}${k.Section ? " · شعبة " + staffEsc(k.Section) : ""}</span></div>
+        <div class="pc-kid-att">غياب هذا الشهر: <b>${absent}</b> · تأخير: <b>${late}</b>${tLab ? ` · <span class="${tLab.startsWith("غائب") ? "bad" : "ok"}">${tLab}</span>` : ""}</div>
+        <button type="button" class="status-pill" onclick="gsGo('att','${sid.replace(/'/g, "")}')">🔎 سجل الحضور</button>
+      </div>`;
+  }).join("") : `<div class="ta-none">لا أبناء مسجّلون.</div>`;
+
+  const payRows = f.rows.slice(0, 3).map(r => `<div class="pc-pay"><span>${fmtD(r.Payment_Date)} · ${staffEsc(r.Payment_Method || "")}</span><b>${moneyStr(parseMoney(r.Amount))}</b></div>`).join("");
+  const pid2 = String(pid).replace(/'/g, "");
+  return `
+    <button type="button" class="gs-back" onclick="gsBack()">→ رجوع للنتائج</button>
+    <div class="pc-head">
+      <div class="pc-name">${staffEsc(p.Parent_Name)} <span class="pr-id">${staffEsc(p.Parent_ID)}</span></div>
+      <div class="pc-phone">${phone ? "📞 " + staffEsc(phone) : "بدون رقم هاتف"}</div>
+      <div class="pc-btns">
+        ${phone ? `<a class="status-pill" style="background:var(--tint-card);color:#7A2626;text-decoration:none;" href="tel:${staffEsc(phone)}">📞 اتصال</a>` : ""}
+        ${wa ? `<a class="status-pill" style="background:#25D366;color:#fff;text-decoration:none;" href="https://wa.me/${wa}" target="_blank" rel="noopener">💬 واتساب</a>` : ""}
+        <button type="button" class="status-pill" style="background:var(--edit-bg);color:var(--edit-text);" onclick="sendParentCredentials('${staffEsc(phone)}','${String(p.Parent_Name || "").replace(/'/g, "")}','${staffEsc(p.PIN_Code || "")}')">📤 بيانات الدخول</button>
+      </div>
+    </div>
+    <div class="pc-sec">💳 المالية</div>
+    ${f.has ? `
+      <div class="pc-tiles">
+        <div><span>المطلوب</span><b>${moneyStr(f.required)}</b></div>
+        <div><span>المدفوع</span><b class="ok">${moneyStr(f.paid)}</b></div>
+        <div><span>المتبقي</span><b class="${f.remaining > 0 ? "bad" : "ok"}">${moneyStr(f.remaining)}</b></div>
+      </div>
+      ${payRows}` : `<div class="ta-none">لا دفعات مسجّلة بعد.</div>`}
+    <div class="pc-btns" style="margin-top:8px;">
+      <button type="button" class="status-pill" style="background:var(--tint-card);color:#7A2626;" onclick="gsGo('pay','${pid2}')">➕ تسجيل دفعة</button>
+      ${f.remaining > 0 && phone ? `<button type="button" class="status-pill" style="background:#FFF2D6;color:#7A5A12;" onclick="sendPaymentReminder('${pid2}')">💰 تذكير بالدفعة</button>` : ""}
+    </div>
+    <div class="pc-sec">🎓 الأبناء (${kids.length})</div>
+    ${kidsHtml}
+    <div class="pc-btns" style="margin-top:12px;">
+      <button type="button" class="status-pill" style="background:var(--edit-bg);color:var(--edit-text);" onclick="gsGo('edit','${pid2}')">✏️ تعديل بيانات ولي الأمر</button>
+    </div>`;
+}
+function gsGo(kind, id) {
+  closeGlobalSearch();
+  if (kind === "pay") { selectedPaymentParentId = id; addPaymentMsg = ""; paymentParentSearch = ""; adminGroup = "money"; adminTab = "payments"; }
+  else if (kind === "edit") { editingParentId = id; adminGroup = "students"; adminTab = "parents"; }
+  else if (kind === "att") { attSelectedStudentId = id; attCalYear = new Date().getFullYear(); attCalMonth = new Date().getMonth(); adminGroup = "attend"; adminTab = "attendanceSearch"; }
+  renderDashboard();
+  window.scrollTo(0, 0);
+}
+document.addEventListener("keydown", (e) => { if (e.key === "Escape" && gsOpen) closeGlobalSearch(); });
+
+// ---------- التقارير (طباعة / حفظ PDF) ----------
+function openPrintDoc(title, meta, bodyHtml) {
+  const w = window.open("", "_blank");
+  if (!w) { alert("المتصفح منع فتح النافذة. اسمح بالنوافذ المنبثقة لهذا الموقع ثم أعد المحاولة."); return; }
+  w.document.write(`<html dir="rtl" lang="ar"><head><meta charset="UTF-8"><title>${staffEsc(title)}</title>
+    <style>
+      body{font-family:Tahoma,Arial,sans-serif;padding:24px;color:#222;}
+      h1{font-size:20px;margin:0 0 4px;} .sub{color:#666;font-size:13px;margin-bottom:16px;line-height:1.8;}
+      table{border-collapse:collapse;width:100%;font-size:13px;} th,td{border:1px solid #bbb;padding:7px 9px;text-align:right;}
+      th{background:#f1e3e1;} tfoot td{font-weight:700;background:#faf3f2;} .n{white-space:nowrap;}
+      .foot{color:#888;font-size:11px;margin-top:18px;}
+    </style></head><body>
+    <h1>مدرسة مسار للتميز — ${staffEsc(title)}</h1>
+    <div class="sub">${meta}</div>
+    ${bodyHtml}
+    <div class="foot">طُبع بتاريخ ${fmtDT(new Date())} · بتوقيت دمشق</div>
+    <script>window.onload=function(){setTimeout(function(){window.print();},300);};<\/script>
+    </body></html>`);
+  w.document.close();
+}
+function monthLabelOf(key) { const [y, m] = key.split("-"); return ARABIC_MONTHS[Number(m) - 1] + " " + y; }
+function reportMonthOptions() {
+  const t = String(staffSession.todayDate || "").slice(0, 7) || new Date().toISOString().slice(0, 7);
+  let [y, m] = t.split("-").map(Number);
+  const out = [];
+  for (let i = 0; i < 12; i++) { out.push(`${y}-${padTwo(m)}`); m--; if (m === 0) { m = 12; y--; } }
+  return out;
+}
+function paymentMonthKey(p) {
+  const d = fmtD(p.Payment_Date).split("/"); // dd/mm/yyyy
+  return d.length === 3 ? `${d[2]}-${d[1]}` : "";
+}
+function repTable(head, rows, foot) {
+  return `<table class="rep-table"><thead><tr>${head.map(h => `<th>${h}</th>`).join("")}</tr></thead><tbody>${rows.map(r => `<tr>${r.map((c, i) => `<td${i === r.length - 1 ? ' class="n"' : ""}>${c}</td>`).join("")}</tr>`).join("")}</tbody>${foot ? `<tfoot>${foot}</tfoot>` : ""}</table>`;
+}
+
+// تقرير التحصيل المالي
+let finRepMonth = "", finRepKind = "collect";
+function buildFinanceReport() {
+  const monthKey = finRepMonth || reportMonthOptions()[0];
+  if (finRepKind === "collect") {
+    const parentsById = {}; (staffSession.parents || []).forEach(p => { parentsById[String(p.Parent_ID).trim()] = p; });
+    const pays = (staffSession.payments || []).filter(p => String(p.Status || "Active").trim() !== "Void" && paymentMonthKey(p) === monthKey)
+      .sort((a, b) => String(fmtD(a.Payment_Date).split("/").reverse().join("")).localeCompare(String(fmtD(b.Payment_Date).split("/").reverse().join(""))));
+    const total = pays.reduce((s, p) => s + parseMoney(p.Amount), 0);
+    const rows = pays.map(p => [fmtD(p.Payment_Date), staffEsc((parentsById[String(p.Parent_ID).trim()] || {}).Parent_Name || p.Parent_ID), staffEsc(p.Payment_Method || "—"), moneyStr(parseMoney(p.Amount))]);
+    return { title: "تقرير التحصيل — " + monthLabelOf(monthKey), meta: `عدد الدفعات: ${pays.length} · إجمالي المحصّل: <b>${moneyStr(total)}</b>`,
+      head: ["التاريخ", "ولي الأمر", "طريقة الدفع", "المبلغ"], rows, foot: `<tr><td colspan="3">الإجمالي (${pays.length} دفعة)</td><td class="n">${moneyStr(total)}</td></tr>`, summary: [["عدد الدفعات", String(pays.length)], ["إجمالي المحصّل", moneyStr(total)]] };
+  }
+  const due = allFinance().filter(x => x.f.remaining > 0).sort((a, b) => b.f.remaining - a.f.remaining);
+  const req = due.reduce((s, x) => s + x.f.required, 0), paid = due.reduce((s, x) => s + x.f.paid, 0), rem = due.reduce((s, x) => s + x.f.remaining, 0);
+  const rows = due.map(x => [staffEsc(x.p.Parent_Name), staffEsc(x.kids.map(k => firstToken(k.Student_Name)).join("، ") || "—"), moneyStr(x.f.required), moneyStr(x.f.paid), moneyStr(x.f.remaining)]);
+  return { title: "تقرير المتبقيات المالية", meta: `أولياء أمور عليهم متبقٍ: ${due.length} · إجمالي المتبقي: <b>${moneyStr(rem)}</b>`,
+    head: ["ولي الأمر", "الأبناء", "المطلوب", "المدفوع", "المتبقي"], rows, foot: `<tr><td colspan="2">الإجمالي (${due.length})</td><td class="n">${moneyStr(req)}</td><td class="n">${moneyStr(paid)}</td><td class="n">${moneyStr(rem)}</td></tr>`, summary: [["أولياء أمور عليهم متبقٍ", String(due.length)], ["إجمالي المتبقي", moneyStr(rem)]] };
+}
+function printFinanceReport() { const r = buildFinanceReport(); openPrintDoc(r.title, r.meta, repTable(r.head, r.rows, r.foot)); }
+function renderFinanceReportTab() {
+  const months = reportMonthOptions();
+  if (!finRepMonth) finRepMonth = months[0];
+  const r = buildFinanceReport();
+  const kindBtn = (k, lab) => `<button type="button" class="seg2-b ${finRepKind === k ? "on" : ""}" onclick="finRepKind='${k}';renderDashboard();">${lab}</button>`;
+  const shown = r.rows.slice(0, 30);
+  return `
+    <div class="form-card">
+      <div class="section-title">📄 تقارير مالية</div>
+      <div class="seg2">${kindBtn("collect", "تحصيل شهر")}${kindBtn("remain", "المتبقيات")}</div>
+      ${finRepKind === "collect" ? `<div class="form-field"><label>الشهر</label><select onchange="finRepMonth=this.value;renderDashboard();">${months.map(m => `<option value="${m}" ${m === finRepMonth ? "selected" : ""}>${monthLabelOf(m)}</option>`).join("")}</select></div>` : ""}
+      <div class="rep-sum">${r.summary.map(([a, b]) => `<div><span>${a}</span><b>${b}</b></div>`).join("")}</div>
+      <button type="button" class="btn-save" onclick="printFinanceReport()" ${r.rows.length ? "" : "disabled"}>🖨 طباعة / حفظ PDF</button>
+    </div>
+    ${r.rows.length ? `<div class="section-title">${r.title}</div><div class="rep-scroll">${repTable(r.head, shown, "")}</div>${r.rows.length > 30 ? `<div class="pr-more">تُعرض أول 30 من ${r.rows.length} — كل الصفوف بنسخة الطباعة.</div>` : ""}` : emptyState("📄", "لا بيانات لهذا التقرير", "اختر شهراً آخر.")}`;
+}
+
+// تقرير الغياب
+const absRep = { cls: "", sec: "", period: "month", from: "", to: "" };
+function absencePeriod() {
+  const t = String(staffSession.todayDate || "").slice(0, 10);
+  if (absRep.period === "week") return { from: shiftDays(t, -6), to: t, label: "آخر 7 أيام" };
+  if (absRep.period === "30") return { from: shiftDays(t, -29), to: t, label: "آخر 30 يوماً" };
+  if (absRep.period === "custom") return { from: absRep.from || t, to: absRep.to || t, label: "من " + fmtD(absRep.from || t) + " إلى " + fmtD(absRep.to || t) };
+  return { from: t.slice(0, 7) + "-01", to: t, label: "هذا الشهر (" + monthLabelOf(t.slice(0, 7)) + ")" };
+}
+function buildAbsenceReport() {
+  const per = absencePeriod();
+  const students = (staffSession.students || []).filter(s => String(s.Status || "Active").trim() !== "Inactive" &&
+    (!absRep.cls || String(s.Class_Level || "").trim() === absRep.cls) && (!absRep.sec || String(s.Section || "").trim() === absRep.sec));
+  const ids = {}; students.forEach(s => { ids[String(s.Student_ID).trim()] = { s, absent: 0, late: 0, days: 0 }; });
+  const att = (typeof getAllAttendanceForSearch === "function") ? getAllAttendanceForSearch() : (staffSession.attendance || []);
+  att.forEach(a => {
+    const d = String(a.Date).slice(0, 10), rec = ids[String(a.Student_ID).trim()];
+    if (!rec || d < per.from || d > per.to) return;
+    rec.days++;
+    if (/غائب|غياب/.test(String(a.Status || ""))) rec.absent++; else if (/متأخر|تأخير/.test(String(a.Status || ""))) rec.late++;
+  });
+  const list = Object.values(ids).filter(x => x.absent > 0 || x.late > 0).sort((a, b) => b.absent - a.absent || b.late - a.late);
+  const totAbs = list.reduce((s, x) => s + x.absent, 0), totLate = list.reduce((s, x) => s + x.late, 0);
+  const scope = (absRep.cls || "كل الصفوف") + (absRep.sec ? " — شعبة " + absRep.sec : "");
+  return { title: "تقرير الغياب", meta: `${per.label} · ${scope}<br>عدد الطلاب: ${list.length} · مجموع أيام الغياب: <b>${totAbs}</b> · التأخير: ${totLate}`,
+    head: ["الطالب", "الصف", "الغياب", "التأخير", "أيام مسجّلة"],
+    rows: list.map(x => [staffEsc(x.s.Student_Name), staffEsc((x.s.Class_Level || "") + (x.s.Section ? " / " + x.s.Section : "")), String(x.absent), String(x.late), String(x.days)]),
+    foot: `<tr><td colspan="2">الإجمالي (${list.length} طالب)</td><td class="n">${totAbs}</td><td class="n">${totLate}</td><td></td></tr>`,
+    summary: [["طلاب لديهم غياب/تأخير", String(list.length)], ["مجموع أيام الغياب", String(totAbs)]] };
+}
+function printAbsenceReport() { const r = buildAbsenceReport(); openPrintDoc(r.title, r.meta, repTable(r.head, r.rows, r.foot)); }
+function renderAbsenceReportTab() {
+  const r = buildAbsenceReport();
+  const classOpts = `<option value="">كل الصفوف</option>` + CLASS_LEVELS_LIST.map(c => `<option value="${c}" ${c === absRep.cls ? "selected" : ""}>${c}</option>`).join("");
+  const secOpts = `<option value="">كل الشعب</option>` + [1, 2, 3, 4, 5, 6, 7, 8].map(n => `<option value="${n}" ${String(n) === absRep.sec ? "selected" : ""}>شعبة ${n}</option>`).join("");
+  const perOpts = [["month", "هذا الشهر"], ["week", "آخر 7 أيام"], ["30", "آخر 30 يوماً"], ["custom", "فترة مخصصة"]].map(([k, l]) => `<option value="${k}" ${k === absRep.period ? "selected" : ""}>${l}</option>`).join("");
+  const t = String(staffSession.todayDate || "").slice(0, 10);
+  const shown = r.rows.slice(0, 30);
+  return `
+    <div class="form-card">
+      <div class="section-title">📄 تقرير الغياب</div>
+      <div class="bg-two">
+        <div class="form-field"><label>الصف</label><select onchange="absRep.cls=this.value;renderDashboard();">${classOpts}</select></div>
+        <div class="form-field"><label>الشعبة</label><select onchange="absRep.sec=this.value;renderDashboard();">${secOpts}</select></div>
+      </div>
+      <div class="form-field"><label>الفترة</label><select onchange="absRep.period=this.value;renderDashboard();">${perOpts}</select></div>
+      ${absRep.period === "custom" ? `<div class="bg-two">
+        <div class="form-field"><label>من</label><input type="date" value="${absRep.from || t}" max="${t}" onchange="absRep.from=this.value;renderDashboard();" /></div>
+        <div class="form-field"><label>إلى</label><input type="date" value="${absRep.to || t}" max="${t}" onchange="absRep.to=this.value;renderDashboard();" /></div></div>` : ""}
+      <div class="rep-sum">${r.summary.map(([a, b]) => `<div><span>${a}</span><b>${b}</b></div>`).join("")}</div>
+      <button type="button" class="btn-save" onclick="printAbsenceReport()" ${r.rows.length ? "" : "disabled"}>🖨 طباعة / حفظ PDF</button>
+    </div>
+    ${r.rows.length ? `<div class="rep-scroll">${repTable(r.head, shown, "")}</div>${r.rows.length > 30 ? `<div class="pr-more">تُعرض أول 30 من ${r.rows.length} — كل الصفوف بنسخة الطباعة.</div>` : ""}` : emptyState("✅", "لا غياب ولا تأخير بهذه الفترة", "")}`;
+}
+
 function renderDashboard() {
   const activeId = document.activeElement ? document.activeElement.id : null;
   const app = document.getElementById("app");
@@ -4644,21 +5832,9 @@ function renderDashboard() {
   if (isAdmin()) {
     contentHtml = renderAdminTabBars();
     const renderer = ADMIN_TAB_RENDERERS[adminTab];
-    contentHtml += renderer ? renderer() : `<div class="empty-box">اختر قسماً</div>`;
+    contentHtml += renderer ? renderer() : `${emptyState("🎯", "اختر قسماً", "")}`;
   } else {
-    contentHtml = `
-      <div class="admin-tabs" id="teacherTabsBar">
-        <button class="admin-tab-btn ${teacherTab === "dashboard" ? "active" : ""}" onclick="teacherTab='dashboard';nextStaffCheer();renderDashboard();">🏠 الرئيسية</button>
-        <button class="admin-tab-btn ${teacherTab === "roster" ? "active" : ""}" onclick="teacherTab='roster';renderDashboard();">طلابي</button>
-        <button class="admin-tab-btn ${teacherTab === "attendance" ? "active" : ""}" onclick="teacherTab='attendance';renderDashboard();">تسجيل الحضور</button>
-        <button class="admin-tab-btn ${teacherTab === "attendanceSearch" ? "active" : ""}" onclick="teacherTab='attendanceSearch';renderDashboard();">سجل الحضور</button>
-        <button class="admin-tab-btn ${teacherTab === "behavior" ? "active" : ""}" onclick="teacherTab='behavior';renderDashboard();">السلوك</button>
-        <button class="admin-tab-btn ${teacherTab === "grades" ? "active" : ""}" onclick="teacherTab='grades';renderDashboard();">العلامات</button>
-        <button class="admin-tab-btn ${teacherTab === "assignments" ? "active" : ""}" onclick="teacherTab='assignments';renderDashboard();">الواجبات</button>
-        <button class="admin-tab-btn ${teacherTab === "announcements" ? "active" : ""}" onclick="teacherTab='announcements';renderDashboard();">📢 الإعلانات</button>
-        <button class="admin-tab-btn ${teacherTab === "ranking" ? "active" : ""}" onclick="teacherTab='ranking';renderDashboard();">🏆 الترتيب</button>
-      </div>
-    `;
+    contentHtml = "";
     if (teacherTab === "dashboard") contentHtml += renderTeacherDashboardTab();
     else if (teacherTab === "roster") contentHtml += renderTeacherRosterTab();
     else if (teacherTab === "attendance") contentHtml += renderTeacherAttendanceTab();
@@ -4681,6 +5857,7 @@ function renderDashboard() {
         <div id="liveClock" style="color:#F3D3D0;font-size:11px;margin-top:4px;">${getCurrentDateTimeText()}</div>
       </div>
       <div style="display: flex; gap: 12px; align-items: center;">
+        ${isAdmin() ? `<button class="logout-btn" onclick="openGlobalSearch()" title="بحث شامل" aria-label="بحث شامل">🔎</button>` : ""}
         <button class="logout-btn" onclick="toggleStaffDarkMode();renderDashboard();" title="الوضع الليلي">
           ${document.body.classList.contains('dark') ? '☀️' : '🌙'}
         </button>
@@ -4688,7 +5865,11 @@ function renderDashboard() {
         <button id="logoutBtn" class="logout-btn">خروج</button>
       </div>
     </div>
+    <div id="syncBar" class="sync-bar">${staffSyncText()}</div>
     <div class="content">${contentHtml}</div>
+    ${renderBottomNav()}
+    ${renderMoreSheet()}
+    ${renderGlobalSheet()}
   `;
 
   document.getElementById("refreshBtn").addEventListener("click", async function () {
@@ -4703,6 +5884,8 @@ function renderDashboard() {
       if (data.ok) {
         data._password = staffSession._password;
         staffSession = data;
+        staffLastFetch = Date.now();
+        if (getSavedStaffCreds()) writeStaffCache(data.username, data);
         nextStaffCheer();
         renderDashboard(); 
       } else {

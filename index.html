@@ -250,6 +250,109 @@
   @keyframes cf-fall { 0% { opacity: 1; transform: translateY(0) rotate(0deg); } 100% { opacity: 0; transform: translateY(190px) rotate(320deg); } }
   @media (prefers-reduced-motion: reduce) { .confetti { display: none; } .kid-card { transition: none; } }
 
+  /* ===== القوائم القابلة للفتح (أبناء الرئيسية + أقسام المزيد) ===== */
+  .acc-item { margin-bottom: 10px; }
+  .acc-head { display: flex; align-items: center; gap: 12px; width: 100%; background: var(--card); border: 1.5px solid var(--border); border-radius: 16px; padding: 12px 14px; font-family: inherit; color: var(--text); text-align: right; cursor: pointer; transition: border-color .2s, box-shadow .2s; }
+  .acc-head:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+  .acc-item.open > .acc-head { border-color: var(--gold); box-shadow: 0 0 0 3px rgba(199,154,62,0.18); }
+  .acc-title { flex: 1; min-width: 0; }
+  .acc-sum { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 12px; margin-top: 4px; font-size: 11.5px; color: var(--muted); }
+  .acc-sum b { font-size: 13px; color: var(--text); }
+  .acc-new { background: #E6EEFA; color: #2D5A9E; padding: 0 8px; border-radius: 10px; font-weight: 600; }
+  body.dark .acc-new { background: rgba(123,167,230,0.15); color: #9DBFEF; }
+  .acc-ic { width: 38px; height: 38px; border-radius: 12px; background: var(--bg); display: flex; align-items: center; justify-content: center; font-size: 19px; flex-shrink: 0; }
+  .acc-count { background: var(--header); color: #fff; min-width: 24px; padding: 2px 8px; border-radius: 12px; font-size: 12px; font-weight: 700; text-align: center; }
+  body.dark .acc-count { background: var(--gold); color: var(--header); }
+  .acc-chev { flex-shrink: 0; width: 9px; height: 9px; border-right: 2px solid var(--muted2); border-bottom: 2px solid var(--muted2); transform: rotate(45deg); margin: 0 4px 3px; transition: transform .25s ease; }
+  .acc-item.open > .acc-head .acc-chev { transform: rotate(-135deg); margin-bottom: -3px; }
+  .acc-panel { display: grid; grid-template-rows: 0fr; margin-top: 0; transition: grid-template-rows .3s ease, margin-top .3s ease; }
+  .acc-item.open > .acc-panel { grid-template-rows: 1fr; margin-top: 10px; }
+  .acc-inner { min-height: 0; overflow: hidden; visibility: hidden; transition: visibility 0s .3s; }
+  .acc-item.open > .acc-panel > .acc-inner { visibility: visible; transition: visibility 0s; }
+  .acc-body { padding: 1px 2px 2px; }
+  .acc-body > .kid-tags:first-child { margin-top: 0; }
+  .acc-body .subj-card { margin-bottom: 0; }
+  @media (prefers-reduced-motion: reduce) { .acc-panel, .acc-chev, .acc-inner, .acc-head { transition: none !important; } }
+
+  /* ===== تحسينات: أيقونات التبويبات ===== */
+  .tab-btn { padding: 8px 4px 9px; gap: 3px; }
+  .tab-btn span { font-size: 11.5px; }
+  .tab-btn svg { width: 23px; height: 23px; fill: none; stroke: currentColor; stroke-width: 1.9; stroke-linecap: round; stroke-linejoin: round; }
+  .tab-btn svg circle { fill: currentColor; stroke: none; }
+  .badge-dot { top: 4px; left: calc(50% + 10px); }
+  .last-updated:empty { display: none; }
+
+  /* ===== حالات فارغة ===== */
+  .empty-fr { padding: 26px 16px; }
+  .ef-ic { font-size: 30px; margin-bottom: 6px; }
+  .ef-t { font-size: 14.5px; font-weight: 700; color: var(--text); }
+  .ef-s { font-size: 12.5px; color: var(--muted); margin-top: 4px; line-height: 1.8; }
+
+  /* ===== آخر المستجدات ===== */
+  .tl { display: flex; flex-direction: column; gap: 8px; }
+  .tl-item { display: flex; align-items: center; gap: 10px; background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 9px 11px; }
+  .tl-ic { flex: 0 0 34px; height: 34px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 16px; background: var(--bg); }
+  .tl-ic.bad { background: #FBDEDC; } .tl-ic.warn { background: #FCEBC7; } .tl-ic.good { background: #DDF0DE; } .tl-ic.info { background: #E6EEFA; }
+  body.dark .tl-ic.bad { background: rgba(229,130,117,0.2); } body.dark .tl-ic.warn { background: rgba(216,177,92,0.2); }
+  body.dark .tl-ic.good { background: rgba(93,190,149,0.2); } body.dark .tl-ic.info { background: rgba(123,167,230,0.2); }
+  .tl-text { flex: 1; min-width: 0; font-size: 13px; color: var(--text); line-height: 1.6; }
+  .tl-when { font-size: 11px; color: var(--muted); white-space: nowrap; }
+
+  /* ===== تثبيت التطبيق ===== */
+  .install-card { background: var(--card); border: 1px solid var(--border); border-right: 4px solid var(--gold); border-radius: 16px; padding: 14px 16px; margin: 14px 0 4px; }
+  .install-t { font-size: 14.5px; font-weight: 700; color: var(--text); }
+  .install-s { font-size: 12.5px; color: var(--muted2); margin-top: 4px; line-height: 1.8; }
+  .install-how { font-size: 12.5px; color: var(--text); background: var(--bg); border-radius: 10px; padding: 8px 10px; margin-top: 8px; line-height: 1.9; }
+  .install-btns { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+  .ib { font-family: inherit; font-size: 12.5px; padding: 7px 14px; border-radius: 10px; border: 1px solid var(--border); background: transparent; color: var(--muted2); cursor: pointer; }
+  .ib.main { background: var(--header); color: #fff; border-color: var(--header); font-weight: 700; }
+  body.dark .ib.main { background: var(--gold); color: var(--header); border-color: var(--gold); }
+
+  /* ===== النتائج ===== */
+  .results-table td { vertical-align: middle; }
+  .dl { display: block; font-style: normal; font-size: 10px; line-height: 1.3; margin-top: 2px; font-weight: 700; }
+  .dl.up { color: var(--lv-great); } .dl.dn { color: var(--lv-low); } .dl.eq { color: var(--muted); }
+  .rt-bar { height: 4px; border-radius: 4px; background: var(--field-border); margin: 4px auto 0; width: 90%; overflow: hidden; }
+  .rt-bar i { display: block; height: 100%; border-radius: 4px; }
+  .results-table tr.rt-best td { background: rgba(46,125,91,0.09); }
+  .results-table tr.rt-low td { background: rgba(185,138,46,0.11); }
+  .rt-flags { display: flex; flex-wrap: wrap; gap: 6px; margin: -8px 0 18px; }
+
+  /* ===== الحضور ===== */
+  .att-summary { display: flex; gap: 8px; margin-bottom: 12px; }
+  .as { flex: 1; text-align: center; border-radius: 12px; padding: 8px 4px; }
+  .as b { display: block; font-size: 19px; } .as span { font-size: 11.5px; }
+  .as.ok { background: #DDF0DE; color: #1E5E27; } .as.bad { background: #FBDEDC; color: #8E2F2A; } .as.warn { background: #FCEBC7; color: #7A5A12; }
+  body.dark .as.ok { background: rgba(93,190,149,0.18); color: #7FD3AE; } body.dark .as.bad { background: rgba(229,130,117,0.18); color: #F0A69B; } body.dark .as.warn { background: rgba(216,177,92,0.18); color: #E6C77E; }
+  .cal-cell[data-day] { cursor: pointer; }
+  .cal-cell.sel { outline: 2px solid var(--gold); outline-offset: 1px; }
+  .cal-detail { display: flex; justify-content: space-between; align-items: center; gap: 8px; background: var(--card); border: 1px solid var(--gold); border-radius: 12px; padding: 10px 12px; margin: -6px 0 14px; font-size: 13px; }
+  .cal-detail span { font-weight: 600; color: var(--text); }
+  .cal-hint { text-align: center; font-size: 11.5px; color: var(--muted); margin: -8px 0 12px; }
+
+  /* ===== الوظائف ===== */
+  .task-progress { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 10px 12px; margin-bottom: 12px; }
+  .tp-t { font-size: 12.5px; color: var(--muted2); } .tp-t b { color: var(--text); }
+  .tp-bar { height: 6px; border-radius: 6px; background: var(--field-border); margin-top: 7px; overflow: hidden; }
+  .tp-bar i { display: block; height: 100%; background: var(--lv-great); border-radius: 6px; transition: width .3s; }
+  .grp-head { display: flex; justify-content: space-between; align-items: center; font-size: 13px; font-weight: 700; color: var(--text); margin: 16px 2px 8px; }
+  .grp-head span { font-size: 11.5px; font-weight: 600; background: var(--bg); color: var(--muted2); border: 1px solid var(--border); padding: 1px 9px; border-radius: 10px; }
+  .task-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+  .task-details { font-size: 13px; color: var(--muted2); margin-top: 8px; line-height: 1.8; overflow-wrap: anywhere; }
+  .task-done { font-family: inherit; font-size: 12px; font-weight: 700; padding: 6px 13px; border-radius: 16px; border: 1.5px solid var(--border); background: transparent; color: var(--muted2); cursor: pointer; white-space: nowrap; }
+  .task-done.on { background: var(--lv-great); border-color: var(--lv-great); color: #fff; }
+  body.dark .task-done.on { color: var(--header); }
+  .task-card.done { opacity: 0.62; border-right-color: var(--lv-great); }
+  .task-card.done .task-title { text-decoration: line-through; }
+
+  /* ===== إعدادات العرض ===== */
+  .set-row { margin-bottom: 14px; }
+  .set-lab { font-size: 12.5px; color: var(--muted2); margin-bottom: 6px; font-weight: 600; }
+  .seg { display: flex; gap: 6px; }
+  .seg-b { flex: 1; font-family: inherit; font-size: 13px; padding: 9px 4px; border-radius: 12px; border: 1.5px solid var(--border); background: var(--bg); color: var(--text); cursor: pointer; }
+  .seg-b.on { border-color: var(--gold); background: rgba(199,154,62,0.14); font-weight: 700; }
+  .set-hint { font-size: 11.5px; color: var(--muted); }
+
   @media print {
     .tabbar, .header, .child-chips, .print-btn { display: none !important; }
   }
@@ -261,7 +364,7 @@
 
 <script>
 // تأكد من وضع الرابط الجديد للـ Web App هنا
-const API_URL = "https://script.google.com/macros/s/AKfycbxlDZU8RyKRpjH6xJiGdHRfRVatXW6EcvY3Y268pndtqfNFaZlFpBnDdCAzVeXK0d2Tlw/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbx-36zpcxd2A-8zsLkQdeTtZ837W7_9_q3wogdRsAPCC1pYlKo3UtOqtPGUuWPv8FhWtA/exec";
 
 let session = null;
 let currentChildIndex = 0;
@@ -282,14 +385,6 @@ function hasNew(key, currentCount) {
   return (seen[key] || 0) < currentCount;
 }
 
-function applyDarkModePref() {
-  if (localStorage.getItem("masar_dark") === "1") document.body.classList.add("dark");
-}
-function toggleDarkMode() {
-  document.body.classList.toggle("dark");
-  localStorage.setItem("masar_dark", document.body.classList.contains("dark") ? "1" : "0");
-  renderApp();
-}
 
 function saveCreds(phone, pin) {
   localStorage.setItem("masar_phone", phone);
@@ -298,6 +393,7 @@ function saveCreds(phone, pin) {
 function clearCreds() {
   localStorage.removeItem("masar_phone");
   localStorage.removeItem("masar_pin");
+  localStorage.removeItem(SESSION_CACHE_KEY); // لا نُبقي بيانات الأبناء على الجهاز بعد الخروج
 }
 function getSavedCreds() {
   const phone = localStorage.getItem("masar_phone");
@@ -311,7 +407,7 @@ function statusColor(remaining) {
     : { bg: "#EAF3DE", text: "#3B6D11", dark: "#173404" };
 }
 
-async function doLogin(phone, pin, remember) {
+async function doLogin(phone, pin, remember, silent) {
   const url = `${API_URL}?action=login&phone=${encodeURIComponent(phone)}&pin=${encodeURIComponent(pin)}`;
   const res = await fetch(url);
   const data = await res.json();
@@ -321,6 +417,7 @@ async function doLogin(phone, pin, remember) {
   session = data;
   session._phone = phone; // حفظ بيانات الدخول من أجل زر التحديث
   session._pin = pin;
+  lastFetchTs = Date.now();
   linkOneSignalToParent(session.parent && session.parent.Parent_ID);
 
   // نُبقي الطفل المختار بعد التحديث (بمعرّفه)، وإلا نستعيد آخر طفل حفظناه على الجهاز، وإلا الأول.
@@ -333,8 +430,8 @@ async function doLogin(phone, pin, remember) {
   }
   const kidIdx = wantedKid == null ? -1 : (data.children || []).findIndex((c) => String(c.Student_ID) === String(wantedKid));
   currentChildIndex = kidIdx >= 0 ? kidIdx : 0;
-  nextCheer();
-  if (remember) saveCreds(phone, pin);
+  if (!silent) nextCheer();
+  if (remember) { saveCreds(phone, pin); writeSessionCache(phone, data); }
   return { ok: true };
 }
 
@@ -393,6 +490,30 @@ function renderLogin(errorMsg) {
 async function tryAutoLogin() {
   const saved = getSavedCreds();
   if (!saved) { renderLogin(); return; }
+
+  // فتح فوري: نعرض آخر نسخة محفوظة على الجهاز، ثم نحدّثها بالخلفية
+  const cached = readSessionCache(saved.phone);
+  if (cached) {
+    session = cached.data;
+    session._phone = saved.phone;
+    session._pin = saved.pin;
+    session._refreshing = true;
+    let wantedKid = null;
+    try { wantedKid = localStorage.getItem("masar_kid_" + session.parent.Parent_ID); } catch (e) {}
+    const idx = wantedKid == null ? -1 : (session.children || []).findIndex((c) => String(c.Student_ID) === String(wantedKid));
+    currentChildIndex = idx >= 0 ? idx : 0;
+    showAnnouncements = (session.announcements || []).length > 0;
+    renderApp();
+    try {
+      const r = await doLogin(saved.phone, saved.pin, true, true);
+      if (!r.ok) { clearCreds(); session = null; renderLogin(); return; }
+    } catch (err) {
+      if (session) { session._refreshing = false; session._refreshFailed = true; }
+    }
+    if (session) renderApp();
+    return;
+  }
+
   const app = document.getElementById("app");
   app.innerHTML = `<div class="empty-box" style="padding-top:80px;">جارِ تسجيل الدخول...</div>`;
   try {
@@ -428,26 +549,44 @@ function computeSubjectAverages(rows) {
   });
 }
 
+function deltaHtml(cur, prev) {
+  const d = Math.round((cur - prev) * 10) / 10;
+  if (d === 0) return `<i class="dl eq">＝</i>`;
+  return d > 0 ? `<i class="dl up">▲ ${d}</i>` : `<i class="dl dn">▼ ${Math.abs(d)}</i>`;
+}
+
 function renderClassicTable(subjectResults) {
+  const graded = subjectResults.filter((r) => r.avg !== null);
+  const best = graded.length >= 2 ? graded.reduce((a, b) => (b.avg > a.avg ? b : a)) : null;
+  const low = graded.length >= 2 ? graded.reduce((a, b) => (b.avg < a.avg ? b : a)) : null;
+  const showFlags = !!(best && low && best.avg !== low.avg);
+  const clean = (subj) => subj.replace(/[^\u0600-\u06FF\sa-zA-Z]/g, "").trim() || subj;
+  const r1 = (n) => Math.round(n * 10) / 10;
+
   let rows = "";
-  subjectResults.forEach(({ subj, entries, avg }) => {
-    const subjectClean = subj.replace(/[^\u0600-\u06FF\sa-zA-Z]/g, "").trim() || subj;
-    const slots = [entries[0], entries[1], entries[2]];
-    const cellVal = (e) => {
-      if (!e) return "—";
-      const hasScore = e.Score !== "" && e.Score !== null && e.Score !== undefined;
-      return hasScore ? Number(e.Score) : "—";
-    };
-    rows += `
-      <tr>
-        <td class="rt-subject">${subjectClean}</td>
-        <td>${cellVal(slots[0])}</td>
-        <td>${cellVal(slots[1])}</td>
-        <td>${cellVal(slots[2])}</td>
-        <td class="rt-avg">${avg === null ? "—" : Math.round(avg * 10) / 10}</td>
-      </tr>
-    `;
+  subjectResults.forEach((r) => {
+    const { subj, entries, avg } = r;
+    let prev = null;
+    const cells = [0, 1, 2].map((i) => {
+      const e = entries[i];
+      const ok = e && e.Score !== "" && e.Score !== null && e.Score !== undefined && !isNaN(Number(e.Score));
+      if (!ok) return `<td>—</td>`;
+      const v = Number(e.Score);
+      const dl = prev === null ? "" : deltaHtml(v, prev);
+      prev = v;
+      return `<td>${v}${dl}</td>`;
+    }).join("");
+    const lv = avg !== null ? scoreLevel(avg) : null;
+    const cls = showFlags ? (r === best ? "rt-best" : (r === low ? "rt-low" : "")) : "";
+    const avgCell = avg === null
+      ? "—"
+      : `<div>${r1(avg)}</div><div class="rt-bar"><i style="width:${Math.max(0, Math.min(100, avg))}%;background:${lv.c}"></i></div>`;
+    rows += `<tr class="${cls}"><td class="rt-subject">${clean(subj)}</td>${cells}<td class="rt-avg">${avgCell}</td></tr>`;
   });
+
+  const flags = showFlags
+    ? `<div class="rt-flags"><span class="pill green">🥇 الأعلى: ${clean(best.subj)} (${r1(best.avg)})</span><span class="pill blue">🌱 الأدنى: ${clean(low.subj)} (${r1(low.avg)})</span></div>`
+    : "";
 
   return `
     <table class="results-table">
@@ -462,13 +601,14 @@ function renderClassicTable(subjectResults) {
       </thead>
       <tbody>${rows}</tbody>
     </table>
+    ${flags}
   `;
 }
 
 function renderResults(child) {
   if (!session.grades) return `<div class="empty-box">لا توجد بيانات علامات</div>`;
   const rows = session.grades.filter(g => String(g.Student_ID).trim() === String(child.Student_ID).trim());
-  if (rows.length === 0) return `<div class="empty-box">لا توجد علامات مسجلة بعد لـ ${child.Student_Name}</div>`;
+  if (rows.length === 0) return emptyState("🌱", "لا علامات بعد", `ستظهر علامات ${esc(firstName(child.Student_Name))} هنا فور إدخالها من المعلمين.`);
 
   const hasSemesterColumn = rows.some(r => r.Semester !== undefined && String(r.Semester).trim() !== "");
 
@@ -541,7 +681,7 @@ function renderResults(child) {
 let assignSearchTerm = "";
 
 function renderAssignments(child) {
-  if (!session.assignments || session.assignments.length === 0) return `<div class="empty-box">لا توجد وظائف مسجلة حالياً</div>`;
+  if (!session.assignments || session.assignments.length === 0) return emptyState("🎉", "لا وظائف حالياً", "استمتعوا بوقتكم! أي وظيفة جديدة ستظهر هنا فور إضافتها.");
   let tasks = session.assignments.filter(a => {
     const sameClass = String(a.Class_Level || "").trim() === String(child.Class_Level || "").trim();
     const aSection = String(a.Section || "").trim();
@@ -550,29 +690,62 @@ function renderAssignments(child) {
   });
   tasks = tasks.slice().sort((a, b) => String(b.Date || "").localeCompare(String(a.Date || "")));
 
+  const done = getDoneSet();
+  const total = tasks.length;
+  const doneCount = tasks.filter(t => done.indexOf(taskKey(child, t)) !== -1).length;
+
   const searchBox = `
     <div class="search-field">
-      <input id="assignSearch" placeholder="ابحث حسب اسم المادة..." value="${assignSearchTerm}" oninput="assignSearchTerm=this.value;renderApp();" />
+      <input id="assignSearch" placeholder="ابحث حسب اسم المادة..." value="${esc(assignSearchTerm)}" oninput="assignSearchTerm=this.value;renderApp();" />
       <span>🔎</span>
     </div>
   `;
+
+  if (total === 0) return searchBox + emptyState("🎉", "لا وظائف حالياً", "استمتعوا بوقتكم! أي وظيفة جديدة ستظهر هنا فور إضافتها.");
 
   if (assignSearchTerm.trim() !== "") {
     const term = assignSearchTerm.trim();
     tasks = tasks.filter(t => String(t.Subject || "").includes(term));
   }
+  if (tasks.length === 0) return searchBox + emptyState("🔎", "لا نتائج مطابقة", "جرّبوا اسماً آخر للمادة.");
 
-  if (tasks.length === 0) return searchBox + `<div class="empty-box">لا توجد وظائف مطابقة</div>`;
+  const progress = `
+    <div class="task-progress">
+      <div class="tp-t">أنجزتم <b>${doneCount}</b> من <b>${total}</b> وظيفة</div>
+      <div class="tp-bar"><i style="width:${Math.round((doneCount / total) * 100)}%"></i></div>
+    </div>`;
 
-  let html = searchBox;
-  tasks.forEach(t => {
-    html += `
-      <div class="task-card">
-        <div class="task-title">${t.Subject || 'وظيفة'}</div>
-        <div class="task-meta"><span>التاريخ: ${t.Date || 'غير محدد'}</span></div>
-        ${t.Details ? `<div style="font-size:13px;color:var(--muted2);margin-top:8px;">${t.Details}</div>` : ""}
-      </div>
-    `;
+  const groupOf = (dateStr) => {
+    const d = daysUntil(dateStr);
+    if (d === null) return "بدون تاريخ";
+    if (d > 0) return "قادمة";
+    if (d === 0) return "اليوم";
+    if (d === -1) return "أمس";
+    if (d >= -7) return "هذا الأسبوع";
+    return "أقدم";
+  };
+  const ORDER = ["قادمة", "اليوم", "أمس", "هذا الأسبوع", "أقدم", "بدون تاريخ"];
+  const groups = {};
+  tasks.forEach(t => { const g = groupOf(t.Date); (groups[g] = groups[g] || []).push(t); });
+
+  let html = searchBox + progress;
+  ORDER.forEach(g => {
+    if (!groups[g]) return;
+    html += `<div class="grp-head">${g}<span>${groups[g].length}</span></div>`;
+    groups[g].forEach(t => {
+      const key = taskKey(child, t);
+      const isDone = done.indexOf(key) !== -1;
+      html += `
+        <div class="task-card ${isDone ? "done" : ""}">
+          <div class="task-top">
+            <div class="task-title">${esc(t.Subject || 'وظيفة')}</div>
+            <button type="button" class="task-done ${isDone ? "on" : ""}" data-k="${esc(key)}" aria-pressed="${isDone}" onclick="toggleTaskDone(this.dataset.k)">${isDone ? "✓ تم" : "تم؟"}</button>
+          </div>
+          <div class="task-meta"><span>التاريخ: ${esc(t.Date || 'غير محدد')}</span></div>
+          ${t.Details ? `<div class="task-details">${esc(t.Details)}</div>` : ""}
+        </div>
+      `;
+    });
   });
   return html;
 }
@@ -632,6 +805,7 @@ function ymd(y, m, d) {
 }
 
 function changeCalMonth(delta) {
+  calSelectedDay = "";
   calMonth += delta;
   if (calMonth < 0) { calMonth = 11; calYear--; }
   if (calMonth > 11) { calMonth = 0; calYear++; }
@@ -653,33 +827,36 @@ function renderAttendance(child) {
     if (!isNaN(d)) holidayMap[ymd(d.getFullYear(), d.getMonth(), d.getDate())] = h.Holiday_Name || "عطلة رسمية";
   });
 
+  const now = new Date();
+  const todayKey = ymd(now.getFullYear(), now.getMonth(), now.getDate());
   const firstDay = new Date(calYear, calMonth, 1);
-  const startOffset = firstDay.getDay(); 
+  const startOffset = firstDay.getDay();
   const daysInMonth = new Date(calYear, calMonth + 1, 0).getDate();
 
   let cells = "";
+  const info = {};
+  const cnt = { present: 0, absent: 0, late: 0 };
   for (let i = 0; i < startOffset; i++) cells += `<div class="cal-cell empty"></div>`;
 
   for (let day = 1; day <= daysInMonth; day++) {
-    const dow = new Date(calYear, calMonth, day).getDay(); 
+    const dow = new Date(calYear, calMonth, day).getDay();
     const key = ymd(calYear, calMonth, day);
     let cls = "cal-neutral";
     let title = "";
+    let label = key > todayKey ? "يوم قادم" : (key === todayKey ? "لم يُسجَّل حضور بعد" : "لم يُسجَّل حضور لهذا اليوم");
 
     if (dow === 5 || dow === 6) {
-      cls = "cal-weekend";
-      title = "عطلة نهاية أسبوع";
+      cls = "cal-weekend"; title = "عطلة نهاية أسبوع"; label = "عطلة نهاية الأسبوع";
     } else if (holidayMap[key]) {
-      cls = "cal-holiday";
-      title = holidayMap[key];
+      cls = "cal-holiday"; title = holidayMap[key]; label = "🎉 عطلة رسمية: " + holidayMap[key];
     } else if (attMap[key]) {
       const st = attMap[key];
-      if (st.includes("غائب") || st.includes("غياب")) { cls = "cal-absent"; title = "غياب"; }
-      else if (st.includes("متأخر") || st.includes("تأخير")) { cls = "cal-late"; title = "تأخير"; }
-      else { cls = "cal-present"; title = "حضور"; }
+      if (st.includes("غائب") || st.includes("غياب")) { cls = "cal-absent"; title = "غياب"; label = "❌ غائب"; cnt.absent++; }
+      else if (st.includes("متأخر") || st.includes("تأخير")) { cls = "cal-late"; title = "تأخير"; label = "⏰ متأخر"; cnt.late++; }
+      else { cls = "cal-present"; title = "حضور"; label = "✅ حاضر"; cnt.present++; }
     }
-
-    cells += `<div class="cal-cell ${cls}" title="${title}">${day}</div>`;
+    info[key] = { dow, day, label };
+    cells += `<div class="cal-cell ${cls} ${calSelectedDay === key ? "sel" : ""}" role="button" tabindex="0" title="${title}" data-day="${key}" onclick="selectCalDay('${key}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();selectCalDay('${key}');}">${day}</div>`;
   }
 
   const monthHolidays = (session.holidays || []).filter(h => {
@@ -689,7 +866,7 @@ function renderAttendance(child) {
 
   let holidayTableHtml = `<div class="section-title">🔵 العطل الرسمية هذا الشهر</div>`;
   if (monthHolidays.length === 0) {
-    holidayTableHtml += `<div class="empty-box" style="padding:16px;">لا توجد عطل رسمية مسجلة هذا الشهر</div>`;
+    holidayTableHtml += `<div class="empty-box" style="padding:16px;">لا عطل رسمية هذا الشهر 🌤️</div>`;
   } else {
     holidayTableHtml += `<table class="holiday-table">`;
     monthHolidays.forEach(h => {
@@ -699,16 +876,30 @@ function renderAttendance(child) {
     holidayTableHtml += `</table>`;
   }
 
+  const summary = `
+    <div class="att-summary">
+      <div class="as ok"><b>${cnt.present}</b><span>حضور</span></div>
+      <div class="as bad"><b>${cnt.absent}</b><span>غياب</span></div>
+      <div class="as warn"><b>${cnt.late}</b><span>تأخير</span></div>
+    </div>`;
+
+  const sel = calSelectedDay && info[calSelectedDay] ? info[calSelectedDay] : null;
+  const detail = sel
+    ? `<div class="cal-detail"><b>${ARABIC_DOW_FULL[sel.dow]}، ${sel.day} ${ARABIC_MONTHS[calMonth]}</b><span>${sel.label}</span></div>`
+    : `<div class="cal-hint">اضغط على أي يوم لعرض تفاصيله</div>`;
+
   return `
     <div class="cal-header">
       <button class="cal-nav-btn" onclick="changeCalMonth(-1)">›</button>
       <div class="cal-title">${ARABIC_MONTHS[calMonth]} ${calYear}</div>
       <button class="cal-nav-btn" onclick="changeCalMonth(1)">‹</button>
     </div>
+    ${summary}
     <div class="cal-grid">
       ${ARABIC_DOW.map(d => `<div class="cal-dow">${d}</div>`).join("")}
       ${cells}
     </div>
+    ${detail}
     <div class="cal-legend">
       <span><span class="legend-dot" style="background:#DDF0DE;"></span>حضور</span>
       <span><span class="legend-dot" style="background:#FBDEDC;"></span>غياب</span>
@@ -777,95 +968,93 @@ function renderMore(child) {
     .map(ex => ({ ...ex, _days: daysUntil(ex.Exam_Date) }))
     .filter(ex => ex._days === null || ex._days >= 0)
     .sort((a, b) => (a._days ?? 999) - (b._days ?? 999));
+  const upcomingCount = exams.length;
 
   const notes = (session.behaviorNotes || [])
     .filter(n => String(n.Student_ID).trim() === String(child.Student_ID).trim())
     .slice()
     .reverse();
 
-  let html = `
-    <div class="section-title">🧒 بيانات الطالب</div>
-    <div class="subj-card" style="margin-bottom:18px;">
-      <div style="font-size:13px;color:var(--muted2);margin-bottom:6px;"><b>اسم الأم:</b> ${child.Mother_Name && child.Mother_Name.trim() ? child.Mother_Name : "لم يتم إدخال معلومات بعد"}</div>
-      <div style="font-size:13px;color:var(--muted2);"><b>ملاحظات صحية:</b> ${child.Illness && child.Illness.trim() ? child.Illness : "لم يتم إدخال معلومات بعد"}</div>
-    </div>
-  `;
-  html += `<div class="section-title">📅 الامتحانات القادمة</div>`;
-  html += `
+  // 1) بيانات الطالب
+  const infoBody = `
+    <div class="subj-card">
+      <div style="font-size:13px;color:var(--muted2);margin-bottom:6px;"><b>اسم الأم:</b> ${child.Mother_Name && child.Mother_Name.trim() ? esc(child.Mother_Name) : "لم يتم إدخال معلومات بعد"}</div>
+      <div style="font-size:13px;color:var(--muted2);"><b>ملاحظات صحية:</b> ${child.Illness && child.Illness.trim() ? esc(child.Illness) : "لم يتم إدخال معلومات بعد"}</div>
+    </div>`;
+
+  // 2) الامتحانات القادمة
+  let examsBody = `
     <div class="search-field">
-      <input id="examSearch" placeholder="ابحث حسب اسم المادة..." value="${examSearchTerm}" oninput="examSearchTerm=this.value;renderApp();" />
+      <input id="examSearch" placeholder="ابحث حسب اسم المادة..." value="${esc(examSearchTerm)}" oninput="examSearchTerm=this.value;renderApp();" />
       <span>🔎</span>
-    </div>
-  `;
+    </div>`;
   if (examSearchTerm.trim() !== "") {
     const term = examSearchTerm.trim();
     exams = exams.filter(ex => String(ex.Subject || "").includes(term));
   }
-
   if (exams.length === 0) {
-    html += `<div class="empty-box" style="padding:20px;">لا توجد امتحانات قادمة مطابقة</div>`;
+    examsBody += emptyState("🎈", "لا امتحانات قريبة", "ستظهر الامتحانات القادمة هنا مع عدّاد تنازلي.");
   } else {
     const next = exams[0];
-    html += `
+    examsBody += `
       <div class="countdown-card">
         <div style="font-size:13px;color:#B9C2D4;">أقرب امتحان: ${(next.Subject||'').toString()} (${next.Exam_Type||''})</div>
         <div class="countdown-num">${next._days === 0 ? 'اليوم' : next._days + ' يوم'}</div>
-      </div>
-    `;
+      </div>`;
     exams.forEach(ex => {
-      html += `
+      examsBody += `
         <div class="exam-item">
           <div>
             <div class="exam-subject">${ex.Subject || ''} — ${ex.Exam_Type || ''}</div>
             <div class="exam-meta">${ex.Exam_Date || ''}${ex.Notes ? ' · ' + ex.Notes : ''}</div>
           </div>
           <div style="font-weight:700;color:var(--header);">${ex._days === 0 ? 'اليوم' : ex._days + ' ي'}</div>
-        </div>
-      `;
+        </div>`;
     });
   }
 
-  html += `<div class="section-title" style="margin-top:20px;">📝 ملاحظات المعلمين</div>`;
+  // 3) ملاحظات المعلمين
+  let notesBody = "";
   if (notes.length === 0) {
-    html += `<div class="empty-box" style="padding:20px;">لا توجد ملاحظات مسجلة</div>`;
+    notesBody = emptyState("🌿", "لا ملاحظات حتى الآن", "وهذا خبر جيد — أي ملاحظة من المعلمين ستظهر هنا.");
   } else {
     notes.forEach(n => {
-      html += `
+      notesBody += `
         <div class="note-card">
           <div class="note-text">${n.Note_Text || ''}</div>
           <div class="note-meta">${n.Date || ''}</div>
-        </div>
-      `;
+        </div>`;
     });
   }
 
-  // لوحة الأوائل — تشمل كل الصفوف/الشعب التي لأحد أبناء ولي الأمر فيها طالب، مهما كان الطفل المختار حالياً بالأعلى
+  // 4) لوحة الأوائل — تشمل كل الصفوف/الشعب التي لأحد أبناء ولي الأمر فيها طالب
   const honorRoll = session.honorRoll || [];
-  html += `<div class="section-title" style="margin-top:20px;">🏆 لوحة تكريم الأوائل</div>`;
+  let honorBody = "";
   if (honorRoll.length === 0) {
-    html += `<div class="empty-box" style="padding:20px;">لا تتوفر بيانات كافية لعرض لوحة الأوائل بعد</div>`;
+    honorBody = `<div class="empty-box" style="padding:20px;">لا تتوفر بيانات كافية لعرض لوحة الأوائل بعد</div>`;
   } else {
     honorRoll.forEach(entry => {
       const top = entry.TopStudents || [];
-      html += `<div style="font-size:13px;font-weight:700;color:var(--text);margin:12px 0 8px;">${entry.Class_Level}${entry.Section ? " - شعبة " + entry.Section : ""}</div>`;
+      honorBody += `<div style="font-size:13px;font-weight:700;color:var(--text);margin:4px 0 8px;">${entry.Class_Level}${entry.Section ? " - شعبة " + entry.Section : ""}</div>`;
       if (top.length === 0) {
-        html += `<div class="empty-box" style="padding:16px;">لا توجد علامات كافية بعد لهذا الصف</div>`;
+        honorBody += `<div class="empty-box" style="padding:16px;">لا توجد علامات كافية بعد لهذا الصف</div>`;
       } else {
         top.forEach((s, i) => {
           const medals = ["🥇", "🥈", "🥉", "🏅"];
-          html += `
+          honorBody += `
             <div class="exam-item">
-              <div>
-                <div class="exam-subject">${medals[i] || "🏅"} ${s.Student_Name}</div>
-              </div>
-            </div>
-          `;
+              <div><div class="exam-subject">${medals[i] || "🏅"} ${s.Student_Name}</div></div>
+            </div>`;
         });
       }
     });
   }
 
-  return html;
+  return accSection("info", "🧒", "بيانات الطالب", "", infoBody) +
+         accSection("exams", "📅", "الامتحانات القادمة", upcomingCount ? String(upcomingCount) : "", examsBody) +
+         accSection("notes", "📝", "ملاحظات المعلمين", notes.length ? String(notes.length) : "", notesBody) +
+         accSection("honor", "🏆", "لوحة تكريم الأوائل", "", honorBody) +
+         accSection("view", "⚙️", "إعدادات العرض", "", settingsBody());
 }
 
 function renderAnnouncementsModal() {
@@ -1209,8 +1398,13 @@ function busRowHtml(c) {
   return `<div class="kid-bus"><span>🚌 مشرف الباص: <b>${name}</b></span>${action}</div>`;
 }
 
-function renderKidCard(c, i) {
-  const selected = i === currentChildIndex;
+// ---------- قائمة الطفل القابلة للفتح (الرئيسية) ----------
+let homeOpenKid = -1;          // الطفل المفتوح حالياً (-1 = الكل مغلق)
+let homeOpenKidInit = false;   // لتحديد الوضع الابتدائي مرة واحدة لكل جلسة
+const moreOpen = {};           // أقسام تبويب "المزيد" المفتوحة
+
+function renderKidAccordion(c, i) {
+  const open = i === homeOpenKid;
   const avg = childAverageInfo(c);
   const att = attendanceInfo(c);
   const rank = honorRankFor(c);
@@ -1218,33 +1412,117 @@ function renderKidCard(c, i) {
   const lv = avg.avg !== null ? scoreLevel(avg.avg) : null;
   const age = calcChildAgeLabel(c.Birth_Date);
   const sub = [c.Class_Level, c.Section ? "شعبة " + c.Section : "", age].filter(Boolean).map(esc).join(" · ");
+  const newTotal = nw.grades + nw.assigns;
 
   const newBits = [];
   if (nw.grades) newBits.push(arCount(nw.grades, "علامة جديدة", "علامتان جديدتان", "علامات جديدة", "علامة جديدة"));
   if (nw.assigns) newBits.push(arCount(nw.assigns, "وظيفة جديدة", "وظيفتان جديدتان", "وظائف جديدة", "وظيفة جديدة"));
-
   const tags = [];
   if (rank >= 0) tags.push(`<span class="pill gold">🏅 من الأوائل · المركز ${HONOR_RANKS[rank]}</span>`);
   if (att.fullMonth) tags.push(`<span class="pill green">✨ حضور كامل هذا الشهر</span>`);
   if (newBits.length) tags.push(`<span class="pill blue">🔔 ${newBits.join(" · ")}</span>`);
 
+  const praise = childPraiseLine(c);
   return `
-    <div class="kid-card ${selected ? "selected" : ""}" role="button" tabindex="0" aria-pressed="${selected}" data-kid="${i}">
-      <div class="kid-top">
+    <div class="acc-item ${open ? "open" : ""}" data-kid="${i}">
+      <button type="button" class="acc-head" id="kidHead${i}" aria-expanded="${open}" aria-controls="kidPanel${i}">
         <div class="kid-avatar" style="background:${KID_COLORS[i % KID_COLORS.length]}">${esc((c.Student_Name || "؟")[0])}</div>
-        <div style="flex:1;min-width:0;">
+        <div class="acc-title">
           <div class="kid-name">${esc(c.Student_Name)}</div>
           <div class="kid-sub">${sub}</div>
+          <div class="acc-sum">
+            <span>المعدل <b ${lv ? `style="color:${lv.c}"` : ""}>${avg.avg !== null ? roundOne(avg.avg) : "—"}</b></span>
+            <span>الحضور <b>${att.pct !== null ? att.pct + "%" : "—"}</b></span>
+            ${newTotal ? `<span class="acc-new">🔔 ${newTotal}</span>` : ""}
+          </div>
         </div>
+        <span class="acc-chev" aria-hidden="true"></span>
+      </button>
+      <div class="acc-panel" id="kidPanel${i}" role="region" aria-labelledby="kidHead${i}">
+        <div class="acc-inner"><div class="acc-body">
+          ${tags.length ? `<div class="kid-tags">${tags.join("")}</div>` : ""}
+          ${busRowHtml(c)}
+          <div style="margin-top:12px;">${renderTodayCard(c)}</div>
+          ${renderStatTiles(c)}
+          ${renderCountdownCard(c)}
+          ${praise ? `<div class="cheer">${praise}</div>` : ""}
+        </div></div>
       </div>
-      <div class="kid-stats">
-        <div class="kid-stat"><b ${lv ? `style="color:${lv.c}"` : ""}>${avg.avg !== null ? roundOne(avg.avg) : "—"}</b><span>المعدل</span></div>
-        <div class="kid-stat"><b>${att.pct !== null ? att.pct + "%" : "—"}</b><span>الحضور</span></div>
-        <div class="kid-stat"><b>${nw.grades + nw.assigns || "—"}</b><span>جديد</span></div>
-      </div>
-      ${tags.length ? `<div class="kid-tags">${tags.join("")}</div>` : ""}
-      ${busRowHtml(c)}
     </div>`;
+}
+
+// فتح/إغلاق طفل بدون إعادة رسم الصفحة (حتى تعمل حركة الفتح): يُغلق الباقي، ويصبح هو الطفل المختار بكل التبويبات
+function toggleKid(idx) {
+  const wasOpen = homeOpenKid === idx;
+  homeOpenKid = wasOpen ? -1 : idx;
+  document.querySelectorAll(".acc-item[data-kid]").forEach((el) => {
+    const open = Number(el.getAttribute("data-kid")) === homeOpenKid;
+    el.classList.toggle("open", open);
+    const b = el.querySelector(".acc-head");
+    if (b) b.setAttribute("aria-expanded", String(open));
+  });
+  if (wasOpen) return;
+  currentChildIndex = idx;
+  nextCheer();
+  const c = session.children[idx];
+  if (c && session.parent) {
+    try { localStorage.setItem("masar_kid_" + session.parent.Parent_ID, String(c.Student_ID)); } catch (e) {}
+  }
+  const cheerEl = document.querySelector(".home-cheer");
+  if (cheerEl) cheerEl.textContent = dailyCheerLine();
+  updateTabBadges();
+  const el = document.querySelector('.acc-item[data-kid="' + idx + '"]');
+  if (el) {
+    const reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    setTimeout(() => el.scrollIntoView({ block: "nearest", behavior: reduce ? "auto" : "smooth" }), 320);
+  }
+}
+
+// النقاط الحمراء بشريط التبويبات تتبع الطفل المختار (تُحدَّث عند تبديله بدون إعادة رسم)
+function updateTabBadges() {
+  const child = session.children[currentChildIndex];
+  if (!child) return;
+  const moreCount = (session.exams || []).length +
+    (session.behaviorNotes || []).filter((n) => String(n.Student_ID).trim() === String(child.Student_ID).trim()).length;
+  const flags = {
+    results: hasNew("results_" + child.Student_ID, childGradeRows(child).length),
+    assignments: hasNew("assign_" + child.Student_ID, assignmentsForChild(child).length),
+    more: hasNew("more_" + child.Student_ID, moreCount),
+  };
+  document.querySelectorAll(".tab-btn").forEach((btn) => {
+    const id = btn.getAttribute("data-tab");
+    if (!(id in flags)) return;
+    const dot = btn.querySelector(".badge-dot");
+    if (flags[id] && !dot) {
+      const d = document.createElement("span"); d.className = "badge-dot"; btn.insertBefore(d, btn.firstChild);
+    } else if (!flags[id] && dot) dot.remove();
+  });
+}
+
+// ---------- أقسام "المزيد" القابلة للفتح ----------
+function accSection(key, icon, title, count, bodyHtml, defaultOpen) {
+  if (moreOpen[key] === undefined) moreOpen[key] = !!defaultOpen;
+  const open = !!moreOpen[key];
+  return `
+    <div class="acc-item ${open ? "open" : ""}" data-sec="${key}">
+      <button type="button" class="acc-head" aria-expanded="${open}" aria-controls="sec_${key}">
+        <span class="acc-ic">${icon}</span>
+        <span class="acc-title"><span class="kid-name">${title}</span></span>
+        ${count ? `<span class="acc-count">${count}</span>` : ""}
+        <span class="acc-chev" aria-hidden="true"></span>
+      </button>
+      <div class="acc-panel" id="sec_${key}" role="region">
+        <div class="acc-inner"><div class="acc-body">${bodyHtml}</div></div>
+      </div>
+    </div>`;
+}
+function toggleSec(key) {
+  moreOpen[key] = !moreOpen[key];
+  const el = document.querySelector('.acc-item[data-sec="' + key + '"]');
+  if (!el) return;
+  el.classList.toggle("open", !!moreOpen[key]);
+  const b = el.querySelector(".acc-head");
+  if (b) b.setAttribute("aria-expanded", String(!!moreOpen[key]));
 }
 
 // ---------- "اليوم" ----------
@@ -1462,20 +1740,296 @@ function renderHome() {
     });
   }
 
+  // الوضع الابتدائي: كل الأطفال مغلقون، وإن كان للأب طفل واحد فقط يكون مفتوحاً
+  if (!homeOpenKidInit) { homeOpenKid = session.children.length === 1 ? 0 : -1; homeOpenKidInit = true; }
+  if (homeOpenKid >= session.children.length) homeOpenKid = -1;
+
+  html += installBannerHtml();
+
   const many = session.children.length > 1;
   html += `
-    <div class="sec-head"><h3>${many ? "أبناؤك" : "الطالب"}</h3>${many ? `<span>اضغط على بطاقة لعرض تفاصيله</span>` : ""}</div>
-    <div class="kids-wrap">${celebrate ? confettiHtml() : ""}${session.children.map(renderKidCard).join("")}</div>`;
-
-  const child = session.children[currentChildIndex];
-  html += `<div class="sec-head"><h3>تفاصيل ${esc(firstName(child.Student_Name))}</h3></div>`;
-  html += renderTodayCard(child);
-  html += renderStatTiles(child);
-  html += renderCountdownCard(child);
+    <div class="sec-head"><h3>${many ? "أبناؤك" : "الطالب"}</h3>${many ? `<span>اضغط على اسم الطفل لعرض تفاصيله</span>` : ""}</div>
+    <div class="kids-wrap">${celebrate ? confettiHtml() : ""}${session.children.map(renderKidAccordion).join("")}</div>`;
+  html += renderTimelineSection();
   html += renderLatestAnnouncement();
-  const praise = childPraiseLine(child);
-  if (praise) html += `<div class="cheer">${praise}</div>`;
   return html;
+}
+
+// =====================================================================
+// تحسينات: المظهر وحجم الخط، آخر المستجدات، تثبيت التطبيق، الفتح الفوري والتحديث التلقائي
+// =====================================================================
+
+// ---------- المظهر (تلقائي / فاتح / ليلي) ----------
+function getThemePref() {
+  let t = null;
+  try { t = localStorage.getItem("masar_theme"); } catch (e) {}
+  if (t === "light" || t === "dark" || t === "auto") return t;
+  let old = null;
+  try { old = localStorage.getItem("masar_dark"); } catch (e) {} // توافق مع الإعداد القديم
+  if (old === "1") return "dark";
+  if (old === "0") return "light";
+  return "auto"; // أول مرة: يتبع إعداد الجوال
+}
+function isDarkNow() {
+  const t = getThemePref();
+  return t === "dark" || (t === "auto" && !!(window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches));
+}
+function applyDarkModePref() {
+  document.body.classList.toggle("dark", isDarkNow());
+  applyFontPref();
+}
+function rerenderCurrent() { if (session) renderApp(); else renderLogin(); }
+function setThemePref(t) {
+  try { localStorage.setItem("masar_theme", t); } catch (e) {}
+  applyDarkModePref();
+  rerenderCurrent();
+}
+function toggleDarkMode() { setThemePref(document.body.classList.contains("dark") ? "light" : "dark"); }
+if (window.matchMedia) {
+  const _mq = window.matchMedia("(prefers-color-scheme: dark)");
+  const _onMq = () => { if (getThemePref() === "auto") { applyDarkModePref(); rerenderCurrent(); } };
+  if (_mq.addEventListener) _mq.addEventListener("change", _onMq); else if (_mq.addListener) _mq.addListener(_onMq);
+}
+
+// ---------- حجم الخط (تكبير المحتوى كله بثلاث درجات) ----------
+const FONT_ZOOM = { n: 1, l: 1.12, xl: 1.25 };
+function getFontPref() {
+  try { const k = localStorage.getItem("masar_font"); return FONT_ZOOM[k] ? k : "n"; } catch (e) { return "n"; }
+}
+function applyFontPref() {
+  const app = document.getElementById("app");
+  const z = FONT_ZOOM[getFontPref()];
+  if (app) app.style.zoom = z === 1 ? "" : String(z);
+}
+function setFontPref(k) {
+  try { localStorage.setItem("masar_font", k); } catch (e) {}
+  applyFontPref();
+  rerenderCurrent();
+}
+function settingsBody() {
+  const f = getFontPref(), t = getThemePref();
+  const seg = (items, cur, fn) => `<div class="seg">${items.map(([k, lab]) => `<button type="button" class="seg-b ${k === cur ? "on" : ""}" onclick="${fn}('${k}')">${lab}</button>`).join("")}</div>`;
+  return `
+    <div class="set-row"><div class="set-lab">حجم الخط</div>
+      ${seg([["n", "عادي"], ["l", "كبير"], ["xl", "أكبر"]], f, "setFontPref")}</div>
+    <div class="set-row"><div class="set-lab">المظهر</div>
+      ${seg([["auto", "تلقائي"], ["light", "فاتح"], ["dark", "ليلي"]], t, "setThemePref")}</div>
+    <div class="set-hint">«تلقائي» يتبع إعداد الوضع الليلي في جوالك.</div>`;
+}
+
+// ---------- حالات فارغة ودودة ----------
+function emptyState(icon, title, sub) {
+  return `<div class="empty-box empty-fr"><div class="ef-ic">${icon}</div><div class="ef-t">${title}</div>${sub ? `<div class="ef-s">${sub}</div>` : ""}</div>`;
+}
+
+// ---------- أيقونات شريط التبويبات ----------
+const TAB_ICONS = {
+  home: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11.5 12 4l9 7.5"/><path d="M5.5 10v10h13V10"/><path d="M10 20v-5.5h4V20"/></svg>',
+  results: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 20V11"/><path d="M12 20V4"/><path d="M19 20v-7"/><path d="M3 20h18"/></svg>',
+  assignments: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3.5h10a2.5 2.5 0 0 1 2.5 2.5v14H8.5A2.5 2.5 0 0 1 6 17.5z"/><path d="M9.5 8.5h6M9.5 12h6"/></svg>',
+  attendance: '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15.5" rx="3"/><path d="M3.5 10h17M8 3v4M16 3v4"/></svg>',
+  more: '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="5.5" cy="12" r="1.7"/><circle cx="12" cy="12" r="1.7"/><circle cx="18.5" cy="12" r="1.7"/></svg>',
+};
+
+// ---------- آخر المستجدات ----------
+let calSelectedDay = "";
+function evTs(v) {
+  if (v instanceof Date) return v.getTime();
+  const s = String(v || "").trim();
+  if (!s) return 0;
+  const m = s.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (m) return new Date(+m[1], +m[2] - 1, +m[3], 12).getTime();
+  const t = new Date(s).getTime();
+  return isNaN(t) ? 0 : t;
+}
+function cleanSubject(s) { return String(s || "").replace(/[^\u0600-\u06FF\sa-zA-Z0-9]/g, "").trim() || "مادة"; }
+function relDayLabel(ts) {
+  const a = new Date(); a.setHours(0, 0, 0, 0);
+  const b = new Date(ts); b.setHours(0, 0, 0, 0);
+  const n = Math.round((a - b) / 86400000);
+  if (n <= 0) return "اليوم";
+  if (n === 1) return "أمس";
+  if (n === 2) return "قبل يومين";
+  if (n <= 10) return `قبل ${n} أيام`;
+  return `قبل ${n} يوماً`;
+}
+function buildTimeline() {
+  const now = Date.now(), WIN = 30 * 86400000, kids = session.children || [];
+  const ev = [];
+  const push = (ts, icon, text, tone) => { if (ts && now - ts <= WIN && ts <= now + 86400000) ev.push({ ts, icon, text, tone }); };
+  kids.forEach((c) => {
+    const fn = esc(firstName(c.Student_Name)), sid = String(c.Student_ID).trim();
+    (session.attendance || []).forEach((a) => {
+      if (String(a.Student_ID).trim() !== sid) return;
+      const st = String(a.Status || "");
+      const absent = /غائب|غياب/.test(st), late = /متأخر|تأخير/.test(st);
+      if (absent || late) push(evTs(a.Date), absent ? "📍" : "⏰", `${absent ? "غياب" : "تأخر"} ${fn}`, absent ? "bad" : "warn");
+    });
+    childGradeRows(c).forEach((g) => {
+      const ts = evTs(g.Created_At);
+      if (ts && g.Score !== "" && !isNaN(Number(g.Score))) push(ts, "📊", `علامة ${esc(cleanSubject(g.Subject))} لـ ${fn}: <b>${roundOne(Number(g.Score))}</b>`, "good");
+    });
+    (session.behaviorNotes || []).forEach((n) => {
+      if (String(n.Student_ID).trim() === sid) push(evTs(n.Date), "✍️", `ملاحظة من المعلم لـ ${fn}`, "info");
+    });
+  });
+  const seen = {};
+  kids.forEach((c) => {
+    assignmentsForChild(c).forEach((t) => {
+      const key = [t.Class_Level, t.Section, t.Date, t.Subject, String(t.Details || "").slice(0, 30)].join("|");
+      if (!seen[key]) seen[key] = { t, names: [] };
+      seen[key].names.push(esc(firstName(c.Student_Name)));
+    });
+  });
+  Object.keys(seen).forEach((k) => {
+    const { t, names } = seen[k];
+    push(evTs(t.Date), "📚", `وظيفة ${esc(cleanSubject(t.Subject))} (${names.join(" و")})`, "info");
+  });
+  (session.payments || []).forEach((p) => {
+    push(evTs(p.Payment_Date), "💳", `دفعة مسجّلة: <bdi>$${parseMoney(p.Amount).toLocaleString()}</bdi>`, "good");
+  });
+  ev.sort((a, b) => b.ts - a.ts);
+  return ev.slice(0, 5);
+}
+function renderTimelineSection() {
+  const ev = buildTimeline();
+  const body = ev.length
+    ? `<div class="tl">${ev.map((e) => `<div class="tl-item"><span class="tl-ic ${e.tone}">${e.icon}</span><div class="tl-text">${e.text}</div><div class="tl-when">${relDayLabel(e.ts)}</div></div>`).join("")}</div>`
+    : emptyState("🌿", "لا مستجدات جديدة", "كل شيء هادئ. أي علامة أو غياب أو دفعة جديدة ستظهر هنا فوراً.");
+  return accSection("tl", "🕘", "آخر المستجدات", ev.length ? String(ev.length) : "", body, true);
+}
+
+// ---------- تنبيه "ثبّت التطبيق" ----------
+let deferredInstallPrompt = null;
+function isStandalone() {
+  return !!((window.matchMedia && window.matchMedia("(display-mode: standalone)").matches) || window.navigator.standalone);
+}
+function installPlatform() {
+  const ua = navigator.userAgent || "";
+  if (/iphone|ipad|ipod/i.test(ua) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1)) return "ios";
+  if (/android/i.test(ua)) return "android";
+  return "other";
+}
+function installHiddenUntil() {
+  try { return Number(localStorage.getItem("masar_install_hide") || 0); } catch (e) { return 0; }
+}
+function installBannerHtml() {
+  if (isStandalone() || installPlatform() === "other" || Date.now() < installHiddenUntil()) return "";
+  const plat = installPlatform();
+  const how = plat === "ios"
+    ? "اضغط زر المشاركة <b>⬆️</b> بأسفل المتصفح، ثم اختر «إضافة إلى الشاشة الرئيسية»."
+    : (deferredInstallPrompt ? "" : "افتح قائمة المتصفح <b>⋮</b> ثم اختر «تثبيت التطبيق».");
+  return `
+    <div class="install-card">
+      <div class="install-t">📲 ثبّت التطبيق على جوالك</div>
+      <div class="install-s">يفتح أسرع كتطبيق مستقل، ويصلك إشعار بكل علامة وغياب ودفعة.</div>
+      ${how ? `<div class="install-how">${how}</div>` : ""}
+      <div class="install-btns">
+        ${deferredInstallPrompt ? `<button type="button" class="ib main" onclick="installApp()">تثبيت الآن</button>` : ""}
+        <button type="button" class="ib" onclick="hideInstall(7)">ليس الآن</button>
+        <button type="button" class="ib" onclick="hideInstall(36500)">لا تذكّرني</button>
+      </div>
+    </div>`;
+}
+function hideInstall(days) {
+  try { localStorage.setItem("masar_install_hide", String(Date.now() + days * 86400000)); } catch (e) {}
+  renderApp();
+}
+async function installApp() {
+  if (!deferredInstallPrompt) return;
+  try {
+    deferredInstallPrompt.prompt();
+    const r = await deferredInstallPrompt.userChoice;
+    if (r && r.outcome === "accepted") { try { localStorage.setItem("masar_install_hide", String(Date.now() + 36500 * 86400000)); } catch (e) {} }
+  } catch (e) {}
+  deferredInstallPrompt = null;
+  if (session) renderApp();
+}
+window.addEventListener("beforeinstallprompt", (e) => { e.preventDefault(); deferredInstallPrompt = e; if (session) renderApp(); });
+window.addEventListener("appinstalled", () => {
+  try { localStorage.setItem("masar_install_hide", String(Date.now() + 36500 * 86400000)); } catch (e) {}
+  deferredInstallPrompt = null;
+  if (session) renderApp();
+});
+
+// ---------- فتح فوري بآخر نسخة محفوظة + تحديث بالخلفية ----------
+const SESSION_CACHE_KEY = "masar_cache_v1";
+let lastFetchTs = Date.now();
+let bgRefreshing = false;
+
+function writeSessionCache(phone, data) {
+  try {
+    const copy = Object.assign({}, data);
+    delete copy._pin;
+    localStorage.setItem(SESSION_CACHE_KEY, JSON.stringify({ ts: Date.now(), phone: phone, data: copy }));
+  } catch (e) { /* مساحة التخزين ممتلئة أو ممنوعة: نتجاهل */ }
+}
+function readSessionCache(phone) {
+  try {
+    const c = JSON.parse(localStorage.getItem(SESSION_CACHE_KEY) || "null");
+    if (!c || c.phone !== phone || !c.data || !c.data.ok || !c.data.parent) return null;
+    if (Date.now() - Number(c.ts || 0) > 14 * 86400000) return null; // أقدم من أسبوعين: لا نعرضه
+    return c;
+  } catch (e) { return null; }
+}
+function syncBarText() {
+  if (!session) return "";
+  if (session._refreshing) return "⏳ جارٍ تحديث البيانات…";
+  if (session._refreshFailed) return "⚠️ تعذّر التحديث الآن — تُعرض آخر نسخة محفوظة";
+  return session.lastUpdated ? `🕓 آخر تحديث للبيانات: ${session.lastUpdated}` : "";
+}
+function updateSyncBar() {
+  const el = document.getElementById("syncBar");
+  if (el) el.textContent = syncBarText();
+}
+function volatileFree(s) {
+  const c = Object.assign({}, s);
+  ["_refreshing", "_refreshFailed", "_cacheTs", "lastUpdated", "_pin", "_phone"].forEach((k) => { delete c[k]; });
+  return JSON.stringify(c);
+}
+// تحديث صامت (بدون تغيير العبارة ولا نافذة الإعلانات) يُعاد رسم الصفحة فقط إذا تغيّرت البيانات فعلاً
+async function backgroundRefresh() {
+  if (!session || bgRefreshing || !session._phone) return;
+  const ae = document.activeElement;
+  if (showAnnouncements || showPayments || (ae && (ae.tagName === "INPUT" || ae.tagName === "TEXTAREA"))) return;
+  bgRefreshing = true;
+  session._refreshing = true;
+  updateSyncBar();
+  const before = volatileFree(session);
+  try {
+    const r = await doLogin(session._phone, session._pin, !!getSavedCreds(), true);
+    if (r.ok) {
+      if (before !== volatileFree(session)) renderApp(); else updateSyncBar();
+    } else if (session) { session._refreshing = false; updateSyncBar(); }
+  } catch (err) {
+    if (session) { session._refreshing = false; session._refreshFailed = true; updateSyncBar(); }
+  } finally { bgRefreshing = false; }
+}
+document.addEventListener("visibilitychange", () => {
+  if (document.visibilityState === "visible" && session && Date.now() - lastFetchTs > 5 * 60 * 1000) backgroundRefresh();
+});
+
+// ---------- تفاصيل يوم بالتقويم ----------
+function selectCalDay(key) {
+  calSelectedDay = calSelectedDay === key ? "" : key;
+  renderApp();
+}
+
+// ---------- الوظائف: علامة "تم" ----------
+function taskKey(child, t) {
+  return [child.Student_ID, t.Class_Level, t.Section, t.Date, t.Subject, String(t.Details || "").slice(0, 40)]
+    .map((x) => String(x == null ? "" : x).trim()).join("|");
+}
+function doneStorageKey() { return "masar_done_" + (session && session.parent ? session.parent.Parent_ID : ""); }
+function getDoneSet() {
+  try { const a = JSON.parse(localStorage.getItem(doneStorageKey()) || "[]"); return Array.isArray(a) ? a : []; } catch (e) { return []; }
+}
+function toggleTaskDone(key) {
+  const set = getDoneSet();
+  const i = set.indexOf(key);
+  if (i >= 0) set.splice(i, 1); else set.push(key);
+  try { localStorage.setItem(doneStorageKey(), JSON.stringify(set.slice(-400))); } catch (e) {}
+  renderApp();
 }
 
 function renderApp() {
@@ -1514,7 +2068,7 @@ function renderApp() {
   const showBadgeMore = child ? hasNew("more_" + child.Student_ID, moreCount) : false;
 
   const tabBtn = (id, label, badge) =>
-    `<button class="tab-btn ${currentTab === id ? "active" : ""}" data-tab="${id}">${badge ? '<span class="badge-dot"></span>' : ""}<span>${label}</span></button>`;
+    `<button class="tab-btn ${currentTab === id ? "active" : ""}" data-tab="${id}">${badge ? '<span class="badge-dot"></span>' : ""}${TAB_ICONS[id] || ""}<span>${label}</span></button>`;
 
   app.innerHTML = `
     <div class="header">
@@ -1537,7 +2091,7 @@ function renderApp() {
       </div>
       ${financeStripHtml()}
     </div>
-    ${session.lastUpdated ? `<div class="last-updated">🕓 آخر تحديث للبيانات: ${session.lastUpdated}</div>` : ""}
+    <div id="syncBar" class="last-updated">${syncBarText()}</div>
 
     <div class="content">
       ${currentTab !== "home" && session.children.length > 0 ? `<div class="child-chips">${chips}</div>` : ""}
@@ -1579,6 +2133,8 @@ function renderApp() {
     currentTab = "home";
     currentChildIndex = 0;
     showPayments = false;
+    homeOpenKid = -1;
+    homeOpenKidInit = false;
     clearCreds();
     renderLogin();
   });
@@ -1602,12 +2158,11 @@ function renderApp() {
     });
   });
 
-  document.querySelectorAll(".kid-card").forEach((el) => {
-    const pick = () => selectChild(Number(el.getAttribute("data-kid")));
-    el.addEventListener("click", pick);
-    el.addEventListener("keydown", (e) => {
-      if (e.key === "Enter" || e.key === " ") { e.preventDefault(); pick(); }
-    });
+  document.querySelectorAll(".acc-item[data-kid] > .acc-head").forEach((btn) => {
+    btn.addEventListener("click", () => toggleKid(Number(btn.parentElement.getAttribute("data-kid"))));
+  });
+  document.querySelectorAll(".acc-item[data-sec] > .acc-head").forEach((btn) => {
+    btn.addEventListener("click", () => toggleSec(btn.parentElement.getAttribute("data-sec")));
   });
 
   // نُبقي اسم الطفل المختار ظاهراً في صف الأسماء (يُمرَّر أفقياً لمنتصفه بعد كل إعادة رسم)
