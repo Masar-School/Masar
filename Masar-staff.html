@@ -179,13 +179,19 @@
   .pp-list[hidden] { display: none; }
   .pp-item { padding: 9px 10px; border-radius: 9px; cursor: pointer; }
   .pp-item:hover, .pp-item.pp-active { background: var(--tint-card); }
+
+  /* ===== فلاتر سجل الدخول ===== */
+  .log-filters { display: flex; gap: 6px; flex-wrap: wrap; margin: 2px 0 12px; }
+  .log-chip { padding: 7px 13px; border-radius: 999px; background: var(--tint-card); border: 1px solid var(--border); font-family: inherit; font-size: 12.5px; color: #7A2626; cursor: pointer; white-space: nowrap; }
+  .log-chip.active { background: #A63A3A; color: #fff; border-color: #A63A3A; }
+  body.dark .log-chip { color: var(--edit-text); }
 </style>
 </head>
 <body>
 <div id="app"></div>
 
 <script>
-const API_URL = "https://script.google.com/macros/s/AKfycbxlDZU8RyKRpjH6xJiGdHRfRVatXW6EcvY3Y268pndtqfNFaZlFpBnDdCAzVeXK0d2Tlw/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbxix7sIw8wEXli_WvOPZ1cxAfkxiThbkgISzCNW0-UeFcJ1APY5ynchEJM7cBYQvyrtiA/exec";
 
 const SUBJECTS = ["لغة عربية", "لغة إنجليزية", "رياضيات", "علوم", "تربية إسلامية", "دراسات اجتماعية", "حاسب آلي", "تربية فنية", "تربية بدنية", "عام"];
 const EXAM_TYPES = ["المذاكرة الأولى", "المذاكرة الثانية", "الامتحان النهائي للفصل"];
@@ -576,17 +582,44 @@ function confirmDuplicateName(duplicates, describeFn, label) {
 // ---------------------------------------------------------------------------
 // دوال الساعة والتاريخ المباشرة
 // ---------------------------------------------------------------------------
+// كل الأوقات بصفحة الإدارة تُعرض بتوقيت دمشق بالشكل: 19/09/2026 17:02
+const DAMASCUS_TZ = "Asia/Damascus";
+const _dmFmt = new Intl.DateTimeFormat("en-GB", { timeZone: DAMASCUS_TZ, year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit", hourCycle: "h23" });
+function _dmParts(d) { const o = {}; _dmFmt.formatToParts(d).forEach((p) => { o[p.type] = p.value; }); return o; }
+
+// تاريخ فقط (dd/mm/yyyy). النص بلا وقت يبقى كما هو بدون تحويل منطقة زمنية.
+function fmtD(v) {
+  if (v === null || v === undefined || v === "") return "";
+  if (v instanceof Date) { if (isNaN(v)) return ""; const p = _dmParts(v); return `${p.day}/${p.month}/${p.year}`; }
+  const s = String(v).trim();
+  let m = s.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (m) return `${m[3]}/${m[2]}/${m[1]}`;
+  m = s.match(/^(\d{4})-(\d{2})-(\d{2})[ T](\d{2}):(\d{2})(?::\d{2}(?:\.\d+)?)?$/); // بلا منطقة زمنية = دمشق أصلاً
+  if (m) return `${m[3]}/${m[2]}/${m[1]}`;
+  if (/^\d{4}-\d{2}-\d{2}T.*(Z|[+-]\d{2}:?\d{2})$/.test(s)) {
+    const d = new Date(s);
+    if (!isNaN(d)) { const p = _dmParts(d); return `${p.day}/${p.month}/${p.year}`; }
+  }
+  return s;
+}
+
+// تاريخ ووقت (dd/mm/yyyy HH:mm) بتوقيت دمشق
+function fmtDT(v) {
+  if (v === null || v === undefined || v === "") return "";
+  const fromDate = (d) => { const p = _dmParts(d); return `${p.day}/${p.month}/${p.year} ${p.hour}:${p.minute}`; };
+  if (v instanceof Date) return isNaN(v) ? "" : fromDate(v);
+  const s = String(v).trim();
+  let m = s.match(/^(\d{4})-(\d{2})-(\d{2})[ T](\d{2}):(\d{2})(?::\d{2}(?:\.\d+)?)?$/); // بلا منطقة زمنية = دمشق أصلاً
+  if (m) return `${m[3]}/${m[2]}/${m[1]} ${m[4]}:${m[5]}`;
+  if (/^\d{4}-\d{2}-\d{2}T.*(Z|[+-]\d{2}:?\d{2})$/.test(s)) { const d = new Date(s); if (!isNaN(d)) return fromDate(d); }
+  return fmtD(s);
+}
+
 function getCurrentDateTimeText() {
   const now = new Date();
-  const dow = ARABIC_DOW_FULL[now.getDay()];
-  const day = now.getDate();
-  const month = ARABIC_MONTHS[now.getMonth()];
-  let hours = now.getHours();
-  const minutes = String(now.getMinutes()).padStart(2, "0");
-  const period = hours >= 12 ? "م" : "ص";
-  hours = hours % 12;
-  if (hours === 0) hours = 12;
-  return `${dow}، ${day} ${month} · ${hours}:${minutes} ${period}`;
+  const wd = new Intl.DateTimeFormat("en-US", { timeZone: DAMASCUS_TZ, weekday: "short" }).format(now);
+  const idx = { Sun: 0, Mon: 1, Tue: 2, Wed: 3, Thu: 4, Fri: 5, Sat: 6 }[wd];
+  return `${ARABIC_DOW_FULL[idx]} · ${fmtDT(now)}`;
 }
 
 function startLiveClock() {
@@ -844,7 +877,7 @@ function renderAdminGradesTab() {
     studentGrades.forEach(g => {
       const addedBy = String(g.Teacher_User || "").trim();
       const teacherObj = (staffSession.teachers || []).find(t => String(t.Username).trim() === addedBy);
-      const actualName = teacherObj && teacherObj.Name ? teacherObj.Name : addedBy;
+      const actualName = teacherObj && teacherObj.Name ? teacherObj.Name : (teacherObj ? addedBy : "الإدارة");
       
       let auditNote = "";
       let noteColor = "";
@@ -853,7 +886,7 @@ function renderAdminGradesTab() {
         auditNote = `تم التعديل/الإضافة بواسطة المدير: ${actualName}`;
         noteColor = "#A63A3A"; 
       } else {
-        auditNote = `تم إضافة النتيجة بواسطة المعلم: ${actualName}`;
+        auditNote = teacherObj ? `تم إضافة النتيجة بواسطة المعلم: ${actualName}` : "تمت الإضافة بواسطة الإدارة";
         noteColor = "#3B6D11"; 
       }
 
@@ -1720,7 +1753,7 @@ function renderAdminPaymentsTab() {
           <div style="display:flex;justify-content:space-between;align-items:center;">
             <div class="student-info">
               <div class="name">$${parseMoney(p.Amount).toLocaleString()} ${isVoid ? '<span class="void-badge">ملغاة</span>' : ""}</div>
-              <div class="meta">${p.Payment_Date} · ${p.Payment_Method || ""}${p.Notes ? " · " + p.Notes : ""}</div>
+              <div class="meta">${fmtD(p.Payment_Date)} · ${p.Payment_Method || ""}${p.Notes ? " · " + p.Notes : ""}</div>
             </div>
           </div>
           ${isVoid ? `<div style="font-size:11.5px;color:#A63A3A;margin-top:6px;">🚫 سبب الإلغاء: ${p.Void_Reason || "غير مذكور"}</div>` : ""}
@@ -2832,7 +2865,7 @@ function renderTeacherDashboardTab() {
         <div class="student-row">
           <div class="student-info">
             <div class="name">${nextExam.Subject || ""} — ${nextExam.Exam_Type || ""}</div>
-            <div class="meta">${nextExam.Class_Level || ""} · ${nextExam.Exam_Date}</div>
+            <div class="meta">${nextExam.Class_Level || ""} · ${fmtD(nextExam.Exam_Date)}</div>
           </div>
         </div>
       </div>
@@ -2847,7 +2880,7 @@ function renderTeacherDashboardTab() {
         <div class="student-row" style="flex-direction:column;align-items:stretch;">
           <div class="student-info">
             <div class="name">${latestAnn.Title || ""}</div>
-            <div class="meta">${latestAnn.Date || ""}</div>
+            <div class="meta">${fmtD(latestAnn.Date)}</div>
             <div style="font-size:12.5px;color:var(--text);margin-top:6px;">${latestAnn.Body || ""}</div>
           </div>
         </div>
@@ -2931,8 +2964,8 @@ function renderTeacherAttendanceTab() {
     });
     const names = users.map(u => {
       const t = (staffSession.teachers || []).find(x => String(x.Username).trim() === u);
-      return t && t.Name ? t.Name : u;
-    });
+      return t ? (t.Name || u) : "الإدارة";
+    }).filter((n, i, arr) => arr.indexOf(n) === i);
     const mine = users.length === 1 && users[0] === staffSession.username;
     recordedBy = `<div class="form-msg ${mine ? "ok" : "err"}" style="margin-bottom:10px;">
       ${mine ? "✓ أنت سجّلت حضور هذا اليوم" : "⚠️ حضور هذا اليوم مسجّل مسبقاً بواسطة: " + names.join("، ") + " — الحفظ سيعدّل تسجيلهم"}
@@ -3049,7 +3082,7 @@ function renderTeacherBehaviorTab() {
         <div class="student-row">
           <div class="student-info">
             <div class="name">${nameWithAgeById(n.Student_Name, n.Student_ID)}</div>
-            <div class="meta">${n.Date} · ${n.Note_Text}</div>
+            <div class="meta">${fmtD(n.Date)} · ${n.Note_Text}</div>
           </div>
         </div>
       `;
@@ -3243,7 +3276,7 @@ function renderTeacherAssignmentsTab() {
       listHtml += `
         <div class="student-row">
           <div class="student-info">
-            <div class="name">${h.Subject || ""} · ${h.Date}</div>
+            <div class="name">${h.Subject || ""} · ${fmtD(h.Date)}</div>
             <div class="meta">${h.Details}</div>
           </div>
         </div>
@@ -3288,7 +3321,7 @@ function renderTeacherAnnouncementsTab() {
         <div class="student-row" style="flex-direction:column;align-items:stretch;">
           <div class="student-info">
             <div class="name">${a.Title || "بدون عنوان"}</div>
-            <div class="meta">${a.Date || ""}</div>
+            <div class="meta">${fmtD(a.Date)}</div>
             <div style="font-size:12.5px;color:var(--text);margin-top:6px;">${a.Body || ""}</div>
           </div>
         </div>
@@ -3493,7 +3526,7 @@ function renderAdminAnnouncementsTab() {
           <div class="student-row ${isActive ? "" : "void-row"}" style="flex-direction:column;align-items:stretch;">
             <div class="student-info">
               <div class="name">${a.Title || "بدون عنوان"}</div>
-              <div class="meta">${a.Date || ""} · ${a.Audience || "الجميع"}</div>
+              <div class="meta">${fmtD(a.Date)} · ${a.Audience || "الجميع"}</div>
               <div style="font-size:12.5px;color:var(--muted2);margin-top:6px;">${a.Body || ""}</div>
             </div>
             <div style="display:flex;gap:6px;margin-top:8px;">
@@ -3663,7 +3696,7 @@ function renderAdminExamsTab() {
           <div class="student-row ${isActive ? "" : "void-row"}" style="flex-direction:column;align-items:stretch;">
             <div class="student-info">
               <div class="name">${ex.Subject || ""} — ${ex.Exam_Type || ""}</div>
-              <div class="meta">${ex.Class_Level || ""} · ${ex.Exam_Date || ""}${ex.Notes ? " · " + ex.Notes : ""}</div>
+              <div class="meta">${ex.Class_Level || ""} · ${fmtD(ex.Exam_Date)}${ex.Notes ? " · " + ex.Notes : ""}</div>
             </div>
             <div style="display:flex;gap:6px;margin-top:8px;">
               <button class="status-pill" style="background:var(--edit-bg);color:var(--edit-text);" onclick="editingExamId='${eid}';renderDashboard();">تعديل</button>
@@ -4485,55 +4518,80 @@ let changeLogSearch = "";
 // سجل الدخول — من دخل ومتى، لكل الأهالي والمعلمين والمدراء
 // ---------------------------------------------------------------------------
 
+let loginLogFilter = "all";
 function renderAdminLoginLogTab() {
-  let rows = staffSession.loginLog || [];
+  let rows = (staffSession.loginLog || []).slice();
+  // حماية إضافية بالواجهة: لا يظهر حساب المالك لغير المالك
+  if (!isOwner()) rows = rows.filter(r => String(r.Role || "").trim() !== "Owner");
+
+  const grp = (r) => { const x = String(r.Role || "").trim(); return x === "Parent" ? "Parent" : (x === "Teacher" ? "Teacher" : "Admin"); };
+  const counts = { all: rows.length, Parent: 0, Teacher: 0, Admin: 0 };
+  rows.forEach(r => { counts[grp(r)]++; });
+  const chip = (id, label) => `<button type="button" class="log-chip ${loginLogFilter === id ? "active" : ""}" onclick="loginLogFilter='${id}';renderDashboard();">${label} (${counts[id]})</button>`;
+  const filters = `<div class="log-filters">${chip("all", "الكل")}${chip("Parent", "أهالي")}${chip("Teacher", "معلمون")}${chip("Admin", "مدراء")}</div>`;
+
+  if (loginLogFilter !== "all") rows = rows.filter(r => grp(r) === loginLogFilter);
 
   const searchBox = `
     <div class="search-field-admin">
-      <input id="loginLogSearchInput" placeholder="ابحث بالاسم أو اسم المستخدم..." value="${loginLogSearch}" oninput="loginLogSearch=this.value;renderDashboard();" />
+      <input id="loginLogSearchInput" placeholder="ابحث بالاسم أو اسم المستخدم..." value="${staffEsc(loginLogSearch)}" oninput="loginLogSearch=this.value;renderDashboard();" />
       <span>🔎</span>
     </div>
   `;
-
   if (loginLogSearch.trim() !== "") {
     const term = loginLogSearch.trim();
-    rows = rows.filter(r =>
-      String(r.Name || "").includes(term) || String(r.Username || "").includes(term)
-    );
+    rows = rows.filter(r => String(r.Name || "").includes(term) || String(r.Username || "").includes(term));
   }
 
   const roleLabel = (r) => (r === "Owner" && isOwner()) ? "مالك" : ((r === "Owner" || r === "Admin") ? "مدير" : (r === "Teacher" ? "معلم" : "ولي أمر"));
 
-  let listHtml = `<div class="section-title">🕓 آخر ${rows.length} عملية دخول</div>`;
+  let listHtml = `<div class="section-title">🕓 آخر ظهور للحسابات (${rows.length})</div>`;
   if (rows.length === 0) {
     listHtml += `<div class="empty-box">لا يوجد سجل دخول بعد</div>`;
   } else {
     rows.forEach(r => {
       listHtml += `
         <div class="student-row">
-          <div class="student-info">
-            <div class="name">${r.Name || r.Username}</div>
-            <div class="meta">${r.Username} · ${roleLabel(r.Role)}</div>
+          <div class="student-info" style="min-width:0;overflow-wrap:anywhere;">
+            <div class="name">${staffEsc(r.Name || r.Username)}</div>
+            <div class="meta">${staffEsc(r.Username)} · ${roleLabel(String(r.Role || "").trim())}</div>
           </div>
-          <span class="badge-role">${r.Login_Time || ""}</span>
+          <span class="badge-role" style="white-space:nowrap;">${fmtDT(r.Login_Time)}</span>
         </div>
       `;
     });
   }
 
-  return searchBox + listHtml;
+  return filters + searchBox + listHtml;
 }
 
 // ---------------------------------------------------------------------------
 // سجل التغييرات — من عدّل شو ومتى، لكل عمليات الإضافة/التعديل/التعطيل بالتطبيق
 // ---------------------------------------------------------------------------
 
+// يحوّل رموز السجل لأسماء مقروءة: S_ طالب، P_ ولي أمر، G_ علامة (باسم طالبها)، وكلمات الحالة بالعربية
+function humanizeLogText(text) {
+  let t = String(text == null ? "" : text);
+  const students = staffSession.students || [], parents = staffSession.parents || [], grades = staffSession.grades || [];
+  t = t.replace(/\bS_\d+\b/g, (id) => { const x = students.find(z => String(z.Student_ID).trim() === id); return x && x.Student_Name ? x.Student_Name : id; });
+  t = t.replace(/\bP_\d+\b/g, (id) => { const x = parents.find(z => String(z.Parent_ID).trim() === id); return x && x.Parent_Name ? x.Parent_Name : id; });
+  t = t.replace(/\bG_\d+\b/g, (id) => {
+    const g = grades.find(z => String(z.Grade_ID).trim() === id);
+    const st = g && students.find(z => String(z.Student_ID).trim() === String(g.Student_ID).trim());
+    return st && st.Student_Name ? "علامة " + st.Student_Name : id;
+  });
+  t = t.replace(/\bVoid\b/g, "إلغاء").replace(/\bInactive\b/g, "معطّل").replace(/\bActive\b/g, "نشط");
+  // حماية إضافية: لا يُعرض أي مفتاح/سر بقيمته الكاملة
+  t = t.replace(/([A-Za-z_]*(?:api|key|secret|token|password)[A-Za-z_]*\s*=\s*)\S+/gi, "$1••••••").replace(/os_v2_[A-Za-z0-9]{10,}/g, "••••••");
+  return t;
+}
+
 function renderAdminChangeLogTab() {
   let rows = staffSession.changeLog || [];
 
   const searchBox = `
     <div class="search-field-admin">
-      <input id="changeLogSearchInput" placeholder="ابحث بالاسم أو نوع العملية..." value="${changeLogSearch}" oninput="changeLogSearch=this.value;renderDashboard();" />
+      <input id="changeLogSearchInput" placeholder="ابحث بالاسم أو نوع العملية..." value="${staffEsc(changeLogSearch)}" oninput="changeLogSearch=this.value;renderDashboard();" />
       <span>🔎</span>
     </div>
   `;
@@ -4544,7 +4602,7 @@ function renderAdminChangeLogTab() {
       String(r.Actor_Name || "").includes(term) ||
       String(r.Actor_Username || "").includes(term) ||
       String(r.Action || "").includes(term) ||
-      String(r.Target || "").includes(term)
+      humanizeLogText(r.Target).includes(term)
     );
   }
 
@@ -4552,13 +4610,14 @@ function renderAdminChangeLogTab() {
   if (rows.length === 0) {
     listHtml += `<div class="empty-box">لا يوجد سجل تغييرات بعد</div>`;
   } else {
+    // كل نص يلتف داخل عرض الشاشة (overflow-wrap) حتى لا تتوسّع الصفحة بسبب نص طويل بلا مسافات
     rows.forEach(r => {
       listHtml += `
-        <div class="student-row" style="flex-direction:column;align-items:stretch;">
-          <div class="student-info">
-            <div class="name">${r.Action || ""}</div>
-            <div class="meta">${r.Actor_Name || r.Actor_Username} · ${r.Change_Time || ""}</div>
-            ${r.Target ? `<div style="font-size:12px;color:var(--text);margin-top:4px;">${r.Target}</div>` : ""}
+        <div class="student-row" style="flex-direction:column;align-items:stretch;min-width:0;">
+          <div class="student-info" style="min-width:0;overflow-wrap:anywhere;word-break:break-word;">
+            <div class="name">${staffEsc(r.Action || "")}</div>
+            <div class="meta">${staffEsc(r.Actor_Name || r.Actor_Username)} · ${fmtDT(r.Change_Time)}</div>
+            ${r.Target ? `<div style="font-size:12px;color:var(--text);margin-top:4px;overflow-wrap:anywhere;word-break:break-word;">${staffEsc(humanizeLogText(r.Target))}</div>` : ""}
           </div>
         </div>
       `;
